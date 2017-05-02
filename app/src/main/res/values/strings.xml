@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">GroupMeApp</string>
+    <string name="news_fragment">Noticias</string>
+    <string name="groups_fragment">Grupos</string>
+    <string name="notifications_fragment">Notificaciones</string>
+    <string name="messages_fragment">Mensajes</string>
+</resources>
