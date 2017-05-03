@@ -17,6 +17,8 @@ public class FireApp extends Application{
         super.onCreate();
 
         if(!FirebaseApp.getApps(this).isEmpty()){
+
+            //Permite la persistencia offline
             FirebaseDatabase.getInstance().setPersistenceEnabled(true);
         }
     }
