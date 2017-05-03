@@ -1,8 +1,6 @@
-package com.andresdlg.groupmeapp;
+package com.andresdlg.groupmeapp.uiPackage;
 
 import android.content.res.Resources;
-import android.graphics.drawable.Icon;
-import android.support.annotation.IntegerRes;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
@@ -13,6 +11,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
+import com.andresdlg.groupmeapp.R;
 import com.ogaclejapan.smarttablayout.SmartTabLayout;
 import com.ogaclejapan.smarttablayout.utils.v4.FragmentPagerItemAdapter;
 import com.ogaclejapan.smarttablayout.utils.v4.FragmentPagerItems;

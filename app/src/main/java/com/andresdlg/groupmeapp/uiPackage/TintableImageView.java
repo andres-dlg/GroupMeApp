@@ -1,10 +1,12 @@
-package com.andresdlg.groupmeapp;
+package com.andresdlg.groupmeapp.uiPackage;
 
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.content.res.TypedArray;
 import android.util.AttributeSet;
 import android.widget.ImageView;
+
+import com.andresdlg.groupmeapp.R;
 
 public class TintableImageView extends ImageView {
 
