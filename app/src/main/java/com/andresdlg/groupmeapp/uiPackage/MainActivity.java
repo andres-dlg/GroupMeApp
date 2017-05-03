@@ -63,16 +63,16 @@ public class MainActivity extends AppCompatActivity
 
                 switch (position) {
                     case 0:
-                        icon.setImageDrawable(res.getDrawable(R.drawable.ic_newspaper_black_24dp));
+                        icon.setImageDrawable(res.getDrawable(R.drawable.newspaper));
                         break;
                     case 1:
-                        icon.setImageDrawable(res.getDrawable(R.drawable.ic_people_black_24dp));
+                        icon.setImageDrawable(res.getDrawable(R.drawable.account_multiple));
                         break;
                     case 2:
-                        icon.setImageDrawable(res.getDrawable(R.drawable.ic_notifications_active_black_24dp));
+                        icon.setImageDrawable(res.getDrawable(R.drawable.bell));
                         break;
                     case 3:
-                        icon.setImageDrawable(res.getDrawable(R.drawable.ic_message_black_24dp));
+                        icon.setImageDrawable(res.getDrawable(R.drawable.message));
                         break;
                     default:
                         throw new IllegalStateException("Invalid position: " + position);
