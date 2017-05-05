@@ -1,6 +1,8 @@
 package com.andresdlg.groupmeapp.uiPackage;
 
+import android.content.res.ColorStateList;
 import android.content.res.Resources;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
@@ -46,7 +48,7 @@ public class MainActivity extends AppCompatActivity
         final LayoutInflater inflater = LayoutInflater.from(this);
         final Resources res = getResources();
 
-        SmartTabLayout viewPagerTab = (SmartTabLayout) findViewById(R.id.viewpagertab);
+        final SmartTabLayout viewPagerTab = (SmartTabLayout) findViewById(R.id.viewpagertab);
         viewPagerTab.setCustomTabView(new SmartTabLayout.TabProvider(){
             @Override
             public View createTabView(ViewGroup container, int position, PagerAdapter adapter) {
@@ -82,6 +84,13 @@ public class MainActivity extends AppCompatActivity
         });
 
         viewPagerTab.setViewPager(viewPager);
+
+        /*viewPagerTab.setOnTabClickListener(new SmartTabLayout.OnTabClickListener() {
+            @Override
+            public void onTabClicked(int position) {
+                viewPagerTab.getTabAt(position).setBackgroundColor(getResources().getColor(R.color.colorAccent));
+            }
+        });*/
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);

@@ -33,7 +33,7 @@
         app:stl_underlineThickness="1dp"
         app:stl_dividerColor="#4D000000"
         app:stl_dividerThickness="1dp"
-        app:stl_defaultTabBackground="?attr/selectableItemBackground"
+        app:stl_defaultTabBackground="@drawable/tab_highlight_selector"
         app:stl_defaultTabTextAllCaps="true"
         app:stl_defaultTabTextColor="#FC000000"
         app:stl_defaultTabTextSize="12sp"
