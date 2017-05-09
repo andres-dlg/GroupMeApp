@@ -1,8 +1,7 @@
 package com.andresdlg.groupmeapp.uiPackage;
 
-import android.content.res.ColorStateList;
+import android.content.Intent;
 import android.content.res.Resources;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
@@ -29,9 +28,12 @@ import com.ogaclejapan.smarttablayout.utils.v4.FragmentPagerItems;
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        boolean isLoggedIn = getIntent().getBooleanExtra("isLoggedIn", false);
         setContentView(R.layout.activity_main);
 
         FragmentPagerItemAdapter adapter = new FragmentPagerItemAdapter(
@@ -49,7 +51,7 @@ public class MainActivity extends AppCompatActivity
         final Resources res = getResources();
 
         final SmartTabLayout viewPagerTab = (SmartTabLayout) findViewById(R.id.viewpagertab);
-        viewPagerTab.setCustomTabView(new SmartTabLayout.TabProvider(){
+        viewPagerTab.setCustomTabView(new SmartTabLayout.TabProvider() {
             @Override
             public View createTabView(ViewGroup container, int position, PagerAdapter adapter) {
                 View itemView = inflater.inflate(R.layout.tab_icon, container, false);
@@ -61,7 +63,7 @@ public class MainActivity extends AppCompatActivity
 
                 //Divido por la cantidad de fragmentos y determino el ancho del imageview que va en
                 // cada tab
-                icon.getLayoutParams().width = metrics.widthPixels/4;
+                icon.getLayoutParams().width = metrics.widthPixels / 4;
 
                 switch (position) {
                     case 0:
@@ -104,6 +106,7 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
     }
+
 
     @Override
     public void onBackPressed() {

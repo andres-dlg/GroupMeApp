@@ -10,13 +10,13 @@ import com.google.firebase.database.FirebaseDatabase;
  * Created by andresdlg on 02/05/17.
  */
 
-public class FireApp extends Application{
+public class FireApp extends Application {
 
     @Override
     public void onCreate() {
         super.onCreate();
 
-        if(!FirebaseApp.getApps(this).isEmpty()){
+        if (!FirebaseApp.getApps(this).isEmpty()) {
 
             //Permite la persistencia offline
             FirebaseDatabase.getInstance().setPersistenceEnabled(true);

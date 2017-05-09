@@ -14,17 +14,22 @@
 
     <!-- Strings related to login -->
     <string name="prompt_email">Email</string>
-    <string name="prompt_password">Password</string>
+    <string name="prompt_password">Contraseña</string>
     <string name="action_sign_in">Login</string>
     <string name="action_sign_up">¿Eres nuevo? Registra tu cuenta</string>
     <string name="action_sign_in_short">Sign in</string>
-    <string name="error_invalid_email">This email address is invalid</string>
-    <string name="error_invalid_password">This password is too short</string>
-    <string name="error_incorrect_password">This password is incorrect</string>
-    <string name="error_field_required">This field is required</string>
+    <string name="error_invalid_email">Dirección de correo inválida</string>
+    <string name="error_invalid_password">La contraseña es muy corta</string>
+    <string name="error_incorrect_password">La contraseña no es correcta</string>
+    <string name="error_field_required">Este campo es necesario</string>
     <string name="permission_rationale">"Contacts permissions are needed for providing email
         completions."
     </string>
     <string name="or">-OR-</string>
     <string name="forgotten_password">Olvidé mi contraseña</string>
+    <string name="create_account">Crear cuenta</string>
+    <string name="create_account_message">Espere mientras se crea su cuenta</string>
+    <string name="create_account_success">La cuenta ha sido creada con éxito</string>
+    <string name="create_account_failed">La cuenta no ha sido creada</string>
+
 </resources>
