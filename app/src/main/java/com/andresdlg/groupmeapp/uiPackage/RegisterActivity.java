@@ -2,9 +2,9 @@ package com.andresdlg.groupmeapp.uiPackage;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
@@ -23,16 +23,15 @@ import com.google.firebase.auth.FirebaseUser;
 
 public class RegisterActivity extends AppCompatActivity {
 
-    //DECLARE FIELDS
-    private AutoCompleteTextView mEmailView;
-    private EditText mPasswordView;
-
     //FIREBASE AUTHENTICATION ID
     FirebaseAuth mAuth;
     FirebaseAuth.AuthStateListener mAuthListener;
-
     //PROGRESS DIALOG
     ProgressDialog mProgressDialog;
+    //DECLARE FIELDS
+    private AutoCompleteTextView mEmailView;
+    private EditText mPasswordView;
+    ///TODO: implementar confirmar contraseña.
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -109,6 +108,10 @@ public class RegisterActivity extends AppCompatActivity {
             mEmailView.setError(getString(R.string.error_invalid_email));
             focusView = mEmailView;
             cancel = true;
+        }
+
+        if (cancel) {
+            focusView.requestFocus();
         } else {
             mAuth.createUserWithEmailAndPassword(emailUser, passUser).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
                 @Override
@@ -118,7 +121,7 @@ public class RegisterActivity extends AppCompatActivity {
                         mProgressDialog.dismiss();
                         Intent intent = new Intent(RegisterActivity.this, MainActivity.class);
                         intent.putExtra("isLoggedIn", true);
-                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                         startActivity(intent);
                     } else {
                         FirebaseAuthException e = (FirebaseAuthException) task.getException();
@@ -129,13 +132,10 @@ public class RegisterActivity extends AppCompatActivity {
                 }
             });
         }
-
-        if (cancel) {
-            focusView.requestFocus();
-        }
     }
 
     private boolean isEmailValid(String email) {
+        //TODO: Replace this with your own logic
         boolean response = false;
         if (email.contains("@") && email.contains(".com")) {
             response = true;
