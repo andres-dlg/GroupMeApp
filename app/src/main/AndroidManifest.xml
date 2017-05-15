@@ -30,6 +30,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".uiPackage.RegisterActivity" />
+        <activity android:name=".uiPackage.UserProfileSetupActivity"></activity>
     </application>
 
 </manifest>

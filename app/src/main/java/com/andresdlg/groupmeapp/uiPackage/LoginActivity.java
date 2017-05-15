@@ -63,6 +63,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_login);
 
         // Set up the login form.
         mEmailView = (AutoCompleteTextView) findViewById(R.id.email);
@@ -116,8 +117,6 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             }
         };
         mAuth.addAuthStateListener(mAuthStateListener);
-
-        setContentView(R.layout.activity_login);
     }
 
     @Override
@@ -331,7 +330,6 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         };
 
         int ADDRESS = 0;
-        int IS_PRIMARY = 1;
     }
 }
 

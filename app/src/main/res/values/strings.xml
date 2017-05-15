@@ -31,5 +31,8 @@
     <string name="create_account_message">Espere mientras se crea su cuenta</string>
     <string name="create_account_success">La cuenta ha sido creada con éxito</string>
     <string name="create_account_failed">La cuenta no ha sido creada</string>
+    <string name="alias">Alias</string>
+    <string name="guardar">Guardar</string>
+    <string name="estado">Estado</string>
 
 </resources>

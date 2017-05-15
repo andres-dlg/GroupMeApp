@@ -8,6 +8,7 @@ import android.widget.ImageView;
 
 import com.andresdlg.groupmeapp.R;
 
+// Se utiliza para brindar la posibilidad de visualizar iconos (imagenes) en la TabBar
 public class TintableImageView extends ImageView {
 
     private ColorStateList tint;
