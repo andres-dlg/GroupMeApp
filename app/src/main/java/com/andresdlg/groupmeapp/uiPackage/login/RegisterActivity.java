@@ -1,4 +1,4 @@
-package com.andresdlg.groupmeapp.uiPackage;
+package com.andresdlg.groupmeapp.uiPackage.login;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
@@ -14,6 +14,7 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import com.andresdlg.groupmeapp.R;
+import com.andresdlg.groupmeapp.uiPackage.MainActivity;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;

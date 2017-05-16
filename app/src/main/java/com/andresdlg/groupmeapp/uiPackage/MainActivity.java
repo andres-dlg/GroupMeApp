@@ -21,6 +21,11 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 
 import com.andresdlg.groupmeapp.R;
+import com.andresdlg.groupmeapp.uiPackage.fragments.GroupsFragment;
+import com.andresdlg.groupmeapp.uiPackage.fragments.MessagesFragment;
+import com.andresdlg.groupmeapp.uiPackage.fragments.NewsFragment;
+import com.andresdlg.groupmeapp.uiPackage.fragments.NotificationFragment;
+import com.andresdlg.groupmeapp.uiPackage.login.LoginActivity;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -131,6 +136,8 @@ public class MainActivity extends AppCompatActivity
                     mDatabaseRef.addValueEventListener(new ValueEventListener() {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
+                            //Si ya configuro su perfil(no hago nada y muestro la pantalla principal)
+                            // sino (le abro la pantalla de configuración)
                             if(dataSnapshot.hasChild(userId)){
 
                             }else{

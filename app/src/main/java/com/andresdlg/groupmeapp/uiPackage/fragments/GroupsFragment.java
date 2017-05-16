@@ -1,4 +1,4 @@
-package com.andresdlg.groupmeapp.uiPackage;
+package com.andresdlg.groupmeapp.uiPackage.fragments;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -13,7 +13,7 @@ import com.andresdlg.groupmeapp.R;
  * Created by andresdlg on 02/05/17.
  */
 
-class GroupsFragment extends Fragment {
+public class GroupsFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
