@@ -8,6 +8,10 @@
     <uses-permission android:name="android.permission.READ_CONTACTS" />
     <uses-permission android:name="android.permission.INTERNET" />
 
+    <!-- To pick images for profile photo or take photographs -->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+
     <application
         android:name=".firebasePackage.FireApp"
         android:allowBackup="true"
@@ -30,7 +34,9 @@
             </intent-filter>
         </activity>
         <activity android:name=".uiPackage.login.RegisterActivity" />
-        <activity android:name=".uiPackage.UserProfileSetupActivity"></activity>
+        <activity android:name=".uiPackage.UserProfileSetupActivity" />
+        <activity android:name="com.theartofdev.edmodo.cropper.CropImageActivity"
+            android:theme="@style/Base.Theme.AppCompat"/>
     </application>
 
 </manifest>

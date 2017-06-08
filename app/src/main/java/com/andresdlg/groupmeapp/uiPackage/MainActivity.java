@@ -139,7 +139,6 @@ public class MainActivity extends AppCompatActivity
                             //Si ya configuro su perfil(no hago nada y muestro la pantalla principal)
                             // sino (le abro la pantalla de configuración)
                             if(dataSnapshot.hasChild(userId)){
-
                             }else{
                                 finish();
                                 Intent moveToSetupProfile = new Intent(MainActivity.this,UserProfileSetupActivity.class);
@@ -157,7 +156,6 @@ public class MainActivity extends AppCompatActivity
                     finish();
                     startActivity(new Intent(MainActivity.this, LoginActivity.class));
                 }
-
             }
         };
         mAuth.addAuthStateListener(mAuthListener);
