@@ -52,8 +52,6 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        boolean isLoggedIn = getIntent().getBooleanExtra("isLoggedIn", false);
-
         FragmentPagerItemAdapter adapter = new FragmentPagerItemAdapter(
                 getSupportFragmentManager(), FragmentPagerItems.with(this)
                 .add(R.string.news_fragment, NewsFragment.class)
@@ -124,6 +122,9 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
+        //FIREBASE DATABASE REFERENCE
+        mDatabaseRef = FirebaseDatabase.getInstance().getReference().child("Users");
+
         //FIREBASE INSTANCE INITIALIZATION
         mAuth = FirebaseAuth.getInstance();
         mAuthListener = new FirebaseAuth.AuthStateListener() {
@@ -136,10 +137,9 @@ public class MainActivity extends AppCompatActivity
                     mDatabaseRef.addValueEventListener(new ValueEventListener() {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
-                            //Si ya configuro su perfil(no hago nada y muestro la pantalla principal)
-                            // sino (le abro la pantalla de configuración)
-                            if(dataSnapshot.hasChild(userId)){
-                            }else{
+                            //Si no configuro su perfil le abro la pantalla de configuración
+                            // sino no hago nada y muestro la pantalla principal
+                            if(!dataSnapshot.hasChild(userId)){
                                 finish();
                                 Intent moveToSetupProfile = new Intent(MainActivity.this,UserProfileSetupActivity.class);
                                 moveToSetupProfile.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
@@ -159,9 +159,6 @@ public class MainActivity extends AppCompatActivity
             }
         };
         mAuth.addAuthStateListener(mAuthListener);
-
-        //FIREBASE DATABASE REFERENCE
-        mDatabaseRef = FirebaseDatabase.getInstance().getReference().child("Users");
     }
 
     @Override

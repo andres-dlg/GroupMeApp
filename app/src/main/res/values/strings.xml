@@ -34,5 +34,7 @@
     <string name="alias">Alias</string>
     <string name="guardar">Guardar</string>
     <string name="estado">Estado</string>
+    <string name="progress_save_profile_title">Guardando perfil</string>
+    <string name="progress_save_profile_message">Espere, por favor...</string>
 
 </resources>

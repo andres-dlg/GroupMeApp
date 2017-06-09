@@ -1,5 +1,6 @@
 package com.andresdlg.groupmeapp.uiPackage;
 
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
@@ -8,16 +9,24 @@ import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import com.andresdlg.groupmeapp.R;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
 
@@ -37,12 +46,16 @@ public class UserProfileSetupActivity extends AppCompatActivity {
 
     //FIREBASE DATABASE FIELDS
     DatabaseReference mUserDatabase;
+    StorageReference mStorageReference;
 
     private static final int REQUEST_CAMERA = 3;
     private static final int SELECT_FILE = 2;
 
     //IMAGE HOLD URI
     Uri imageHoldUri = null;
+
+    //PROGRESS DIALOG
+    ProgressDialog mProgress;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,14 +85,18 @@ public class UserProfileSetupActivity extends AppCompatActivity {
         };
         mAuth.addAuthStateListener(mAuthStateListener);
 
+        //PROGRESS DIALOG
+        mProgress = new ProgressDialog(this);
+
         //ASSIGN INSTANCE TO FIREBASE DATABASE
-        mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Users");
+        mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Users").child(mAuth.getCurrentUser().getUid());
+        mStorageReference = FirebaseStorage.getInstance().getReference();
 
         //ONCLICK LISTENER PROFILE SAVE BUTTON
         mSaveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //LOGIC FOR SAVING USER PROFILE
+                saveUserProfile();
             }
         });
 
@@ -165,4 +182,44 @@ public class UserProfileSetupActivity extends AppCompatActivity {
             }
         }
     }
+
+    private void saveUserProfile() {
+        final String alias, userStatus;
+        alias = mAlias.getText().toString().trim();
+        userStatus = mStatus.getText().toString().trim();
+        if(!TextUtils.isEmpty(alias) && !TextUtils.isEmpty(userStatus)){
+            if(imageHoldUri!=null){
+                mProgress.setTitle(getString(R.string.progress_save_profile_title));
+                mProgress.setMessage(getString(R.string.progress_save_profile_message));
+                mProgress.show();
+
+                StorageReference mChildStorage = mStorageReference.child("User_Profile").child(imageHoldUri.getLastPathSegment());
+                String profilePicUrl = imageHoldUri.getLastPathSegment();
+
+                mChildStorage.putFile(imageHoldUri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                    @Override
+                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                        final Uri imageUrl = taskSnapshot.getDownloadUrl();
+
+                        mUserDatabase.child("alias").setValue(alias);
+                        mUserDatabase.child("status").setValue(userStatus);
+                        mUserDatabase.child("userid").setValue(mAuth.getCurrentUser().getUid());
+                        mUserDatabase.child("imageUrl").setValue(imageUrl.toString());
+
+                        mProgress.dismiss();
+
+                        finish();
+                        Intent intent = new Intent(UserProfileSetupActivity.this, MainActivity.class);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                        startActivity(intent);
+                    }
+                });
+            }else{
+                Toast.makeText(UserProfileSetupActivity.this,"Ingrese una foto de perfil",Toast.LENGTH_SHORT).show();
+            }
+        }else{
+            Toast.makeText(UserProfileSetupActivity.this,"Complete todos los campos",Toast.LENGTH_SHORT).show();
+        }
+    }
+
 }
