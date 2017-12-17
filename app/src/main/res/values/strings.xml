@@ -15,17 +15,19 @@
     <!-- Strings related to login -->
     <string name="prompt_email">Email</string>
     <string name="prompt_password">Contraseña</string>
+    <string name="prompt_confirm_password">Confirmar Contraseña</string>
     <string name="action_sign_in">Login</string>
     <string name="action_sign_up">¿Eres nuevo? Registra tu cuenta</string>
     <string name="action_sign_in_short">Sign in</string>
     <string name="error_invalid_email">Dirección de correo inválida</string>
     <string name="error_invalid_password">La contraseña es muy corta</string>
     <string name="error_incorrect_password">La contraseña no es correcta</string>
+    <string name="error_incorrect_confirm_password">La contraseña no coincide</string>
     <string name="error_field_required">Este campo es necesario</string>
     <string name="permission_rationale">"Contacts permissions are needed for providing email
         completions."
     </string>
-    <string name="or">-OR-</string>
+    <string name="or">-O-</string>
     <string name="forgotten_password">Olvidé mi contraseña</string>
     <string name="create_account">Crear cuenta</string>
     <string name="create_account_message">Espere mientras se crea su cuenta</string>
@@ -35,6 +37,16 @@
     <string name="guardar">Guardar</string>
     <string name="estado">Estado</string>
     <string name="progress_save_profile_title">Guardando perfil</string>
-    <string name="progress_save_profile_message">Espere, por favor...</string>
+    <string name="progress_save_profile_message">Espere, por favor…</string>
+    <string name="title_app">GroupMeApp</string>
+    <string name="group_name">Nombre del grupo</string>
+    <string name="save">Guardar</string>
+    <string name="no_groups">No tienes ningún grupo</string>
+    <string name="no_news">No tienes ninguna noticia</string>
+    <string name="no_messages">No tienes nuevos mensajes</string>
+    <string name="no_notifications">No tienes nuevas notificaciones</string>
+    <string name="action_google_sign_in">Accede con google</string>
+
+    <string translatable="false" name="fontNotice">fonts/Simplifica.ttf</string>
 
 </resources>
