@@ -40,6 +40,7 @@ public class RegisterActivity extends AppCompatActivity {
     //FIREBASE AUTHENTICATION ID
     FirebaseAuth mAuth;
     FirebaseAuth.AuthStateListener mAuthListener;
+    FirebaseUser user;
     //PROGRESS DIALOG
     ProgressDialog mProgressDialog;
     //DECLARE FIELDS
@@ -117,7 +118,7 @@ public class RegisterActivity extends AppCompatActivity {
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
                 //CHECK USER
-                FirebaseUser user = firebaseAuth.getCurrentUser();
+                user = firebaseAuth.getCurrentUser();
                 /*if(user!=null){
 
                     Intent intent = new Intent(RegisterActivity.this,MainActivity.class);
@@ -186,24 +187,38 @@ public class RegisterActivity extends AppCompatActivity {
         if (cancel) {
             focusView.requestFocus();
         } else {
-            mAuth.createUserWithEmailAndPassword(emailUser, passUser).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
-                @Override
-                public void onComplete(@NonNull Task<AuthResult> task) {
-                    if (task.isSuccessful()) {
-                        Toast.makeText(RegisterActivity.this, R.string.create_account_success, Toast.LENGTH_LONG).show();
-                        mProgressDialog.dismiss();
-                        Intent intent = new Intent(RegisterActivity.this, MainActivity.class);
-                        intent.putExtra("isLoggedIn", true);
-                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                        startActivity(intent);
-                    } else {
-                        FirebaseAuthException e = (FirebaseAuthException) task.getException();
-                        Toast.makeText(RegisterActivity.this, R.string.create_account_failed, Toast.LENGTH_LONG).show();
-                        Log.e("LoginActivity", "Failed Registration", e);
-                        mProgressDialog.dismiss();
-                    }
-                }
-            });
+            mAuth.createUserWithEmailAndPassword(emailUser, passUser)
+                    .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+                        @Override
+                        public void onComplete(@NonNull Task<AuthResult> task) {
+                            if (task.isSuccessful()) {
+                                Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
+                                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                                user.sendEmailVerification().addOnCompleteListener(new OnCompleteListener<Void>() {
+                                    @Override
+                                    public void onComplete(@NonNull Task<Void> task) {
+                                        if (task.isSuccessful()) {
+                                            Toast.makeText(RegisterActivity.this,
+                                                    getString(R.string.verification_email_sent) + user.getEmail(),
+                                                    Toast.LENGTH_SHORT).show();
+                                        } else {
+                                            Toast.makeText(RegisterActivity.this,
+                                                    R.string.verification_email_failed,
+                                                    Toast.LENGTH_SHORT).show();
+                                        }
+                                    }
+                                });
+                                mProgressDialog.dismiss();
+                                startActivity(intent);
+
+                            } else {
+                                FirebaseAuthException e = (FirebaseAuthException) task.getException();
+                                Toast.makeText(RegisterActivity.this, R.string.create_account_failed, Toast.LENGTH_LONG).show();
+                                Log.e("LoginActivity", "Failed Registration", e);
+                                mProgressDialog.dismiss();
+                            }
+                        }
+                    });
         }
     }
 

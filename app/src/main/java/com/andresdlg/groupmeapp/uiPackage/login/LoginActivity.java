@@ -4,6 +4,7 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.app.LoaderManager.LoaderCallbacks;
+import android.content.Context;
 import android.content.CursorLoader;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -16,12 +17,15 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Point;
 import android.graphics.PorterDuff;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
@@ -30,6 +34,7 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.Display;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.inputmethod.EditorInfo;
@@ -160,7 +165,24 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             mSignUpLink.setOnClickListener(new OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    startActivity(new Intent(LoginActivity.this, RegisterActivity.class));
+                    if(!isConnected()){
+                        Toast.makeText(LoginActivity.this,"No tiene conexion a internet",Toast.LENGTH_SHORT).show();
+                    }else{
+                        startActivity(new Intent(LoginActivity.this, RegisterActivity.class));
+                    }
+                }
+            });
+
+
+            TextView mForgottenPasswordLink = (TextView) findViewById(R.id.forgotten_password_link);
+            mForgottenPasswordLink.setOnClickListener(new OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if(!isConnected()){
+                        Toast.makeText(LoginActivity.this,"No tiene conexion a internet",Toast.LENGTH_SHORT).show();
+                    }else{
+                        showInputDialog();
+                    }
                 }
             });
 
@@ -172,7 +194,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                     //CHECKING USER PRESENCE
                     FirebaseUser user = firebaseAuth.getCurrentUser();
 
-                    if (user != null) {
+                    if (user != null && user.isEmailVerified()) {
                         Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                         startActivity(intent);
@@ -182,6 +204,13 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             };
             mAuth.addAuthStateListener(mAuthStateListener);
         }
+    }
+
+    private boolean isConnected() {
+        ConnectivityManager cm =
+                (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo netInfo = cm.getActiveNetworkInfo();
+        return netInfo != null && netInfo.isConnectedOrConnecting();
     }
 
 
@@ -475,6 +504,35 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         };
 
         int ADDRESS = 0;
+    }
+
+    protected void showInputDialog() {
+
+        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this,R.style.MyDialogTheme);
+        LayoutInflater inflater = this.getLayoutInflater();
+        final View dialogView = inflater.inflate(R.layout.activity_login_forgotten_password_dialog, null);
+        dialogBuilder.setView(dialogView);
+
+        final EditText edt = (EditText) dialogView.findViewById(R.id.fgEditText);
+
+        ColorStateList colorStateList = ColorStateList.valueOf(ContextCompat.getColor(this,R.color.cardview_dark_background));
+        edt.setBackgroundTintList(colorStateList);
+        edt.setTextColor(ColorStateList.valueOf(ContextCompat.getColor(this,R.color.tab_icons_not_pressed)));
+
+        dialogBuilder.setTitle("Correo de verificación");
+        dialogBuilder.setMessage("Recibirá un enlace de recuperación");
+        dialogBuilder.setPositiveButton("Enviar", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+                //do something with edt.getText().toString();
+            }
+        });
+        dialogBuilder.setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+                dialog.cancel();
+            }
+        });
+        AlertDialog b = dialogBuilder.create();
+        b.show();
     }
 }
 

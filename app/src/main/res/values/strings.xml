@@ -27,6 +27,8 @@
     <string name="permission_rationale">"Contacts permissions are needed for providing email
         completions."
     </string>
+    <string name="verification_email_sent">Correo de verificación enviado a</string>
+
     <string name="or">-O-</string>
     <string name="forgotten_password">Olvidé mi contraseña</string>
     <string name="create_account">Crear cuenta</string>
@@ -48,5 +50,7 @@
     <string name="action_google_sign_in">Accede con google</string>
 
     <string translatable="false" name="fontNotice">fonts/Simplifica.ttf</string>
+    <string name="verification_email_failed">Fallo al enviar correo de verificación</string>
+
 
 </resources>
