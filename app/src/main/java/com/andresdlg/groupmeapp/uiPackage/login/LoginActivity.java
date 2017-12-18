@@ -519,11 +519,24 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         edt.setBackgroundTintList(colorStateList);
         edt.setTextColor(ColorStateList.valueOf(ContextCompat.getColor(this,R.color.tab_icons_not_pressed)));
 
-        dialogBuilder.setTitle("Correo de verificación");
+        dialogBuilder.setTitle("Correo de recuperación");
         dialogBuilder.setMessage("Recibirá un enlace de recuperación");
         dialogBuilder.setPositiveButton("Enviar", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {
-                //do something with edt.getText().toString();
+                if(!TextUtils.isEmpty(edt.getText().toString().trim()) && isEmailValid(edt.getText().toString().trim())){
+                    mAuth.sendPasswordResetEmail(edt.getText().toString()).addOnCompleteListener(new OnCompleteListener<Void>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Void> task) {
+                            if(task.isSuccessful()){
+                                Toast.makeText(LoginActivity.this,getString(R.string.recover_password_email_sent) + " " +edt.getText().toString(),Toast.LENGTH_SHORT).show();
+                            }else{
+                                Toast.makeText(LoginActivity.this, R.string.recover_password_email_failed,Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                    });
+                }else{
+                    Toast.makeText(LoginActivity.this, "Por favor, rellene el campo correctamente",Toast.LENGTH_SHORT).show();
+                }
             }
         });
         dialogBuilder.setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {

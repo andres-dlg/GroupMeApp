@@ -51,6 +51,8 @@
 
     <string translatable="false" name="fontNotice">fonts/Simplifica.ttf</string>
     <string name="verification_email_failed">Fallo al enviar correo de verificación</string>
+    <string name="recover_password_email_sent">Correo de recuperación enviado a </string>
+    <string name="recover_password_email_failed">Fallo al enviar correo de recuperación</string>
 
 
 </resources>
