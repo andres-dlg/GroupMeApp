@@ -52,14 +52,14 @@
                     android:src="@drawable/app_logo"
                     android:layout_gravity="center"
                     />
-                <fr.arnaudguyon.smartfontslib.FontTextView
+                <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/app_name"
-                    android:textAlignment="center"
-                    app:font="@string/fontNotice"
+                    android:fontFamily="@font/simplifica_font"
                     android:textSize="70sp"
                     android:textColor="#FFFFFF"
+                    android:textAlignment="center"
                     />
             </LinearLayout>
 
