@@ -78,31 +78,19 @@ import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 /**
  * A login screen that offers login via email/password.
  */
-public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<Cursor> {
+public class LoginActivity extends AppCompatActivity {
 
-
-    /**
-     * Id to identity READ_CONTACTS permission request.
-     */
-    //private static final int REQUEST_READ_CONTACTS = 0;
-
-    /**
-     * Id to identity INTERNET permission request.
-     */
-    //private static final int REQUEST_INTERNET = 1;
-
-
+    // STATICS
     public static final int REQUEST_ID_MULTIPLE_PERMISSIONS = 1;
     private static final String TAG = "ADLG";
     private static final int RC_SIGN_IN = 9001;
 
-
-    //FIREBASE ATHENTICATION FIELDS
+    // FIREBASE ATHENTICATION FIELDS
     FirebaseAuth mAuth;
     FirebaseAuth.AuthStateListener mAuthStateListener;
     private GoogleSignInClient mGoogleSignInClient;
 
-    // UI references.
+    // UI REFERENCES.
     private AutoCompleteTextView mEmailView;
     private EditText mPasswordView;
     private View mProgressView;
@@ -115,40 +103,36 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
-        /* adapt the image to the size of the display */
+        // BACKGROUND AUTO ADAPTABLE
         Display display = getWindowManager().getDefaultDisplay();
         Point size = new Point();
         display.getSize(size);
-
         if(LoginActivity.this.getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT)
         {
+            // PORTRAIT MODE
             bmp = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(
                     getResources(),R.drawable.login_background_vertical),size.x,size.y,true);
-            // Portrait Mode
         } else {
+            // LANDSCAPE MODE
             bmp = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(
                     getResources(),R.drawable.login_background),size.x,size.y,true);
-            // Landscape Mode
         }
-
-        /* fill the background ImageView with the resized image */
         ImageView iv_background = findViewById(R.id.ivLogin);
         iv_background.setImageBitmap(bmp);
 
 
+        // PROGRESS BAR ON CLICK ON GOOGLE SIGN IN BUTTON
         RelativeLayout layout = findViewById(R.id.rl);
         progressBar = new ProgressBar(LoginActivity.this,null,android.R.attr.progressBarStyleLarge);
         RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(100,100);
         params.addRule(RelativeLayout.CENTER_IN_PARENT);
         layout.addView(progressBar,params);
         progressBar.setVisibility(View.GONE);
-        //progressBar.setVisibility(View.VISIBLE);  //To show ProgressBar
-        //progressBar.setVisibility(View.GONE);     // To Hide ProgressBar
 
 
+        //IF ALL PERMISSIONS GRANTED...
         if(checkAndRequestPermissions()) {
-
-            // Set up the login form.
+            // SET UP THE LOGIN FORM WITH COLORS.
             mEmailView = findViewById(R.id.email);
             ColorStateList colorStateList = ColorStateList.valueOf(ContextCompat.getColor(this,R.color.colorAccent));
             mEmailView.setBackgroundTintList(colorStateList);
@@ -186,7 +170,6 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                             signInWithGoogle();
                             break;
                     }
-
                 }
             });
 
@@ -205,7 +188,6 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                 }
             });
 
-
             TextView mForgottenPasswordLink = findViewById(R.id.forgotten_password_link);
             mForgottenPasswordLink.setOnClickListener(new OnClickListener() {
                 @Override
@@ -218,14 +200,13 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                 }
             });
 
-            //Firebase authentication instances
+            //FIREBASE AUTHENTICATION INSTANCES
             mAuth = FirebaseAuth.getInstance();
             mAuthStateListener = new FirebaseAuth.AuthStateListener() {
                 @Override
                 public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-                    //CHECKING USER PRESENCE
+                    //CHECKING IF USER IS LOGGED IN AND EMAIL VERIFIED
                     FirebaseUser user = firebaseAuth.getCurrentUser();
-
                     if (user != null && user.isEmailVerified()) {
                         Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
@@ -236,7 +217,6 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             };
             mAuth.addAuthStateListener(mAuthStateListener);
 
-
             // [START config_signin]
             // Configure Google Sign In
             GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -244,10 +224,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                     .requestEmail()
                     .build();
             // [END config_signin]
-
             mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
-
-
         }
     }
 
@@ -311,8 +288,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     protected void onStart() {
         super.onStart();
         mAuth.addAuthStateListener(mAuthStateListener);
-
-        //Check if user is logged in
+        //CHECK IF USER IS LOGGED IN
         GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(this);
         if(account!=null){
             Intent intent = new Intent(LoginActivity.this, MainActivity.class);
@@ -320,7 +296,6 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             startActivity(intent);
             finish();
         }
-
     }
 
     @Override
@@ -329,13 +304,6 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         mAuth.removeAuthStateListener(mAuthStateListener);
     }
 
-    /*private void populateAutoComplete() {
-        if (!mayRequestContacts()) {
-            return;
-        }
-
-        getLoaderManager().initLoader(0, null, this);
-    }*/
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -352,8 +320,6 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             } catch (ApiException e) {
                 Toast.makeText(LoginActivity.this,"Fallo de autenticación con Google", Toast.LENGTH_SHORT).show();
             }
-
-            //handleSignInResult(task);
         }
     }
 
@@ -388,7 +354,6 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                     }
                 });
     }
-// [END auth_with_google]
 
     @Override
     public void onRequestPermissionsResult(int requestCode,
@@ -451,7 +416,6 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                 }
             }
         }
-
     }
 
     private void showDialogOK(String message, DialogInterface.OnClickListener okListener) {
@@ -465,7 +429,6 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
 
     private void attemptLogin() {
-        ///TODO: implementar singin con google
         // Reset errors.
         mEmailView.setError(null);
         mPasswordView.setError(null);
@@ -574,9 +537,6 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         b.show();
     }
 
-
-
-
     /**
      * Shows the progress UI and hides the login form.
      */
@@ -613,64 +573,5 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
         }
     }
-
-    ///TODO: VER SI LO BORRO
-    @Override
-    public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
-        return new CursorLoader(this,
-                // Retrieve data rows for the device user's 'profile' contact.
-                Uri.withAppendedPath(ContactsContract.Profile.CONTENT_URI,
-                        ContactsContract.Contacts.Data.CONTENT_DIRECTORY), ProfileQuery.PROJECTION,
-
-                // Select only email addresses.
-                ContactsContract.Contacts.Data.MIMETYPE +
-                        " = ?", new String[]{ContactsContract.CommonDataKinds.Email
-                .CONTENT_ITEM_TYPE},
-
-                // Show primary email addresses first. Note that there won't be
-                // a primary email address if the user hasn't specified one.
-                ContactsContract.Contacts.Data.IS_PRIMARY + " DESC");
-    }
-
-    ///TODO: VER SI LO BORRO
-    @Override
-    public void onLoadFinished(Loader<Cursor> cursorLoader, Cursor cursor) {
-        List<String> emails = new ArrayList<>();
-        cursor.moveToFirst();
-        while (!cursor.isAfterLast()) {
-            emails.add(cursor.getString(ProfileQuery.ADDRESS));
-            cursor.moveToNext();
-        }
-        addEmailsToAutoComplete(emails);
-    }
-
-
-    ///TODO: VER SI LO BORRO
-    @Override
-    public void onLoaderReset(Loader<Cursor> cursorLoader) {
-
-    }
-
-    ///TODO: VER SI LO BORRO
-    private void addEmailsToAutoComplete(List<String> emailAddressCollection) {
-        //Create adapter to tell the AutoCompleteTextView what to show in its dropdown list.
-        ArrayAdapter<String> adapter =
-                new ArrayAdapter<>(LoginActivity.this,
-                        android.R.layout.simple_dropdown_item_1line, emailAddressCollection);
-        mEmailView.setAdapter(adapter);
-    }
-
-    ///TODO: VER SI LO BORRO
-    private interface ProfileQuery {
-        String[] PROJECTION = {
-                ContactsContract.CommonDataKinds.Email.ADDRESS,
-                ContactsContract.CommonDataKinds.Email.IS_PRIMARY,
-        };
-
-        int ADDRESS = 0;
-    }
-
-
-
 }
 

@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -14,6 +15,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.andresdlg.groupmeapp.R;
@@ -37,7 +39,8 @@ public class UserProfileSetupActivity extends AppCompatActivity {
     //FIELDS DECLARATION
     CircleImageView mCircleImageView;
     EditText mAlias;
-    EditText mStatus;
+    EditText mName;
+    EditText mJob;
     Button mSaveButton;
 
     //FIREBASE AUTHENTICATION FIELDS
@@ -63,10 +66,12 @@ public class UserProfileSetupActivity extends AppCompatActivity {
         setContentView(R.layout.activity_user_profile_setup);
 
         //ASSIGN ID'S
-        mCircleImageView = (CircleImageView) findViewById(R.id.profile_image);
-        mAlias = (EditText) findViewById(R.id.alias);
-        mStatus = (EditText) findViewById(R.id.status);
-        mSaveButton = (Button) findViewById(R.id.save);
+        mCircleImageView = findViewById(R.id.user_profile_photo);
+        mAlias = findViewById(R.id.alias);
+        mName =  findViewById(R.id.user_profile_name);
+        mJob =  findViewById(R.id.job);
+        mSaveButton = findViewById(R.id.save);
+        FloatingActionButton fab = findViewById(R.id.floatingActionButton);
 
         //ASSIGN INSTANCE TO FIREBASE AUTH
         mAuth = FirebaseAuth.getInstance();
@@ -100,34 +105,42 @@ public class UserProfileSetupActivity extends AppCompatActivity {
             }
         });
 
+
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                pickTheProfilePicture();
+            }
+        });
+
         //ONCLICK LISTENER PROFILE IMAGE
-        mCircleImageView.setOnClickListener(new View.OnClickListener() {
+        /*mCircleImageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 //LOGIC FOR PICKING IMAGE
                 pickTheProfilePicture();
             }
-        });
+        });*/
     }
 
     private void pickTheProfilePicture() {
 
         //DISPLAY DIALOG TO CHOOSE CAMERA OR GALLERY
-        final CharSequence[] items = {"Take Photo", "Choose from Library",
-                "Cancel"};
+        final CharSequence[] items = {"Tomar una foto", "Elegir de la galeria",
+                "Cancelar"};
         AlertDialog.Builder builder = new AlertDialog.Builder(UserProfileSetupActivity.this);
-        builder.setTitle("Add Photo!");
+        builder.setTitle("Agregar foto de perfil");
 
         //SET ITEMS AND THERE LISTENERS
         builder.setItems(items, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int item) {
 
-                if (items[item].equals("Take Photo")) {
+                if (items[item].equals("Tomar una foto")) {
                     cameraIntent();
-                } else if (items[item].equals("Choose from Library")) {
+                } else if (items[item].equals("Elegir de la galeria")) {
                     galleryIntent();
-                } else if (items[item].equals("Cancel")) {
+                } else if (items[item].equals("Cancelar")) {
                     dialog.dismiss();
                 }
             }
@@ -160,14 +173,16 @@ public class UserProfileSetupActivity extends AppCompatActivity {
             Uri imageUri = data.getData();
             CropImage.activity(imageUri)
                     .setGuidelines(CropImageView.Guidelines.ON)
-                    .setAspectRatio(1,1)
+                    .setCropShape(CropImageView.CropShape.OVAL)
+                    .setFixAspectRatio(true)
                     .start(this);
         }else if ( requestCode == REQUEST_CAMERA && resultCode == RESULT_OK ){
             //SAVE URI FROM CAMERA
             Uri imageUri = data.getData();
             CropImage.activity(imageUri)
+                    .setCropShape(CropImageView.CropShape.OVAL)
                     .setGuidelines(CropImageView.Guidelines.ON)
-                    .setAspectRatio(1,1)
+                    .setFixAspectRatio(true)
                     .start(this);
         }
 
@@ -175,6 +190,7 @@ public class UserProfileSetupActivity extends AppCompatActivity {
         if (requestCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE) {
             CropImage.ActivityResult result = CropImage.getActivityResult(data);
             if (resultCode == RESULT_OK) {
+                mCircleImageView.setPadding(10,10,10,10);
                 imageHoldUri = result.getUri();
                 mCircleImageView.setImageURI(imageHoldUri);
             } else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
@@ -184,10 +200,11 @@ public class UserProfileSetupActivity extends AppCompatActivity {
     }
 
     private void saveUserProfile() {
-        final String alias, userStatus;
+        final String alias, userName, job;
         alias = mAlias.getText().toString().trim();
-        userStatus = mStatus.getText().toString().trim();
-        if(!TextUtils.isEmpty(alias) && !TextUtils.isEmpty(userStatus)){
+        userName = mName.getText().toString().trim();
+        job = mJob.getText().toString().trim();
+        if(!TextUtils.isEmpty(alias)){
             if(imageHoldUri!=null){
                 mProgress.setTitle(getString(R.string.progress_save_profile_title));
                 mProgress.setMessage(getString(R.string.progress_save_profile_message));
@@ -202,7 +219,8 @@ public class UserProfileSetupActivity extends AppCompatActivity {
                         final Uri imageUrl = taskSnapshot.getDownloadUrl();
 
                         mUserDatabase.child("alias").setValue(alias);
-                        mUserDatabase.child("status").setValue(userStatus);
+                        mUserDatabase.child("name").setValue(userName);
+                        mUserDatabase.child("job").setValue(job);
                         mUserDatabase.child("userid").setValue(mAuth.getCurrentUser().getUid());
                         mUserDatabase.child("imageUrl").setValue(imageUrl.toString());
 
