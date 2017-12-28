@@ -4,4 +4,6 @@
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FFFFFF</color>
     <color name="tab_icons_not_pressed">#000000</color>
+    <color name="black">#000000</color>
+    <color name="celestito">#2196f3</color>
 </resources>

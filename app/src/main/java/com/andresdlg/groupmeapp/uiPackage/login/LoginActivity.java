@@ -207,7 +207,7 @@ public class LoginActivity extends AppCompatActivity {
                 public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
                     //CHECKING IF USER IS LOGGED IN AND EMAIL VERIFIED
                     FirebaseUser user = firebaseAuth.getCurrentUser();
-                    if (user != null && user.isEmailVerified()) {
+                    if (user != null && user.isEmailVerified()){
                         Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                         startActivity(intent);

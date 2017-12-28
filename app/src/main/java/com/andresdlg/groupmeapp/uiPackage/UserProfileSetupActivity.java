@@ -1,31 +1,38 @@
 package com.andresdlg.groupmeapp.uiPackage;
 
+import android.Manifest;
+import android.app.Activity;
 import android.app.ProgressDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.content.res.ColorStateList;
+import android.graphics.Paint;
 import android.net.Uri;
-import android.provider.MediaStore;
-import android.support.annotation.NonNull;
-import android.support.design.widget.FloatingActionButton;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
+import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.annotation.RequiresApi;
+import android.support.design.widget.FloatingActionButton;
+import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.View;
+import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.andresdlg.groupmeapp.R;
-import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
@@ -38,10 +45,12 @@ public class UserProfileSetupActivity extends AppCompatActivity {
 
     //FIELDS DECLARATION
     CircleImageView mCircleImageView;
-    EditText mAlias;
+    AutoCompleteTextView mAlias;
     EditText mName;
-    EditText mJob;
+    AutoCompleteTextView mJob;
     Button mSaveButton;
+    TextView mLater;
+    Uri mCropImageUri;
 
     //FIREBASE AUTHENTICATION FIELDS
     FirebaseAuth mAuth;
@@ -55,7 +64,7 @@ public class UserProfileSetupActivity extends AppCompatActivity {
     private static final int SELECT_FILE = 2;
 
     //IMAGE HOLD URI
-    Uri imageHoldUri = null;
+    Uri imageHoldUri = Uri.parse("android.resource://" + "com.andresdlg.groupmeapp" +"/"+R.drawable.profile_circular_border_imageview);
 
     //PROGRESS DIALOG
     ProgressDialog mProgress;
@@ -65,12 +74,26 @@ public class UserProfileSetupActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_user_profile_setup);
 
+        /*getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setDisplayShowHomeEnabled(true);*/
+
         //ASSIGN ID'S
         mCircleImageView = findViewById(R.id.user_profile_photo);
+
         mAlias = findViewById(R.id.alias);
+        ColorStateList colorStateList = ColorStateList.valueOf(ContextCompat.getColor(this,R.color.black));
+        mAlias.setBackgroundTintList(colorStateList);
+        mAlias.setTextColor(colorStateList);
+
         mName =  findViewById(R.id.user_profile_name);
+
         mJob =  findViewById(R.id.job);
+        mJob.setBackgroundTintList(colorStateList);
+        mJob.setTextColor(colorStateList);
+
         mSaveButton = findViewById(R.id.save);
+        mLater = findViewById(R.id.later);
+        mLater.setPaintFlags(mLater.getPaintFlags() | Paint.UNDERLINE_TEXT_FLAG);
         FloatingActionButton fab = findViewById(R.id.floatingActionButton);
 
         //ASSIGN INSTANCE TO FIREBASE AUTH
@@ -109,81 +132,48 @@ public class UserProfileSetupActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                pickTheProfilePicture();
+                onSelectImageClick(view);
             }
         });
 
-        //ONCLICK LISTENER PROFILE IMAGE
-        /*mCircleImageView.setOnClickListener(new View.OnClickListener() {
+        mLater.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) {
-                //LOGIC FOR PICKING IMAGE
-                pickTheProfilePicture();
-            }
-        });*/
-    }
-
-    private void pickTheProfilePicture() {
-
-        //DISPLAY DIALOG TO CHOOSE CAMERA OR GALLERY
-        final CharSequence[] items = {"Tomar una foto", "Elegir de la galeria",
-                "Cancelar"};
-        AlertDialog.Builder builder = new AlertDialog.Builder(UserProfileSetupActivity.this);
-        builder.setTitle("Agregar foto de perfil");
-
-        //SET ITEMS AND THERE LISTENERS
-        builder.setItems(items, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int item) {
-
-                if (items[item].equals("Tomar una foto")) {
-                    cameraIntent();
-                } else if (items[item].equals("Elegir de la galeria")) {
-                    galleryIntent();
-                } else if (items[item].equals("Cancelar")) {
-                    dialog.dismiss();
-                }
+            public void onClick(View view) {
+                saveUserProfile();
             }
         });
-        builder.show();
+
     }
 
-    private void cameraIntent() {
-        //CHOOSE CAMERA
-        Log.d("gola", "entered here");
-        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        startActivityForResult(intent, REQUEST_CAMERA);
+    public void onSelectImageClick(View view) {
+        CropImage.startPickImageActivity(this);
     }
 
-    private void galleryIntent() {
-        //CHOOSE IMAGE FROM GALLERY
-        Log.d("gola", "entered here");
-        Intent intent = new Intent(Intent.ACTION_PICK);
-        intent.setType("image/*");
-        startActivityForResult(intent, SELECT_FILE);
+    @Override
+    public boolean onSupportNavigateUp() {
+        onBackPressed();
+        return true;
     }
 
+
+    @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        //SAVE URI FROM GALLERY
-        if(requestCode == SELECT_FILE && resultCode == RESULT_OK)
-        {
-            Uri imageUri = data.getData();
-            CropImage.activity(imageUri)
-                    .setGuidelines(CropImageView.Guidelines.ON)
-                    .setCropShape(CropImageView.CropShape.OVAL)
-                    .setFixAspectRatio(true)
-                    .start(this);
-        }else if ( requestCode == REQUEST_CAMERA && resultCode == RESULT_OK ){
-            //SAVE URI FROM CAMERA
-            Uri imageUri = data.getData();
-            CropImage.activity(imageUri)
-                    .setCropShape(CropImageView.CropShape.OVAL)
-                    .setGuidelines(CropImageView.Guidelines.ON)
-                    .setFixAspectRatio(true)
-                    .start(this);
+        // handle result of pick image chooser
+        if (requestCode == CropImage.PICK_IMAGE_CHOOSER_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
+            Uri imageUri = CropImage.getPickImageResultUri(this, data);
+
+            // For API >= 23 we need to check specifically that we have permissions to read external storage.
+            if (CropImage.isReadExternalStoragePermissionsRequired(this, imageUri)) {
+                // request permissions and handle the result in onRequestPermissionsResult()
+                mCropImageUri = imageUri;
+                requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},   CropImage.PICK_IMAGE_PERMISSIONS_REQUEST_CODE);
+            } else {
+                // no permissions required or already grunted, can start crop image activity
+                startCropImageActivity(imageUri);
+            }
         }
 
         //image crop library code
@@ -204,40 +194,90 @@ public class UserProfileSetupActivity extends AppCompatActivity {
         alias = mAlias.getText().toString().trim();
         userName = mName.getText().toString().trim();
         job = mJob.getText().toString().trim();
-        if(!TextUtils.isEmpty(alias)){
-            if(imageHoldUri!=null){
-                mProgress.setTitle(getString(R.string.progress_save_profile_title));
-                mProgress.setMessage(getString(R.string.progress_save_profile_message));
-                mProgress.show();
 
-                StorageReference mChildStorage = mStorageReference.child("User_Profile").child(imageHoldUri.getLastPathSegment());
-                String profilePicUrl = imageHoldUri.getLastPathSegment();
+        boolean pass = false;
+        View focusView;
 
-                mChildStorage.putFile(imageHoldUri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                    @Override
-                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                        final Uri imageUrl = taskSnapshot.getDownloadUrl();
+        if (TextUtils.isEmpty(alias)) {
+            mAlias.setError("Este campo es necesario");
+            focusView = mAlias;
+            focusView.requestFocus();
+            pass = true;
+        } else if(!isAliasValid(alias)){
+            mAlias.setError("Sin espacios ni caracteres especiales");
+            focusView = mAlias;
+            focusView.requestFocus();
+            pass = true;
+        }
 
-                        mUserDatabase.child("alias").setValue(alias);
-                        mUserDatabase.child("name").setValue(userName);
-                        mUserDatabase.child("job").setValue(job);
-                        mUserDatabase.child("userid").setValue(mAuth.getCurrentUser().getUid());
-                        mUserDatabase.child("imageUrl").setValue(imageUrl.toString());
+        if(!pass){
+            DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference("Users");
 
-                        mProgress.dismiss();
+            dbRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    for(DataSnapshot data: dataSnapshot.getChildren()){
+                        if (data.child("alias").getValue().equals(alias)) {
+                            View focusView;
+                            mAlias.setError("Alias en uso");
+                            focusView = mAlias;
+                            focusView.requestFocus();
+                        } else {
+                            mProgress.setTitle(getString(R.string.progress_save_profile_title));
+                            mProgress.setMessage(getString(R.string.progress_save_profile_message));
+                            mProgress.show();
 
-                        finish();
-                        Intent intent = new Intent(UserProfileSetupActivity.this, MainActivity.class);
-                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                        startActivity(intent);
+                            StorageReference mChildStorage = mStorageReference.child("User_Profile").child(imageHoldUri.getLastPathSegment());
+                            String profilePicUrl = imageHoldUri.getLastPathSegment();
+
+                            mChildStorage.putFile(imageHoldUri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                                @Override
+                                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                                    final Uri imageUrl = taskSnapshot.getDownloadUrl();
+                                    mUserDatabase.child("alias").setValue(alias);
+                                    mUserDatabase.child("name").setValue(userName);
+                                    mUserDatabase.child("job").setValue(job);
+                                    mUserDatabase.child("userid").setValue(mAuth.getCurrentUser().getUid());
+                                    mUserDatabase.child("imageUrl").setValue(imageUrl.toString());
+                                    mProgress.dismiss();
+                                    finish();
+                                    Intent intent = new Intent(UserProfileSetupActivity.this, MainActivity.class);
+                                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                                    startActivity(intent);
+                                }
+                            });
+                        }
                     }
-                });
-            }else{
-                Toast.makeText(UserProfileSetupActivity.this,"Ingrese una foto de perfil",Toast.LENGTH_SHORT).show();
-            }
-        }else{
-            Toast.makeText(UserProfileSetupActivity.this,"Complete todos los campos",Toast.LENGTH_SHORT).show();
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
+                }
+            });
         }
     }
 
+    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+        if (requestCode == CropImage.PICK_IMAGE_PERMISSIONS_REQUEST_CODE) {
+            if (mCropImageUri != null && grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // required permissions granted, start crop image activity
+                startCropImageActivity(mCropImageUri);
+            } else {
+                Toast.makeText(this, "Cancelling, required permissions are not granted", Toast.LENGTH_LONG).show();
+            }
+        }
+    }
+
+    private void startCropImageActivity(Uri imageUri) {
+        CropImage.activity(imageUri)
+                .setGuidelines(CropImageView.Guidelines.ON)
+                .setCropShape(CropImageView.CropShape.OVAL)
+                .setFixAspectRatio(true)
+                .start(this);
+    }
+
+    private boolean isAliasValid(String alias) {
+        return alias.matches("[A-Za-z]*");
+    }
 }

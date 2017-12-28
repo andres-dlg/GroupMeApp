@@ -25,7 +25,6 @@ import com.andresdlg.groupmeapp.uiPackage.fragments.GroupsFragment;
 import com.andresdlg.groupmeapp.uiPackage.fragments.MessagesFragment;
 import com.andresdlg.groupmeapp.uiPackage.fragments.NewsFragment;
 import com.andresdlg.groupmeapp.uiPackage.fragments.NotificationFragment;
-import com.andresdlg.groupmeapp.uiPackage.login.LoginActivity;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -60,7 +59,7 @@ public class MainActivity extends AppCompatActivity
                 .add(R.string.messages_fragment, MessagesFragment.class)
                 .create());
 
-        ViewPager viewPager = (ViewPager) findViewById(R.id.viewpager);
+        ViewPager viewPager = findViewById(R.id.viewpager);
         viewPager.setAdapter(adapter);
 
         final LayoutInflater inflater = LayoutInflater.from(this);
@@ -103,17 +102,10 @@ public class MainActivity extends AppCompatActivity
 
         viewPagerTab.setViewPager(viewPager);
 
-        /*viewPagerTab.setOnTabClickListener(new SmartTabLayout.OnTabClickListener() {
-            @Override
-            public void onTabClicked(int position) {
-                viewPagerTab.getTabAt(position).setBackgroundColor(getResources().getColor(R.color.colorAccent));
-            }
-        });*/
-
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.setDrawerListener(toggle);
@@ -133,32 +125,28 @@ public class MainActivity extends AppCompatActivity
                 FirebaseUser user = firebaseAuth.getCurrentUser();
                 final String userId = user.getUid();
 
-                if(user!= null){
-                    mDatabaseRef.addValueEventListener(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(DataSnapshot dataSnapshot) {
-                            //Si no configuro su perfil le abro la pantalla de configuración
-                            // sino no hago nada y muestro la pantalla principal
-                            if(!dataSnapshot.hasChild(userId)){
-                                finish();
-                                Intent moveToSetupProfile = new Intent(MainActivity.this,UserProfileSetupActivity.class);
-                                moveToSetupProfile.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                                startActivity(moveToSetupProfile);
-                            }
+                mDatabaseRef.addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        //Si no configuro su perfil le abro la pantalla de configuración
+                        // sino no hago nada y muestro la pantalla principal
+                        if(!dataSnapshot.hasChild(userId)){
+                            finish();
+                            Intent moveToSetupProfile = new Intent(MainActivity.this,UserProfileSetupActivity.class);
+                            moveToSetupProfile.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                            startActivity(moveToSetupProfile);
                         }
+                    }
 
-                        @Override
-                        public void onCancelled(DatabaseError databaseError) {
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
 
-                        }
-                    });
-                }else{
-                    finish();
-                    startActivity(new Intent(MainActivity.this, LoginActivity.class));
-                }
+                    }
+                });
             }
         };
         mAuth.addAuthStateListener(mAuthListener);
+
     }
 
     @Override
@@ -175,7 +163,7 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onBackPressed() {
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
