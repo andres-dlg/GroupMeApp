@@ -74,7 +74,7 @@ public class RegisterActivity extends AppCompatActivity {
         }
 
         /* fill the background ImageView with the resized image */
-        ImageView iv_background = (ImageView) findViewById(R.id.ivLogin);
+        ImageView iv_background = findViewById(R.id.ivLogin);
         iv_background.setImageBitmap(bmp);
 
 
@@ -89,12 +89,12 @@ public class RegisterActivity extends AppCompatActivity {
         mPasswordView.setBackgroundTintList(colorStateList);
         mPasswordView.setTextColor(colorStateList);
 
-        mConfirmPasswordView = (EditText) findViewById(R.id.confirmPassword);
+        mConfirmPasswordView = findViewById(R.id.confirmPassword);
         mConfirmPasswordView.setBackgroundTintList(colorStateList);
         mConfirmPasswordView.setTextColor(colorStateList);
 
 
-        Button mSignUpButton = (Button) findViewById(R.id.create_account_button);
+        Button mSignUpButton = findViewById(R.id.create_account_button);
 
         mSignUpButton.setOnClickListener(new View.OnClickListener() {
             @Override

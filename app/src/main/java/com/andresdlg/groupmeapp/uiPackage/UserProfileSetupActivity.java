@@ -5,7 +5,6 @@ import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.content.res.ColorStateList;
 import android.graphics.Paint;
 import android.net.Uri;
 import android.os.Build;
@@ -13,7 +12,6 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
 import android.support.design.widget.FloatingActionButton;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.view.View;
@@ -31,13 +29,14 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
+
+import java.util.Objects;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -60,14 +59,21 @@ public class UserProfileSetupActivity extends AppCompatActivity {
     DatabaseReference mUserDatabase;
     StorageReference mStorageReference;
 
+    //FIREBASE STORAGE FIELDS
+    StorageReference mChildStorage;
+
     private static final int REQUEST_CAMERA = 3;
     private static final int SELECT_FILE = 2;
 
     //IMAGE HOLD URI
-    Uri imageHoldUri = Uri.parse("android.resource://" + "com.andresdlg.groupmeapp" +"/"+R.drawable.profile_circular_border_imageview);
+    Uri imageHoldUri;// = Uri.parse("android.resource://" + "com.andresdlg.groupmeapp" +"/"+R.drawable.new_user);
 
     //PROGRESS DIALOG
     ProgressDialog mProgress;
+
+    boolean pass;
+    boolean exists;
+    boolean imageSetted = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,15 +87,10 @@ public class UserProfileSetupActivity extends AppCompatActivity {
         mCircleImageView = findViewById(R.id.user_profile_photo);
 
         mAlias = findViewById(R.id.alias);
-        ColorStateList colorStateList = ColorStateList.valueOf(ContextCompat.getColor(this,R.color.black));
-        mAlias.setBackgroundTintList(colorStateList);
-        mAlias.setTextColor(colorStateList);
 
         mName =  findViewById(R.id.user_profile_name);
 
         mJob =  findViewById(R.id.job);
-        mJob.setBackgroundTintList(colorStateList);
-        mJob.setTextColor(colorStateList);
 
         mSaveButton = findViewById(R.id.save);
         mLater = findViewById(R.id.later);
@@ -98,20 +99,20 @@ public class UserProfileSetupActivity extends AppCompatActivity {
 
         //ASSIGN INSTANCE TO FIREBASE AUTH
         mAuth = FirebaseAuth.getInstance();
-        mAuthStateListener = new FirebaseAuth.AuthStateListener() {
+        /*mAuthStateListener = new FirebaseAuth.AuthStateListener() {
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
                 //LOGIC TO CHECK USER
                 FirebaseUser user = firebaseAuth.getCurrentUser();
-                /*if(user!=null){
+                if(user!=null){
                     finish();
                     Intent moveToHome = new Intent(UserProfileSetupActivity.this,MainActivity.class);
                     moveToHome.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                     startActivity(moveToHome);
-                }*/
+                }
             }
         };
-        mAuth.addAuthStateListener(mAuthStateListener);
+        mAuth.addAuthStateListener(mAuthStateListener);*/
 
         //PROGRESS DIALOG
         mProgress = new ProgressDialog(this);
@@ -128,6 +129,12 @@ public class UserProfileSetupActivity extends AppCompatActivity {
             }
         });
 
+        mStorageReference.child("new_user.png").getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+            @Override
+            public void onSuccess(Uri uri) {
+                imageHoldUri = uri;
+            }
+        });
 
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -183,6 +190,7 @@ public class UserProfileSetupActivity extends AppCompatActivity {
                 mCircleImageView.setPadding(10,10,10,10);
                 imageHoldUri = result.getUri();
                 mCircleImageView.setImageURI(imageHoldUri);
+                imageSetted = true;
             } else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
                 Exception error = result.getError();
             }
@@ -195,7 +203,7 @@ public class UserProfileSetupActivity extends AppCompatActivity {
         userName = mName.getText().toString().trim();
         job = mJob.getText().toString().trim();
 
-        boolean pass = false;
+        pass = false;
         View focusView;
 
         if (TextUtils.isEmpty(alias)) {
@@ -211,42 +219,46 @@ public class UserProfileSetupActivity extends AppCompatActivity {
         }
 
         if(!pass){
-            DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference("Users");
-
-            dbRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            exists = false;
+            DatabaseReference usersReference = FirebaseDatabase.getInstance().getReference().child("Users");
+            usersReference.addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
-                    for(DataSnapshot data: dataSnapshot.getChildren()){
+                    for(DataSnapshot data : dataSnapshot.getChildren()){
                         if (data.child("alias").getValue().equals(alias)) {
                             View focusView;
                             mAlias.setError("Alias en uso");
                             focusView = mAlias;
                             focusView.requestFocus();
-                        } else {
-                            mProgress.setTitle(getString(R.string.progress_save_profile_title));
-                            mProgress.setMessage(getString(R.string.progress_save_profile_message));
-                            mProgress.show();
+                            exists = true;
+                            break;
+                        }
+                    }
+                    if(!exists){
+                        mProgress.setTitle(getString(R.string.progress_save_profile_title));
+                        mProgress.setMessage(getString(R.string.progress_save_profile_message));
+                        mProgress.show();
 
-                            StorageReference mChildStorage = mStorageReference.child("User_Profile").child(imageHoldUri.getLastPathSegment());
-                            String profilePicUrl = imageHoldUri.getLastPathSegment();
-
+                        if(imageSetted){
+                            mChildStorage = mStorageReference.child("User_Profile").child(mAuth.getUid()).child(imageHoldUri.getLastPathSegment());
                             mChildStorage.putFile(imageHoldUri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                                 @Override
                                 public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                                    final Uri imageUrl = taskSnapshot.getDownloadUrl();
-                                    mUserDatabase.child("alias").setValue(alias);
-                                    mUserDatabase.child("name").setValue(userName);
-                                    mUserDatabase.child("job").setValue(job);
-                                    mUserDatabase.child("userid").setValue(mAuth.getCurrentUser().getUid());
-                                    mUserDatabase.child("imageUrl").setValue(imageUrl.toString());
-                                    mProgress.dismiss();
-                                    finish();
-                                    Intent intent = new Intent(UserProfileSetupActivity.this, MainActivity.class);
-                                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                                    startActivity(intent);
+                                    imageHoldUri = taskSnapshot.getDownloadUrl();
                                 }
                             });
                         }
+
+                        mUserDatabase.child("alias").setValue(alias);
+                        mUserDatabase.child("name").setValue(userName);
+                        mUserDatabase.child("job").setValue(job);
+                        mUserDatabase.child("userid").setValue(mAuth.getCurrentUser().getUid());
+                        mUserDatabase.child("imageUrl").setValue(imageHoldUri.toString());
+
+                        Intent intent = new Intent(UserProfileSetupActivity.this, MainActivity.class);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                        startActivity(intent);
+                        finish();
                     }
                 }
 
@@ -255,6 +267,8 @@ public class UserProfileSetupActivity extends AppCompatActivity {
 
                 }
             });
+
+
         }
     }
 
@@ -279,5 +293,11 @@ public class UserProfileSetupActivity extends AppCompatActivity {
 
     private boolean isAliasValid(String alias) {
         return alias.matches("[A-Za-z]*");
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        mProgress.dismiss();
     }
 }

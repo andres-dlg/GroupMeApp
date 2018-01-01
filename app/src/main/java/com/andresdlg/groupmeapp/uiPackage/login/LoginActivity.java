@@ -51,6 +51,7 @@ import android.widget.Toast;
 import com.andresdlg.groupmeapp.Manifest;
 import com.andresdlg.groupmeapp.R;
 import com.andresdlg.groupmeapp.uiPackage.MainActivity;
+import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
@@ -98,10 +99,18 @@ public class LoginActivity extends AppCompatActivity {
     Bitmap bmp;
     ProgressBar progressBar;
 
+    boolean logout = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+
+        Bundle extras = getIntent().getExtras();
+        if (extras != null){
+            logout = true;
+
+        }
 
         // BACKGROUND AUTO ADAPTABLE
         Display display = getWindowManager().getDefaultDisplay();
@@ -290,11 +299,13 @@ public class LoginActivity extends AppCompatActivity {
         mAuth.addAuthStateListener(mAuthStateListener);
         //CHECK IF USER IS LOGGED IN
         GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(this);
-        if(account!=null){
+        if(account!=null && !logout){
             Intent intent = new Intent(LoginActivity.this, MainActivity.class);
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intent);
             finish();
+        }else if(logout){
+            mGoogleSignInClient.signOut();
         }
     }
 

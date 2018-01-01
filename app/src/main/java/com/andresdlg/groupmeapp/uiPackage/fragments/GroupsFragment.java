@@ -27,15 +27,17 @@ import java.util.List;
 
 public class GroupsFragment extends Fragment implements View.OnClickListener {
 
-    int prueba = 0;
     TextView tvNoGroups;
     RVGroupAdapter adapter;
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_groups,container,false);
-        return view;
+        View v = inflater.inflate(R.layout.fragment_groups,container,false);
+
+        setRetainInstance(true);
+
+        return v;
     }
 
     @Override
@@ -45,11 +47,12 @@ public class GroupsFragment extends Fragment implements View.OnClickListener {
         final List<Group> groups = new ArrayList<>();
 
         //Recicler view
-        RecyclerView rv = (RecyclerView) view.findViewById(R.id.rvGroups);
+        RecyclerView rv = view.findViewById(R.id.rvGroups);
         rv.setHasFixedSize(true); //El tamaño queda fijo, mejora el desempeño
 
         //Floating action button
-        FloatingActionButton mFloatingActionButton = (FloatingActionButton) view.findViewById(R.id.fabGroups);
+        FloatingActionButton mFloatingActionButton = view.findViewById(R.id.fabGroups);
+        mFloatingActionButton.setOnClickListener(this);
 
         //Linear Layout Manager para manejar el recicler view
         LinearLayoutManager llm = new LinearLayoutManager(getContext());
@@ -58,9 +61,7 @@ public class GroupsFragment extends Fragment implements View.OnClickListener {
         adapter = new RVGroupAdapter(groups);
         rv.setAdapter(adapter);
 
-        mFloatingActionButton.setOnClickListener(this);
-
-        tvNoGroups = (TextView) view.findViewById(R.id.tvNoGroups);
+        tvNoGroups = view.findViewById(R.id.tvNoGroups);
         checkGroupsQuantity();
     }
 

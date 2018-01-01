@@ -3,6 +3,7 @@ package com.andresdlg.groupmeapp.uiPackage;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -19,22 +20,34 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.TextView;
+import android.widget.Toast;
 
+import com.andresdlg.groupmeapp.Entities.User;
 import com.andresdlg.groupmeapp.R;
 import com.andresdlg.groupmeapp.uiPackage.fragments.GroupsFragment;
 import com.andresdlg.groupmeapp.uiPackage.fragments.MessagesFragment;
 import com.andresdlg.groupmeapp.uiPackage.fragments.NewsFragment;
 import com.andresdlg.groupmeapp.uiPackage.fragments.NotificationFragment;
+import com.andresdlg.groupmeapp.uiPackage.login.LoginActivity;
+import com.google.firebase.FirebaseApp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 import com.ogaclejapan.smarttablayout.SmartTabLayout;
 import com.ogaclejapan.smarttablayout.utils.v4.FragmentPagerItemAdapter;
 import com.ogaclejapan.smarttablayout.utils.v4.FragmentPagerItems;
+import com.squareup.picasso.Picasso;
+//import com.squareup.picasso.Picasso;
+
+import de.hdodenhof.circleimageview.CircleImageView;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -42,9 +55,17 @@ public class MainActivity extends AppCompatActivity
     //FIREBASE AUTHENTICATION FIELDS
     FirebaseAuth mAuth;
     FirebaseAuth.AuthStateListener mAuthListener;
+    FirebaseUser user;
 
     //FIREBASE DATABASE REFERENCE
     DatabaseReference mDatabaseRef;
+
+    //FIREBASE STORAGE REFERENCE
+    StorageReference mStorageReference;
+
+    NavigationView navigationView;
+
+    ValueEventListener valueEventListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -111,7 +132,7 @@ public class MainActivity extends AppCompatActivity
         drawer.setDrawerListener(toggle);
         toggle.syncState();
 
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
         //FIREBASE DATABASE REFERENCE
@@ -119,47 +140,64 @@ public class MainActivity extends AppCompatActivity
 
         //FIREBASE INSTANCE INITIALIZATION
         mAuth = FirebaseAuth.getInstance();
-        mAuthListener = new FirebaseAuth.AuthStateListener() {
-            @Override
-            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-                FirebaseUser user = firebaseAuth.getCurrentUser();
-                final String userId = user.getUid();
+        user = mAuth.getCurrentUser();
+        mStorageReference = FirebaseStorage.getInstance().getReference();
+    }
 
-                mDatabaseRef.addValueEventListener(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        //Si no configuro su perfil le abro la pantalla de configuración
-                        // sino no hago nada y muestro la pantalla principal
-                        if(!dataSnapshot.hasChild(userId)){
-                            finish();
-                            Intent moveToSetupProfile = new Intent(MainActivity.this,UserProfileSetupActivity.class);
-                            moveToSetupProfile.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                            startActivity(moveToSetupProfile);
-                        }
-                    }
+    private void fillDrawer(User user) {
+        View hView =  navigationView.getHeaderView(0);
+        TextView nav_user = hView.findViewById(R.id.nav_user);
+        TextView nav_name = hView.findViewById(R.id.nav_name);
+        CircleImageView nav_photo = hView.findViewById(R.id.nav_photo);
 
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
+        Picasso.with(MainActivity.this).load(user.getImageURL().trim()).fit().into(nav_photo);
 
-                    }
-                });
-            }
-        };
-        mAuth.addAuthStateListener(mAuthListener);
+        if(user!=null){
+            nav_user.setText(user.getAlias());
+            nav_name.setText(user.getName());
+        }
 
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-        mAuth.addAuthStateListener(mAuthListener);
+        valueEventListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                // Si no configuro su perfil le abro la pantalla de configuración
+                // sino no hago nada y muestro la pantalla principal
+                if(!dataSnapshot.hasChild(user.getUid())){
+                    Intent moveToSetupProfile = new Intent(MainActivity.this,UserProfileSetupActivity.class);
+                    moveToSetupProfile.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    startActivity(moveToSetupProfile);
+                    finish();
+                }else{
+                    DatabaseReference db = FirebaseDatabase.getInstance().getReference().child("Users").child(mAuth.getCurrentUser().getUid());
+                    db.addValueEventListener(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+                            User u = dataSnapshot.getValue(User.class);
+                            fillDrawer(u);
+                        }
+
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
+
+                        }
+                    });
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        };
+        mDatabaseRef.addListenerForSingleValueEvent(valueEventListener);
+        //mAuth.addAuthStateListener(mAuthListener);
     }
 
-    @Override
-    protected void onStop() {
-        super.onStop();
-        mAuth.removeAuthStateListener(mAuthListener);
-    }
 
     @Override
     public void onBackPressed() {
@@ -200,22 +238,23 @@ public class MainActivity extends AppCompatActivity
 
         if (id == R.id.nav_camera) {
             // Handle the camera action
-        } else if (id == R.id.nav_gallery) {
-
-        } else if (id == R.id.nav_slideshow) {
-
         } else if (id == R.id.nav_manage) {
 
         } else if (id == R.id.nav_share) {
 
-        } else if (id == R.id.nav_send) {
-
+        } else if (id == R.id.nav_log_out){
+            mDatabaseRef.removeEventListener(valueEventListener);
+            mAuth.signOut();
+            FirebaseAuth.getInstance().signOut();
+            Intent moveToLogin = new Intent(MainActivity.this,LoginActivity.class);
+            moveToLogin.putExtra("logout",true);
+            moveToLogin.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(moveToLogin);
+            finish();
         }
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
-
-
 }
