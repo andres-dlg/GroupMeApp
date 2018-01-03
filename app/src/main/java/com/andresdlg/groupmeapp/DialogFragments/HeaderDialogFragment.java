@@ -43,6 +43,11 @@ public class HeaderDialogFragment extends DialogFragment {
     Uri mCropImageUri;
     Uri imageHoldUri;
 
+
+    public HeaderDialogFragment(){
+        setRetainInstance(true);
+    }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -158,5 +163,24 @@ public class HeaderDialogFragment extends DialogFragment {
                 Exception error = result.getError();
             }
         }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (imageHoldUri != null){
+            mGroupPhoto.setColorFilter(null);
+            mGroupPhoto.setScaleType(ImageView.ScaleType.CENTER_CROP);
+            mGroupPhoto.setImageURI(imageHoldUri);
+        }
+    }
+
+    @Override
+    public void onDestroyView() {
+        Dialog dialog = getDialog();
+        if(dialog != null && getRetainInstance()){
+            dialog.setDismissMessage(null);
+        }
+        super.onDestroyView();
     }
 }
