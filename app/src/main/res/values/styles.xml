@@ -12,6 +12,14 @@
     </style>
 
     <style name="AppTheme.NoActionBar2">
+
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+        <item name="colorAccent">@color/celestito</item>
+    </style>
+
+    <style name="AppTheme.DialogFragment">
+        <item name="android:windowSoftInputMode">adjustPan</item>
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
         <item name="colorAccent">@color/celestito</item>

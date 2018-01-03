@@ -29,6 +29,7 @@
             android:name=".uiPackage.MainActivity"
             android:label="@string/title_activity_main"
             android:theme="@style/AppTheme.NoActionBar"
+            android:windowSoftInputMode="adjustPan"
             />
 
         <activity

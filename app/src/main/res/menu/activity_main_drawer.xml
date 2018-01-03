@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <group android:checkableBehavior="single">
+    <group
+        android:checkableBehavior="single"
+        android:id="@+id/options">
         <item
             android:id="@+id/nav_camera"
             android:icon="@drawable/ic_menu_camera"
@@ -12,8 +14,10 @@
             android:title="Configuración" />
     </group>
 
-    <item android:title="Acciones">
-        <menu>
+    <group
+        android:checkableBehavior="single"
+        android:id="@+id/actions">
+
             <item
                 android:id="@+id/nav_share"
                 android:icon="@drawable/ic_menu_share"
@@ -22,6 +26,6 @@
                 android:id="@+id/nav_log_out"
                 android:icon="@drawable/ic_exit_to_app_black_48dp"
                 android:title="Salir" />
-        </menu>
-    </item>
+        
+    </group>
 </menu>

@@ -3,6 +3,7 @@ package com.andresdlg.groupmeapp.uiPackage.fragments;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
@@ -89,6 +90,7 @@ public class GroupsFragment extends Fragment implements View.OnClickListener {
     private void showHeaderDialogFragment() {
         FragmentManager fragmentManager = getFragmentManager();
         HeaderDialogFragment newFragment = new HeaderDialogFragment();
+        newFragment.setStyle(DialogFragment.STYLE_NORMAL,R.style.AppTheme_DialogFragment);
         FragmentTransaction transaction = fragmentManager.beginTransaction();
         transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
         transaction.add(android.R.id.content, newFragment).addToBackStack(null).commit();

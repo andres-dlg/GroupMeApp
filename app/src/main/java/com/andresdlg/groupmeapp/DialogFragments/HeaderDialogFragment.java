@@ -8,7 +8,9 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.RequiresApi;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.DialogFragment;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -19,6 +21,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.view.WindowManager;
 import android.widget.ImageView;
 
 import com.andresdlg.groupmeapp.R;
@@ -59,7 +62,10 @@ public class HeaderDialogFragment extends DialogFragment {
         setHasOptionsMenu(true);
 
         mGroupPhoto = view.findViewById(R.id.add_group_photo);
-        mGroupPhoto.setOnClickListener(new View.OnClickListener() {
+        mGroupPhoto.setColorFilter(ContextCompat.getColor(getContext(), R.color.add_photo));
+
+        FloatingActionButton fab = view.findViewById(R.id.fab);
+        fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 onSelectImageClick(view);
@@ -84,6 +90,7 @@ public class HeaderDialogFragment extends DialogFragment {
         // remove the dialog title, but you must call the superclass to get the Dialog.
         Dialog dialog = super.onCreateDialog(savedInstanceState);
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
         return dialog;
     }
 
@@ -144,7 +151,8 @@ public class HeaderDialogFragment extends DialogFragment {
             CropImage.ActivityResult result = CropImage.getActivityResult(data);
             if (resultCode == Activity.RESULT_OK) {
                 imageHoldUri = result.getUri();
-
+                mGroupPhoto.setColorFilter(null);
+                mGroupPhoto.setScaleType(ImageView.ScaleType.CENTER_CROP);
                 mGroupPhoto.setImageURI(imageHoldUri);
             } else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
                 Exception error = result.getError();
