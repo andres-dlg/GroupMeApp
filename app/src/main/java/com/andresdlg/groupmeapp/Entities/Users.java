@@ -4,7 +4,7 @@ package com.andresdlg.groupmeapp.Entities;
  * Created by andresdlg on 28/12/17.
  */
 
-public class User {
+public class Users {
 
     private String alias;
     private String imageUrl;
@@ -12,9 +12,9 @@ public class User {
     private String name;
     private String userid;
 
-    private User() {}
+    private Users() {}
 
-    public User(String alias, String imageUrl, String job, String name, String userid){
+    public Users(String alias, String imageUrl, String job, String name, String userid){
         this.alias = alias;
         this.imageUrl = imageUrl;
         this.job = job;

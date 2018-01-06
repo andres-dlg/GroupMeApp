@@ -61,9 +61,9 @@ public class RVGroupAdapter extends RecyclerView.Adapter<RVGroupAdapter.GroupVie
 
         GroupViewHolder(View itemView) {
             super(itemView);
-            cv = (CardView)itemView.findViewById(R.id.cvGroups);
-            groupName = (TextView)itemView.findViewById(R.id.tvGroupName);
-            groupPhoto = (ImageView)itemView.findViewById(R.id.ivGroupPhoto);
+            cv = itemView.findViewById(R.id.cvGroups);
+            groupName = itemView.findViewById(R.id.tvGroupName);
+            groupPhoto = itemView.findViewById(R.id.ivGroupPhoto);
         }
 
     }

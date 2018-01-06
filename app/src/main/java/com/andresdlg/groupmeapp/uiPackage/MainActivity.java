@@ -3,9 +3,11 @@ package com.andresdlg.groupmeapp.uiPackage;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.os.Bundle;
-import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.DialogFragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
@@ -16,24 +18,23 @@ import android.support.v7.widget.Toolbar;
 import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import com.andresdlg.groupmeapp.Entities.User;
+import com.andresdlg.groupmeapp.DialogFragments.AddFriendsDialogFragment;
+import com.andresdlg.groupmeapp.Entities.Users;
 import com.andresdlg.groupmeapp.R;
 import com.andresdlg.groupmeapp.uiPackage.fragments.GroupsFragment;
 import com.andresdlg.groupmeapp.uiPackage.fragments.MessagesFragment;
 import com.andresdlg.groupmeapp.uiPackage.fragments.NewsFragment;
 import com.andresdlg.groupmeapp.uiPackage.fragments.NotificationFragment;
 import com.andresdlg.groupmeapp.uiPackage.login.LoginActivity;
-import com.google.firebase.FirebaseApp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -144,17 +145,17 @@ public class MainActivity extends AppCompatActivity
         mStorageReference = FirebaseStorage.getInstance().getReference();
     }
 
-    private void fillDrawer(User user) {
+    private void fillDrawer(Users users) {
         View hView =  navigationView.getHeaderView(0);
         TextView nav_user = hView.findViewById(R.id.nav_user);
         TextView nav_name = hView.findViewById(R.id.nav_name);
         CircleImageView nav_photo = hView.findViewById(R.id.nav_photo);
 
-        Picasso.with(MainActivity.this).load(user.getImageURL().trim()).fit().into(nav_photo);
+        Picasso.with(MainActivity.this).load(users.getImageURL().trim()).fit().into(nav_photo);
 
-        if(user!=null){
-            nav_user.setText(user.getAlias());
-            nav_name.setText(user.getName());
+        if(users !=null){
+            nav_user.setText(String.format("@%s", users.getAlias()));
+            nav_name.setText(users.getName());
         }
 
     }
@@ -177,7 +178,7 @@ public class MainActivity extends AppCompatActivity
                     db.addValueEventListener(new ValueEventListener() {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
-                            User u = dataSnapshot.getValue(User.class);
+                            Users u = dataSnapshot.getValue(Users.class);
                             fillDrawer(u);
                         }
 
@@ -211,23 +212,21 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
+        MenuInflater menuInflater = getMenuInflater();
+        menuInflater.inflate(R.menu.activity_main_menu, menu);
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        /*if (id == R.id.action_settings) {
-            return true;
-        }*/
-
-        return super.onOptionsItemSelected(item);
+        // Handle item selection
+        switch (item.getItemId()) {
+            case R.id.add_contact:
+                showHeaderDialogFragment();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 
     @SuppressWarnings("StatementWithEmptyBody")
@@ -256,5 +255,15 @@ public class MainActivity extends AppCompatActivity
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+
+    private void showHeaderDialogFragment() {
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        AddFriendsDialogFragment newFragment = new AddFriendsDialogFragment();
+        newFragment.setStyle(DialogFragment.STYLE_NORMAL,R.style.AppTheme_DialogFragment);
+        FragmentTransaction transaction = fragmentManager.beginTransaction();
+        transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
+        transaction.add(android.R.id.content, newFragment).addToBackStack(null).commit();
     }
 }

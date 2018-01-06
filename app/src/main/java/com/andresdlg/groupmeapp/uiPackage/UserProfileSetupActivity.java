@@ -99,20 +99,6 @@ public class UserProfileSetupActivity extends AppCompatActivity {
 
         //ASSIGN INSTANCE TO FIREBASE AUTH
         mAuth = FirebaseAuth.getInstance();
-        /*mAuthStateListener = new FirebaseAuth.AuthStateListener() {
-            @Override
-            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-                //LOGIC TO CHECK USER
-                FirebaseUser user = firebaseAuth.getCurrentUser();
-                if(user!=null){
-                    finish();
-                    Intent moveToHome = new Intent(UserProfileSetupActivity.this,MainActivity.class);
-                    moveToHome.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                    startActivity(moveToHome);
-                }
-            }
-        };
-        mAuth.addAuthStateListener(mAuthStateListener);*/
 
         //PROGRESS DIALOG
         mProgress = new ProgressDialog(this);
@@ -226,10 +212,6 @@ public class UserProfileSetupActivity extends AppCompatActivity {
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     for(DataSnapshot data : dataSnapshot.getChildren()){
                         if (data.child("alias").getValue().equals(alias)) {
-                            View focusView;
-                            mAlias.setError("Alias en uso");
-                            focusView = mAlias;
-                            focusView.requestFocus();
                             exists = true;
                             break;
                         }
@@ -259,6 +241,11 @@ public class UserProfileSetupActivity extends AppCompatActivity {
                         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
                         startActivity(intent);
                         finish();
+                    }else{
+                        View focusView;
+                        mAlias.setError("Alias en uso");
+                        focusView = mAlias;
+                        focusView.requestFocus();
                     }
                 }
 

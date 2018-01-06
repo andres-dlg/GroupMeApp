@@ -102,6 +102,8 @@ public class HeaderDialogFragment extends DialogFragment {
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.fragment_groups_dialog_menu, menu);
+        menu.removeItem(R.id.contacts);
+        menu.removeItem(R.id.add_contact);
     }
 
     @Override
