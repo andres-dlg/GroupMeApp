@@ -33,6 +33,7 @@ import com.andresdlg.groupmeapp.uiPackage.fragments.MessagesFragment;
 import com.andresdlg.groupmeapp.uiPackage.fragments.NewsFragment;
 import com.andresdlg.groupmeapp.uiPackage.fragments.NotificationFragment;
 import com.andresdlg.groupmeapp.uiPackage.login.LoginActivity;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -47,6 +48,9 @@ import com.ogaclejapan.smarttablayout.utils.v4.FragmentPagerItemAdapter;
 import com.ogaclejapan.smarttablayout.utils.v4.FragmentPagerItems;
 import com.squareup.picasso.Picasso;
 //import com.squareup.picasso.Picasso;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -124,6 +128,14 @@ public class MainActivity extends AppCompatActivity
 
         viewPagerTab.setViewPager(viewPager);
 
+        //Posiciono mi activity en el fragment
+        String fragment = getIntent().getStringExtra("fragment");
+        if(fragment!=null){
+            if(fragment.equals("NotificationFragment")){
+                viewPager.setCurrentItem(2);
+            }
+        }
+
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -151,7 +163,10 @@ public class MainActivity extends AppCompatActivity
         TextView nav_name = hView.findViewById(R.id.nav_name);
         CircleImageView nav_photo = hView.findViewById(R.id.nav_photo);
 
-        Picasso.with(MainActivity.this).load(users.getImageURL().trim()).fit().into(nav_photo);
+        Picasso.with(MainActivity.this)
+                .load(users.getImageURL().trim())
+                .fit()
+                .into(nav_photo);
 
         if(users !=null){
             nav_user.setText(String.format("@%s", users.getAlias()));
@@ -163,40 +178,45 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onStart() {
         super.onStart();
-        valueEventListener = new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                // Si no configuro su perfil le abro la pantalla de configuración
-                // sino no hago nada y muestro la pantalla principal
-                if(!dataSnapshot.hasChild(user.getUid())){
-                    Intent moveToSetupProfile = new Intent(MainActivity.this,UserProfileSetupActivity.class);
-                    moveToSetupProfile.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                    startActivity(moveToSetupProfile);
-                    finish();
-                }else{
-                    DatabaseReference db = FirebaseDatabase.getInstance().getReference().child("Users").child(mAuth.getCurrentUser().getUid());
-                    db.addValueEventListener(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(DataSnapshot dataSnapshot) {
-                            Users u = dataSnapshot.getValue(Users.class);
-                            fillDrawer(u);
-                        }
 
-                        @Override
-                        public void onCancelled(DatabaseError databaseError) {
+        if(mAuth.getCurrentUser()==null){
+            sendToLogin();
+        }else{
+            valueEventListener = new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    // Si no configuro su perfil le abro la pantalla de configuración
+                    // sino no hago nada y muestro la pantalla principal
+                    //if(!dataSnapshot.hasChild(user.getUid())){
+                    if(!dataSnapshot.child(user.getUid()).child("alias").exists()){
+                        Intent moveToSetupProfile = new Intent(MainActivity.this,UserProfileSetupActivity.class);
+                        moveToSetupProfile.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                        startActivity(moveToSetupProfile);
+                        finish();
+                    }else{
+                        DatabaseReference db = FirebaseDatabase.getInstance().getReference().child("Users").child(mAuth.getCurrentUser().getUid());
+                        db.addValueEventListener(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(DataSnapshot dataSnapshot) {
+                                Users u = dataSnapshot.getValue(Users.class);
+                                fillDrawer(u);
+                            }
 
-                        }
-                    });
+                            @Override
+                            public void onCancelled(DatabaseError databaseError) {
+
+                            }
+                        });
+                    }
                 }
-            }
 
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
 
-            }
-        };
-        mDatabaseRef.addListenerForSingleValueEvent(valueEventListener);
-        //mAuth.addAuthStateListener(mAuthListener);
+                }
+            };
+            mDatabaseRef.addListenerForSingleValueEvent(valueEventListener);
+        }
     }
 
 
@@ -242,19 +262,41 @@ public class MainActivity extends AppCompatActivity
         } else if (id == R.id.nav_share) {
 
         } else if (id == R.id.nav_log_out){
-            mDatabaseRef.removeEventListener(valueEventListener);
-            mAuth.signOut();
-            FirebaseAuth.getInstance().signOut();
-            Intent moveToLogin = new Intent(MainActivity.this,LoginActivity.class);
-            moveToLogin.putExtra("logout",true);
-            moveToLogin.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-            startActivity(moveToLogin);
-            finish();
+
+            Map<String,Object> tokenMap = new HashMap<>();
+            tokenMap.put("token_id","");
+
+            DatabaseReference mUserRef = FirebaseDatabase.getInstance().getReference("Users").child(mAuth.getUid());
+            mUserRef.updateChildren(tokenMap).addOnSuccessListener(new OnSuccessListener<Void>() {
+                @Override
+                public void onSuccess(Void aVoid) {
+
+                    mDatabaseRef.removeEventListener(valueEventListener);
+                    mAuth.signOut();
+                    FirebaseAuth.getInstance().signOut();
+                    Intent moveToLogin = new Intent(MainActivity.this,LoginActivity.class);
+                    moveToLogin.putExtra("logout",true);
+                    moveToLogin.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    startActivity(moveToLogin);
+                    finish();
+
+                }
+            });
+
+
         }
 
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    private void sendToLogin(){
+        Intent moveToLogin = new Intent(MainActivity.this,LoginActivity.class);
+        moveToLogin.putExtra("logout",true);
+        moveToLogin.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(moveToLogin);
+        finish();
     }
 
 

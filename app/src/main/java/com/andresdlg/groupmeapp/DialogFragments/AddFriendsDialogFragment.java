@@ -21,14 +21,20 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.andresdlg.groupmeapp.Entities.Users;
 import com.andresdlg.groupmeapp.R;
+import com.andresdlg.groupmeapp.Utils.NotificationStatus;
+import com.andresdlg.groupmeapp.Utils.NotificationTypes;
 import com.andresdlg.groupmeapp.firebasePackage.FilterableFirebaseArray;
 import com.firebase.ui.database.ClassSnapshotParser;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.firebase.ui.database.FirebaseRecyclerOptions;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
@@ -37,6 +43,9 @@ import com.miguelcatalan.materialsearchview.MaterialSearchView;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.HashMap;
+import java.util.Map;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -220,7 +229,7 @@ public class AddFriendsDialogFragment extends DialogFragment {
 
             @Override
             protected void onBindViewHolder(@NonNull UsersViewHolder holder, int position, @NonNull Users model) {
-                    holder.setDetails(getContext(),model.getName(),model.getAlias(),model.getImageURL());
+                    holder.setDetails(getContext(),model.getName(),model.getAlias(),model.getImageURL(),model.getUserid());
             }
         };
 
@@ -238,12 +247,14 @@ public class AddFriendsDialogFragment extends DialogFragment {
         UsersViewHolder(View itemView) {
             super(itemView);
             mView = itemView;
+
         }
 
-        void setDetails(Context context, String contactName, String contactAlias, String contactPhoto){
+        void setDetails(final Context context, String contactName, final String contactAlias, String contactPhoto, final String id){
             CircleImageView mContactPhoto = mView.findViewById(R.id.contact_photo);
             TextView mContactName = mView.findViewById(R.id.contact_name);
             TextView mContactAlias = mView.findViewById(R.id.contact_alias);
+            CircleImageView mContactAdd = mView.findViewById(R.id.btn_add_contact);
 
             mContactAlias.setText(String.format("@%s", contactAlias));
             mContactAlias.setSelected(true);
@@ -252,7 +263,39 @@ public class AddFriendsDialogFragment extends DialogFragment {
             mContactName.setSelected(true);
 
             Picasso.with(context).load(contactPhoto).into(mContactPhoto);
+
+            mContactAdd.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+
+                    String userFrom = FirebaseAuth.getInstance().getUid();
+
+                    DatabaseReference userTo = FirebaseDatabase
+                            .getInstance()
+                            .getReference("Users")
+                            .child(id)
+                            .child("notifications");
+
+                    String notificationKey = userTo.push().getKey();
+
+                    Map<String,Object> notification = new HashMap<>();
+                    notification.put("title","Solicitud de amistad");
+                    notification.put("message","Has recibido una solicitud de amistad de ");
+                    notification.put("from",userFrom);
+                    notification.put("state", NotificationStatus.UNREAD);
+                    notification.put("date", Calendar.getInstance().getTime());
+                    notification.put("type", NotificationTypes.FRIENDSHIP);
+
+                    userTo.child(notificationKey).setValue(notification).addOnSuccessListener(new OnSuccessListener<Void>() {
+                        @Override
+                        public void onSuccess(Void aVoid) {
+                            Toast.makeText(context, "Solicitud enviada", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                }
+            });
         }
+
     }
 
 }

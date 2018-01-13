@@ -59,12 +59,17 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.SignInButton;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.GetTokenResult;
 import com.google.firebase.auth.GoogleAuthProvider;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.iid.FirebaseInstanceId;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -97,7 +102,7 @@ public class LoginActivity extends AppCompatActivity {
     private View mProgressView;
     private View mLoginFormView;
     Bitmap bmp;
-    ProgressBar progressBar;
+    ProgressBar mProgressBar;
 
     boolean logout = false;
 
@@ -108,6 +113,7 @@ public class LoginActivity extends AppCompatActivity {
 
         Bundle extras = getIntent().getExtras();
         if (extras != null){
+
             logout = true;
 
         }
@@ -130,17 +136,10 @@ public class LoginActivity extends AppCompatActivity {
         iv_background.setImageBitmap(bmp);
 
 
-        // PROGRESS BAR ON CLICK ON GOOGLE SIGN IN BUTTON
-        RelativeLayout layout = findViewById(R.id.rl);
-        progressBar = new ProgressBar(LoginActivity.this,null,android.R.attr.progressBarStyleLarge);
-        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(100,100);
-        params.addRule(RelativeLayout.CENTER_IN_PARENT);
-        layout.addView(progressBar,params);
-        progressBar.setVisibility(View.GONE);
-
-
         //IF ALL PERMISSIONS GRANTED...
         if(checkAndRequestPermissions()) {
+            mProgressBar = findViewById(R.id.progressBar);
+
             // SET UP THE LOGIN FORM WITH COLORS.
             mEmailView = findViewById(R.id.email);
             ColorStateList colorStateList = ColorStateList.valueOf(ContextCompat.getColor(this,R.color.colorAccent));
@@ -175,7 +174,6 @@ public class LoginActivity extends AppCompatActivity {
                 public void onClick(View v) {
                     switch (v.getId()) {
                         case R.id.google_sign_in_button:
-                            progressBar.setVisibility(View.VISIBLE);
                             signInWithGoogle();
                             break;
                     }
@@ -183,7 +181,7 @@ public class LoginActivity extends AppCompatActivity {
             });
 
             mLoginFormView = findViewById(R.id.login_form);
-            mProgressView = findViewById(R.id.login_progress);
+            //mProgressView = findViewById(R.id.login_progress);
 
             TextView mSignUpLink = findViewById(R.id.sign_up_link);
             mSignUpLink.setOnClickListener(new OnClickListener() {
@@ -209,22 +207,8 @@ public class LoginActivity extends AppCompatActivity {
                 }
             });
 
-            //FIREBASE AUTHENTICATION INSTANCES
+            //FIREBASE AUTHENTICATION INSTANCE
             mAuth = FirebaseAuth.getInstance();
-            mAuthStateListener = new FirebaseAuth.AuthStateListener() {
-                @Override
-                public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-                    //CHECKING IF USER IS LOGGED IN AND EMAIL VERIFIED
-                    FirebaseUser user = firebaseAuth.getCurrentUser();
-                    if (user != null && user.isEmailVerified()){
-                        Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                        startActivity(intent);
-                        finish();
-                    }
-                }
-            };
-            mAuth.addAuthStateListener(mAuthStateListener);
 
             // [START config_signin]
             // Configure Google Sign In
@@ -238,7 +222,6 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void signInWithGoogle() {
-        progressBar.setVisibility(View.GONE);
         Intent signInIntent = mGoogleSignInClient.getSignInIntent();
         startActivityForResult(signInIntent, RC_SIGN_IN);
     }
@@ -296,7 +279,7 @@ public class LoginActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        mAuth.addAuthStateListener(mAuthStateListener);
+        //mAuth.addAuthStateListener(mAuthStateListener);
         //CHECK IF USER IS LOGGED IN
         GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(this);
         if(account!=null && !logout){
@@ -314,7 +297,6 @@ public class LoginActivity extends AppCompatActivity {
         super.onStop();
         mAuth.removeAuthStateListener(mAuthStateListener);
     }
-
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -337,8 +319,10 @@ public class LoginActivity extends AppCompatActivity {
     private void firebaseAuthWithGoogle(GoogleSignInAccount acct) {
         Log.d(TAG, "firebaseAuthWithGoogle:" + acct.getId());
         // [START_EXCLUDE silent]
-        showProgress(true);
+        //showProgress(true);
         // [END_EXCLUDE]
+
+        mProgressBar.setVisibility(View.VISIBLE);
 
         AuthCredential credential = GoogleAuthProvider.getCredential(acct.getIdToken(), null);
         mAuth.signInWithCredential(credential)
@@ -346,15 +330,10 @@ public class LoginActivity extends AppCompatActivity {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if (task.isSuccessful()) {
-                            // Sign in success, update UI with the signed-in user's information
-                            Log.d(TAG, "signInWithCredential:success");
-                            //FirebaseUser user = mAuth.getCurrentUser();
-                            Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-                            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                            startActivity(intent);
-                            finish();
+                            saveTokenAndLogin();
                         } else {
                             // If sign in fails, display a message to the user.
+                            mProgressBar.setVisibility(View.INVISIBLE);
                             Log.w(TAG, "signInWithCredential:failure", task.getException());
                             Toast.makeText(LoginActivity.this,"Fallo de autenticación con Google", Toast.LENGTH_SHORT).show();
                         }
@@ -476,23 +455,20 @@ public class LoginActivity extends AppCompatActivity {
         } else {
             // Show a progress spinner, and kick off a background task to
             // perform the user login attempt.
-            showProgress(true);
+            //showProgress(true);
+            mProgressBar.setVisibility(View.VISIBLE);
 
             mAuth.signInWithEmailAndPassword(email, password).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
                 @Override
                 public void onComplete(@NonNull Task<AuthResult> task) {
                     if (task.isSuccessful()) {
-                        Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                        startActivity(intent);
+                        saveTokenAndLogin();
                     } else {
                         Toast.makeText(LoginActivity.this, "No se ha podido loguear", Toast.LENGTH_LONG).show();
+                        mProgressBar.setVisibility(View.INVISIBLE);
                     }
                 }
             });
-
-            /*mAuthTask = new UserLoginTask(email, password);
-            mAuthTask.execute((Void) null);*/
         }
     }
 
@@ -513,7 +489,7 @@ public class LoginActivity extends AppCompatActivity {
         final View dialogView = inflater.inflate(R.layout.activity_login_forgotten_password_dialog, null);
         dialogBuilder.setView(dialogView);
 
-        final EditText edt = (EditText) dialogView.findViewById(R.id.fgEditText);
+        final EditText edt = dialogView.findViewById(R.id.fgEditText);
 
         ColorStateList colorStateList = ColorStateList.valueOf(ContextCompat.getColor(this,R.color.cardview_dark_background));
         edt.setBackgroundTintList(colorStateList);
@@ -548,41 +524,34 @@ public class LoginActivity extends AppCompatActivity {
         b.show();
     }
 
-    /**
-     * Shows the progress UI and hides the login form.
-     */
-    ///TODO: VER SI LO BORRO
-    @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
-    private void showProgress(final boolean show) {
-        // On Honeycomb MR2 we have the ViewPropertyAnimator APIs, which allow
-        // for very easy animations. If available, use these APIs to fade-in
-        // the progress spinner.
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2) {
-            int shortAnimTime = getResources().getInteger(android.R.integer.config_shortAnimTime);
 
-            mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
-            mLoginFormView.animate().setDuration(shortAnimTime).alpha(
-                    show ? 0 : 1).setListener(new AnimatorListenerAdapter() {
-                @Override
-                public void onAnimationEnd(Animator animation) {
-                    mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
-                }
-            });
+    private void saveTokenAndLogin(){
 
-            mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
-            mProgressView.animate().setDuration(shortAnimTime).alpha(
-                    show ? 1 : 0).setListener(new AnimatorListenerAdapter() {
-                @Override
-                public void onAnimationEnd(Animator animation) {
-                    mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
-                }
-            });
-        } else {
-            // The ViewPropertyAnimator APIs are not available, so simply show
-            // and hide the relevant UI components.
-            mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
-            mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
-        }
+        //El token me servir para identificar el dispositivo con el cual me logueo
+
+        String token_id = FirebaseInstanceId.getInstance().getToken();
+        String current_id = mAuth.getCurrentUser().getUid();
+
+        Map<String,Object> tokenMap = new HashMap<>();
+        tokenMap.put("token_id",token_id);
+
+        DatabaseReference mUserRef = FirebaseDatabase.getInstance().getReference("Users").child(current_id);
+        mUserRef.updateChildren(tokenMap).addOnSuccessListener(new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void aVoid) {
+
+                mProgressBar.setVisibility(View.INVISIBLE);
+                Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(intent);
+
+            }
+        });
+
+
+
+
     }
+
 }
 

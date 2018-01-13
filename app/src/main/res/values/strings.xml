@@ -54,5 +54,7 @@
     <string name="recover_password_email_sent">Correo de recuperación enviado a </string>
     <string name="recover_password_email_failed">Fallo al enviar correo de recuperación</string>
 
+    <string name="default_notification_channel_id">ADLG_CH_01</string>
+
 
 </resources>

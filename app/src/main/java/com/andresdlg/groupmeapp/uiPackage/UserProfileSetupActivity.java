@@ -72,8 +72,9 @@ public class UserProfileSetupActivity extends AppCompatActivity {
     ProgressDialog mProgress;
 
     boolean pass;
-    boolean exists;
+    boolean exists = false;
     boolean imageSetted = false;
+    boolean yaPasoPorAca = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -115,12 +116,12 @@ public class UserProfileSetupActivity extends AppCompatActivity {
             }
         });
 
-        mStorageReference.child("new_user.png").getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+        /*mStorageReference.child("new_user.png").getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
             @Override
             public void onSuccess(Uri uri) {
                 imageHoldUri = uri;
             }
-        });
+        });*/
 
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -205,15 +206,17 @@ public class UserProfileSetupActivity extends AppCompatActivity {
         }
 
         if(!pass){
-            exists = false;
             DatabaseReference usersReference = FirebaseDatabase.getInstance().getReference().child("Users");
             usersReference.addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
+                    yaPasoPorAca = true;
                     for(DataSnapshot data : dataSnapshot.getChildren()){
-                        if (data.child("alias").getValue().equals(alias)) {
-                            exists = true;
-                            break;
+                        if(data.child("alias").exists()){
+                            if (data.child("alias").getValue().equals(alias)) {
+                                exists = true;
+                                break;
+                            }
                         }
                     }
                     if(!exists){
@@ -222,30 +225,35 @@ public class UserProfileSetupActivity extends AppCompatActivity {
                         mProgress.show();
 
                         if(imageSetted){
+                            mProgress.setMessage("Subiendo foto de perfil");
+                            mProgress.show();
+
                             mChildStorage = mStorageReference.child("User_Profile").child(mAuth.getUid()).child(imageHoldUri.getLastPathSegment());
                             mChildStorage.putFile(imageHoldUri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                                 @Override
                                 public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                                     imageHoldUri = taskSnapshot.getDownloadUrl();
+                                    mProgress.dismiss();
+                                    createUserData(alias,userName,job);
                                 }
                             });
+                        }else{
+                            mStorageReference.child("new_user.png").getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                                @Override
+                                public void onSuccess(Uri uri) {
+                                    imageHoldUri = uri;
+                                }
+                            });
+                            mProgress.dismiss();
+                            createUserData(alias,userName,job);
                         }
-
-                        mUserDatabase.child("alias").setValue(alias);
-                        mUserDatabase.child("name").setValue(userName);
-                        mUserDatabase.child("job").setValue(job);
-                        mUserDatabase.child("userid").setValue(mAuth.getCurrentUser().getUid());
-                        mUserDatabase.child("imageUrl").setValue(imageHoldUri.toString());
-
-                        Intent intent = new Intent(UserProfileSetupActivity.this, MainActivity.class);
-                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                        startActivity(intent);
-                        finish();
                     }else{
-                        View focusView;
-                        mAlias.setError("Alias en uso");
-                        focusView = mAlias;
-                        focusView.requestFocus();
+                        if(!yaPasoPorAca){
+                            View focusView;
+                            mAlias.setError("Alias en uso");
+                            focusView = mAlias;
+                            focusView.requestFocus();
+                        }
                     }
                 }
 
@@ -257,6 +265,19 @@ public class UserProfileSetupActivity extends AppCompatActivity {
 
 
         }
+    }
+
+    private void createUserData(String alias,String userName,String job) {
+        mUserDatabase.child("alias").setValue(alias);
+        mUserDatabase.child("name").setValue(userName);
+        mUserDatabase.child("job").setValue(job);
+        mUserDatabase.child("userid").setValue(mAuth.getCurrentUser().getUid());
+        mUserDatabase.child("imageUrl").setValue(imageHoldUri.toString());
+
+        Intent intent = new Intent(UserProfileSetupActivity.this, MainActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        startActivity(intent);
+        finish();
     }
 
     public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
