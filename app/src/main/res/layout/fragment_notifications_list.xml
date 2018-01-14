@@ -31,7 +31,6 @@
             android:layout_toEndOf="@+id/contact_photo"
             android:text="Alias"
             android:textSize="12sp"
-
             android:focusable="true"
             android:focusableInTouchMode="true"
             android:singleLine="true"

@@ -87,6 +87,7 @@ public class MainActivity extends AppCompatActivity
 
         ViewPager viewPager = findViewById(R.id.viewpager);
         viewPager.setAdapter(adapter);
+        viewPager.setOffscreenPageLimit(3);
 
         final LayoutInflater inflater = LayoutInflater.from(this);
         final Resources res = getResources();

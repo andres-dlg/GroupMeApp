@@ -8,29 +8,50 @@ import java.util.Date;
 
 public class Notification {
 
-    private String userFromID;
-    private String message;
-    private int type;
+
     private Date date;
+    private String from;
+    private String message;
+    private String state;
+    private String title;
+    private String type;
 
-    private Notification(String userFromID, String message, int type, Date date){
+    private Notification(Date date, String from, String message, String state, String title, String type ){
 
-        this.userFromID = userFromID;
-        this.message = message;
-        this.type = type;
         this.date = date;
+        this.from = from;
+        this.message = message;
+        this.state = state;
+        this.title = title;
+        this.type = type;
     }
 
     private Notification(){
 
     }
 
-    public String getUserFromID() {
-        return userFromID;
+    public String getType() {
+        return type;
     }
 
-    public void setUserFromID(String userFromID) {
-        this.userFromID = userFromID;
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public String getState() {
+        return state;
+    }
+
+    public void setState(String state) {
+        this.state = state;
     }
 
     public String getMessage() {
@@ -41,12 +62,12 @@ public class Notification {
         this.message = message;
     }
 
-    public int getType() {
-        return type;
+    public String getFrom() {
+        return from;
     }
 
-    public void setType(int type) {
-        this.type = type;
+    public void setFrom(String from) {
+        this.from = from;
     }
 
     public Date getDate() {
