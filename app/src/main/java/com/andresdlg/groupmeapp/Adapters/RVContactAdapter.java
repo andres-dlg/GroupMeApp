@@ -16,6 +16,7 @@ import com.andresdlg.groupmeapp.Entities.Users;
 import com.andresdlg.groupmeapp.R;
 import com.andresdlg.groupmeapp.Utils.ConversationStatus;
 import com.andresdlg.groupmeapp.Utils.FriendshipStatus;
+import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
 import com.andresdlg.groupmeapp.uiPackage.ChatActivity;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
@@ -138,7 +139,7 @@ public class RVContactAdapter extends RecyclerView.Adapter<RVContactAdapter.Cont
 
         private void sendMessage(final String iduser, final Context context) {
 
-            final String currentUserId = FirebaseAuth.getInstance().getUid();
+            final String currentUserId = StaticFirebaseSettings.currentUserId;
             String userToId = iduser;
 
             conversationKey = currentUserId+iduser;
@@ -160,6 +161,7 @@ public class RVContactAdapter extends RecyclerView.Adapter<RVContactAdapter.Cont
                     Map<String,Object> map = new HashMap<>();
                     map.put("user1",currentUserId);
                     map.put("user2",iduser);
+                    map.put("id",conversationKey);
                     conversationRef.child(conversationKey).updateChildren(map);
 
                     Map<String,Object> map2 = new HashMap<>();
@@ -169,7 +171,7 @@ public class RVContactAdapter extends RecyclerView.Adapter<RVContactAdapter.Cont
 
                     Map<String,Object> map3 = new HashMap<>();
                     map3.put("status",ConversationStatus.SEEN);
-                    DatabaseReference currentUserRef = FirebaseDatabase.getInstance().getReference("Users").child(FirebaseAuth.getInstance().getUid()).child("conversation");
+                    DatabaseReference currentUserRef = FirebaseDatabase.getInstance().getReference("Users").child(StaticFirebaseSettings.currentUserId).child("conversation");
                     currentUserRef.child(conversationKey).updateChildren(map3);
 
                     Intent intent = new Intent(context,ChatActivity.class);
@@ -196,9 +198,9 @@ public class RVContactAdapter extends RecyclerView.Adapter<RVContactAdapter.Cont
             DatabaseReference userToRef = FirebaseDatabase.getInstance().getReference("Users").child(iduser).child("friends");
             Map<String,Object> newFriend = new HashMap<>();
             newFriend.put("status", FriendshipStatus.REJECTED);
-            userToRef.child(FirebaseAuth.getInstance().getUid()).updateChildren(newFriend);
+            userToRef.child(StaticFirebaseSettings.currentUserId).updateChildren(newFriend);
 
-            DatabaseReference currentUserRef = FirebaseDatabase.getInstance().getReference("Users").child(FirebaseAuth.getInstance().getUid()).child("friends");
+            DatabaseReference currentUserRef = FirebaseDatabase.getInstance().getReference("Users").child(StaticFirebaseSettings.currentUserId).child("friends");
             Map<String,Object> newFriend2 = new HashMap<>();
             newFriend2.put("status", FriendshipStatus.REJECTED);
             currentUserRef.child(iduser).updateChildren(newFriend2);

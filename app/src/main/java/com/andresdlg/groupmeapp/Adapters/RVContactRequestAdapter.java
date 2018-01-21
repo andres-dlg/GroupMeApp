@@ -14,6 +14,7 @@ import android.widget.Toast;
 import com.andresdlg.groupmeapp.Entities.Users;
 import com.andresdlg.groupmeapp.R;
 import com.andresdlg.groupmeapp.Utils.FriendshipStatus;
+import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -125,16 +126,16 @@ public class RVContactRequestAdapter extends RecyclerView.Adapter<RVContactReque
             DatabaseReference userToRef = FirebaseDatabase.getInstance().getReference("Users").child(iduser).child("friends");
             Map<String,Object> newFriend = new HashMap<>();
             newFriend.put("status", FriendshipStatus.ACCEPTED);
-            userToRef.child(FirebaseAuth.getInstance().getUid()).updateChildren(newFriend);
+            userToRef.child(StaticFirebaseSettings.currentUserId).updateChildren(newFriend);
 
-            DatabaseReference currentUserRef = FirebaseDatabase.getInstance().getReference("Users").child(FirebaseAuth.getInstance().getUid()).child("friends");
+            DatabaseReference currentUserRef = FirebaseDatabase.getInstance().getReference("Users").child(StaticFirebaseSettings.currentUserId).child("friends");
             Map<String,Object> newFriend2 = new HashMap<>();
             newFriend2.put("status", FriendshipStatus.ACCEPTED);
             currentUserRef.child(iduser).updateChildren(newFriend2);
         }
 
         private void rejectRequest(String iduser) {
-            DatabaseReference currentUserRef = FirebaseDatabase.getInstance().getReference("Users").child(FirebaseAuth.getInstance().getUid()).child("friends");
+            DatabaseReference currentUserRef = FirebaseDatabase.getInstance().getReference("Users").child(StaticFirebaseSettings.currentUserId).child("friends");
             Map<String,Object> newFriend2 = new HashMap<>();
             newFriend2.put("status", FriendshipStatus.REJECTED);
             currentUserRef.child(iduser).updateChildren(newFriend2);

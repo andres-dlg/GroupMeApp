@@ -119,5 +119,4 @@ public class RVNotificationAdapter extends RecyclerView.Adapter<RVNotificationAd
             notificationDate = itemView.findViewById(R.id.date);
         }
     }
-
 }

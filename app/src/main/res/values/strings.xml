@@ -49,7 +49,7 @@
     <string name="no_notifications">No tienes nuevas notificaciones</string>
     <string name="action_google_sign_in">Accede con google</string>
 
-    <string translatable="false" name="fontNotice">fonts/Simplifica.ttf</string>
+    <string name="fontNotice" translatable="false">fonts/Simplifica.ttf</string>
     <string name="verification_email_failed">Fallo al enviar correo de verificación</string>
     <string name="recover_password_email_sent">Correo de recuperación enviado a </string>
     <string name="recover_password_email_failed">Fallo al enviar correo de recuperación</string>

@@ -14,6 +14,7 @@ import android.widget.TextView;
 import com.andresdlg.groupmeapp.Adapters.RVNotificationAdapter;
 import com.andresdlg.groupmeapp.Entities.Notification;
 import com.andresdlg.groupmeapp.R;
+import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -61,7 +62,7 @@ public class NotificationFragment extends Fragment {
         //checkNotificationsQuantity();
 
 
-        firebaseNotifications = FirebaseDatabase.getInstance().getReference("Users").child(FirebaseAuth.getInstance().getUid()).child("notifications");
+        firebaseNotifications = FirebaseDatabase.getInstance().getReference("Users").child(StaticFirebaseSettings.currentUserId).child("notifications");
         firebaseNotifications.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {

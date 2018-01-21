@@ -16,6 +16,7 @@ import com.andresdlg.groupmeapp.Adapters.RVContactRequestAdapter;
 import com.andresdlg.groupmeapp.Entities.Users;
 import com.andresdlg.groupmeapp.R;
 import com.andresdlg.groupmeapp.Utils.FriendshipStatus;
+import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -69,7 +70,7 @@ public class FriendRequestsFragment extends Fragment {
         rv.setAdapter(adapter);
 
 
-        firebaseContacts = FirebaseDatabase.getInstance().getReference("Users").child(FirebaseAuth.getInstance().getUid()).child("friends");
+        firebaseContacts = FirebaseDatabase.getInstance().getReference("Users").child(StaticFirebaseSettings.currentUserId).child("friends");
         firebaseContacts.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {

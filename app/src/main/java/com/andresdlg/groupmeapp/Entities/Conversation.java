@@ -8,7 +8,6 @@ public class Conversation {
     public Conversation(){
         listMessageData = new ArrayList<>();
     }
-
     public ArrayList<Message> getListMessageData() {
         return listMessageData;
     }

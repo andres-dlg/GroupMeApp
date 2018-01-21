@@ -20,6 +20,7 @@ import com.andresdlg.groupmeapp.Entities.Conversation;
 import com.andresdlg.groupmeapp.Entities.Users;
 import com.andresdlg.groupmeapp.R;
 import com.andresdlg.groupmeapp.Entities.Message;
+import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
@@ -83,7 +84,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 userTo = dataSnapshot.getValue(Users.class);
-                DatabaseReference currentUserRef = FirebaseDatabase.getInstance().getReference("Users").child(FirebaseAuth.getInstance().getUid());
+                DatabaseReference currentUserRef = FirebaseDatabase.getInstance().getReference("Users").child(StaticFirebaseSettings.currentUserId);
                 tv.setText(userTo.getName());
                 Picasso.with(ChatActivity.this).load(userTo.getImageURL()).into(civ);
                 //getSupportActionBar().setTitle(userTo.getName());
@@ -104,10 +105,11 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
                                     if (dataSnapshot.getValue() != null) {
                                         HashMap mapMessage = (HashMap) dataSnapshot.getValue();
                                         Message newMessage = new Message();
-                                        newMessage.idSender = (String) mapMessage.get("idSender");
-                                        newMessage.idReceiver = (String) mapMessage.get("idReceiver");
-                                        newMessage.text = (String) mapMessage.get("text");
-                                        newMessage.timestamp = (long) mapMessage.get("timestamp");
+                                        newMessage.setIdSender((String) mapMessage.get("idSender"));
+                                        newMessage.setIdReceiver((String) mapMessage.get("idReceiver"));
+                                        newMessage.setText ((String) mapMessage.get("text"));
+                                        newMessage.setTimestamp((long) mapMessage.get("timestamp"));
+                                        newMessage.setId((String) mapMessage.get("id"));
                                         conversation.getListMessageData().add(newMessage);
                                         adapter.notifyDataSetChanged();
                                         linearLayoutManager.scrollToPosition(conversation.getListMessageData().size() - 1);
@@ -179,13 +181,15 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
             String content = editWriteMessage.getText().toString().trim();
             if (content.length() > 0) {
                 editWriteMessage.setText("");
+                DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference("Conversations").child(conversationKey).child("messages").push();
                 Message newMessage = new Message();
-                newMessage.text = content;
-                newMessage.idSender = FirebaseAuth.getInstance().getUid();
+                newMessage.setText(content);
+                newMessage.setIdSender(StaticFirebaseSettings.currentUserId);
                 //Tocar esto cuando la conversación sea grupal
-                newMessage.idReceiver = contactIds.get(0);
-                newMessage.timestamp = System.currentTimeMillis();
-                FirebaseDatabase.getInstance().getReference("Conversations").child(conversationKey).child("messages").push().setValue(newMessage);
+                newMessage.setIdReceiver(contactIds.get(0));
+                newMessage.setTimestamp(System.currentTimeMillis());
+                newMessage.setId(dbRef.getKey());
+                dbRef.setValue(newMessage);
             }
         }
     }
@@ -220,17 +224,17 @@ class ListMessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
         if (holder instanceof ItemMessageFriendHolder) {
-            ((ItemMessageFriendHolder) holder).txtContent.setText(conversation.getListMessageData().get(position).text);
+            ((ItemMessageFriendHolder) holder).txtContent.setText(conversation.getListMessageData().get(position).getText());
             ((ItemMessageFriendHolder) holder).setAvatar(context,userToUrl);
         } else if (holder instanceof ItemMessageUserHolder) {
-            ((ItemMessageUserHolder) holder).txtContent.setText(conversation.getListMessageData().get(position).text);
+            ((ItemMessageUserHolder) holder).txtContent.setText(conversation.getListMessageData().get(position).getText());
             ((ItemMessageUserHolder) holder).setAvatar(context,currentUserUrl);
         }
     }
 
     @Override
     public int getItemViewType(int position) {
-        return conversation.getListMessageData().get(position).idSender.equals(FirebaseAuth.getInstance().getUid()) ? ChatActivity.VIEW_TYPE_USER_MESSAGE : ChatActivity.VIEW_TYPE_FRIEND_MESSAGE;
+        return conversation.getListMessageData().get(position).getIdSender().equals(StaticFirebaseSettings.currentUserId) ? ChatActivity.VIEW_TYPE_USER_MESSAGE : ChatActivity.VIEW_TYPE_FRIEND_MESSAGE;
     }
 
     @Override

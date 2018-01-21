@@ -38,6 +38,7 @@ import com.andresdlg.groupmeapp.Utils.FriendshipStatus;
 import com.andresdlg.groupmeapp.Utils.NotificationStatus;
 import com.andresdlg.groupmeapp.Utils.NotificationTypes;
 import com.andresdlg.groupmeapp.firebasePackage.FilterableFirebaseArray;
+import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
 import com.firebase.ui.database.ClassSnapshotParser;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.firebase.ui.database.FirebaseRecyclerOptions;
@@ -320,7 +321,7 @@ public class AddFriendsDialogFragment extends DialogFragment {
                     mContactAdd.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View view) {
-                            String userFrom = FirebaseAuth.getInstance().getUid();
+                            String userFrom = StaticFirebaseSettings.currentUserId;
 
                             DatabaseReference userTo = FirebaseDatabase
                                     .getInstance()

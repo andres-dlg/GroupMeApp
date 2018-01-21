@@ -8,9 +8,9 @@
     <uses-permission android:name="android.permission.READ_CONTACTS" />
 
     <!-- To pick images for profile photo or take photographs -->
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
-    <uses-permission android:name="android.permission.CAMERA"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.CAMERA" />
 
     <!-- Connection and check connection -->
     <uses-permission android:name="android.permission.INTERNET" />
@@ -26,67 +26,69 @@
         android:theme="@style/AppTheme">
 
         <activity
-            android:name=".uiPackage.MainActivity"
-            android:label="@string/app_name"
-            android:theme="@style/AppTheme.NoActionBar"
-            android:windowSoftInputMode="adjustPan"
-            >
+            android:name=".uiPackage.SplashScreenAcivity"
+            android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".uiPackage.MainActivity"
+            android:label="@string/app_name"
+            android:theme="@style/AppTheme.NoActionBar"
+            android:windowSoftInputMode="adjustPan">
 
             <intent-filter>
-                <action android:name="com.andresdlg.groupmeapp.firebasepushnotifications.TARGETNOTIFICATION"/>
+                <action android:name="com.andresdlg.groupmeapp.firebasepushnotifications.TARGETNOTIFICATION" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
 
         <activity
             android:name=".uiPackage.login.LoginActivity"
-            android:theme="@style/AppTheme.NoActionBar"
+            android:configChanges="orientation|screenSize"
             android:label="@string/title_app"
-            android:configChanges="orientation|screenSize">
-
-        </activity>
+            android:theme="@style/AppTheme.NoActionBar" />
 
         <activity
             android:name=".uiPackage.login.RegisterActivity"
-            android:theme="@style/AppTheme.NoActionBar"
-            android:configChanges="orientation|screenSize"/>
-
+            android:configChanges="orientation|screenSize"
+            android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".uiPackage.UserProfileSetupActivity"
-            android:theme="@style/AppTheme.NoActionBar2"
+            android:configChanges="orientation|screenSize"
             android:label="Datos personales"
-            android:configChanges="orientation|screenSize" />
-
+            android:theme="@style/AppTheme.NoActionBar2" />
         <activity
             android:name="com.theartofdev.edmodo.cropper.CropImageActivity"
-            android:theme="@style/Base.Theme.AppCompat"/>
+            android:theme="@style/Base.Theme.AppCompat" />
+        <activity
+            android:name=".uiPackage.ChatActivity"
+            android:theme="@style/AppTheme.ChatNoActionBar" />
 
-        <activity android:name=".uiPackage.ChatActivity"
-            android:theme="@style/AppTheme.ChatNoActionBar"/>
-
-        <service
-            android:name=".firebasePackage.FirebaseMessagingService">
+        <service android:name=".firebasePackage.FirebaseMessagingService">
             <intent-filter>
-                <action android:name="com.google.firebase.MESSAGING_EVENT"/>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
 
-        <!-- Set custom default icon. This is used when no icon is set for incoming notification messages.
-     See README(https://goo.gl/l4GJaQ) for more. -->
+        <!--
+     Set custom default icon. This is used when no icon is set for incoming notificatconversationsages.
+     See README(https://goo.gl/l4GJaQ) for more.
+        -->
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_icon"
             android:resource="@drawable/app_logo" />
 
-        <!-- Set color used with incoming notification messages. This is used when no color is set for the incoming
-             notification message. See README(https://goo.gl/6BKBk7) for more. -->
+        <!--
+             Set color used with incoming notificatconversationsages. This is used when no color is set for the incoming
+             notification message. See README(https://goo.gl/6BKBk7) for more.
+        -->
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_color"
             android:resource="@color/colorAccent" />
-
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_channel_id"
             android:value="@string/default_notification_channel_id" />

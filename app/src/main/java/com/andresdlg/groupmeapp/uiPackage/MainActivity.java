@@ -1,8 +1,10 @@
 package com.andresdlg.groupmeapp.uiPackage;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.DialogFragment;
@@ -284,6 +286,7 @@ public class MainActivity extends AppCompatActivity
                     moveToLogin.putExtra("logout",true);
                     moveToLogin.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                     startActivity(moveToLogin);
+                    overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
                     finish();
 
                 }
@@ -302,6 +305,7 @@ public class MainActivity extends AppCompatActivity
         moveToLogin.putExtra("logout",true);
         moveToLogin.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(moveToLogin);
+        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
         finish();
     }
 
@@ -323,4 +327,5 @@ public class MainActivity extends AppCompatActivity
         transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
         transaction.add(android.R.id.content, newFragment).addToBackStack(null).commit();
     }
+
 }
