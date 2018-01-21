@@ -19,7 +19,10 @@
             android:layout_width="70dp"
             android:layout_height="70dp"
             android:src="@drawable/new_user"
-            android:layout_margin="20dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginRight="10dp"
+            android:layout_marginBottom="10dp"
+            android:layout_marginLeft="20dp"
             />
 
         <TextView
@@ -30,7 +33,7 @@
             android:layout_marginRight="20dp"
             android:layout_toEndOf="@+id/contact_photo"
             android:text="Alias"
-            android:textSize="12sp"
+            android:textSize="13sp"
             android:focusable="true"
             android:focusableInTouchMode="true"
             android:singleLine="true"
@@ -47,6 +50,22 @@
             android:layout_toEndOf="@+id/contact_photo"
             android:text="Mensaje de la notificación"
             android:textSize="17sp"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
+            android:singleLine="true"
+            android:scrollHorizontally="true"
+            android:ellipsize="marquee"
+            android:marqueeRepeatLimit ="marquee_forever"/>
+
+        <TextView
+            android:id="@+id/date"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="20dp"
+            android:layout_alignBottom="@id/contact_photo"
+            android:layout_toEndOf="@+id/contact_photo"
+            android:text="Fecha de la notificación"
+            android:textSize="11sp"
             android:focusable="true"
             android:focusableInTouchMode="true"
             android:singleLine="true"

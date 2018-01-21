@@ -1,9 +1,7 @@
 package com.andresdlg.groupmeapp.Adapters;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
-import android.net.Uri;
-import android.provider.ContactsContract;
-import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,7 +12,6 @@ import android.widget.TextView;
 import com.andresdlg.groupmeapp.Entities.Notification;
 import com.andresdlg.groupmeapp.Entities.Users;
 import com.andresdlg.groupmeapp.R;
-import com.andresdlg.groupmeapp.uiPackage.fragments.NotificationFragment;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -22,9 +19,9 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.squareup.picasso.Picasso;
 
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
-
-import static java.security.AccessController.getContext;
 
 /**
  * Created by andresdlg on 13/01/18.
@@ -34,7 +31,6 @@ public class RVNotificationAdapter extends RecyclerView.Adapter<RVNotificationAd
 
     private List<Notification> notifications;
     private Context context;
-    DatabaseReference userRef;
 
     public RVNotificationAdapter(List<Notification> notifications, Context context){
         this.notifications = notifications;
@@ -48,10 +44,10 @@ public class RVNotificationAdapter extends RecyclerView.Adapter<RVNotificationAd
     }
 
     @Override
-    public void onBindViewHolder(final NotificationViewHolder notificationViewHolder, final int position) {
+    public void onBindViewHolder(final NotificationViewHolder notificationViewHolder, @SuppressLint("RecyclerView") final int position) {
         ///TODO: Recuperar información del usuario que envio la notificacion con FirebaseDatabase
 
-        userRef = FirebaseDatabase.getInstance().getReference("Users").child(notifications.get(position).getFrom());
+        DatabaseReference userRef = FirebaseDatabase.getInstance().getReference("Users").child(notifications.get(position).getFrom());
         userRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -59,6 +55,10 @@ public class RVNotificationAdapter extends RecyclerView.Adapter<RVNotificationAd
                 notificationViewHolder.userAlias.setText(u.getAlias());
                 Picasso.with(context).load(u.getImageURL()).into(notificationViewHolder.userPhoto);
                 notificationViewHolder.notificationMessage.setText(notifications.get(position).getMessage());
+
+                String date = dateDifference(notifications.get(position).getDate());
+
+                notificationViewHolder.notificationDate.setText(date);
             }
 
             @Override
@@ -66,8 +66,26 @@ public class RVNotificationAdapter extends RecyclerView.Adapter<RVNotificationAd
 
             }
         });
+    }
 
+    private String dateDifference(Date d) {
 
+        Calendar dateNoti = Calendar.getInstance();
+        dateNoti.setTime(d);
+
+        Calendar today = Calendar.getInstance();
+
+        long diff = today.getTimeInMillis() - dateNoti.getTimeInMillis();
+
+        if(diff/1000 <= 60){
+            return ("Hace "+ Math.round(diff/1000)+ " segundos");
+        }else if(diff/1000/60 < 60){
+            return ("Hace "+ Math.round(diff/1000/60)+ " minutos");
+        }else if(diff/1000/60/60 < 24){
+            return ("Hace "+ Math.round(diff/1000/60/60)+ " horas");
+        }else{
+            return ("Hace "+ Math.round(diff/1000/60/60/24)+ " dias");
+        }
     }
 
     @Override
@@ -85,10 +103,11 @@ public class RVNotificationAdapter extends RecyclerView.Adapter<RVNotificationAd
         notifyDataSetChanged();
     }
 
-    public static class NotificationViewHolder extends RecyclerView.ViewHolder {
+    static class NotificationViewHolder extends RecyclerView.ViewHolder {
         TextView userAlias;
         ImageView userPhoto;
         TextView notificationMessage;
+        TextView notificationDate;
 
         NotificationViewHolder(View itemView) {
             super(itemView);
@@ -97,6 +116,8 @@ public class RVNotificationAdapter extends RecyclerView.Adapter<RVNotificationAd
             userPhoto = itemView.findViewById(R.id.contact_photo);
             notificationMessage = itemView.findViewById(R.id.notificationText);
             notificationMessage.setSelected(true);
+            notificationDate = itemView.findViewById(R.id.date);
         }
     }
+
 }

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/message"
+        android:title="Enviar mensaje">
+    </item>
+    <item
+        android:id="@+id/add_to_group"
+        android:title="Agregar a grupo">
+    </item>
+    <item
+        android:id="@+id/delete"
+        android:title="Eliminar contacto">
+    </item>
+</menu>

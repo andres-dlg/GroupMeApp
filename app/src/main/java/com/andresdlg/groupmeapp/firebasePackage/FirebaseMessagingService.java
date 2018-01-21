@@ -34,8 +34,7 @@ public class FirebaseMessagingService extends com.google.firebase.messaging.Fire
         NotificationCompat.Builder mBuilder =
                 new NotificationCompat.Builder(this,getString(R.string.default_notification_channel_id))
                         .setColor(getResources().getColor(R.color.gray_noti))
-                        .setVibrate(new long[] { 1000, 1000, 1000, 1000, 1000 })
-                        .setSound(alarmSound)
+                        .setDefaults(Notification.DEFAULT_ALL)
                         .setSmallIcon(R.drawable.app_logo)
                         .setContentTitle(messageTitle)
                         .setContentText(messageBody);
@@ -59,8 +58,9 @@ public class FirebaseMessagingService extends com.google.firebase.messaging.Fire
         NotificationManager mNotifyMgr =
                 (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 
-        mNotifyMgr.notify(mNotificationId, mBuilder.build());
-
-
+        mNotifyMgr.notify(mNotificationId,
+                mBuilder.setVibrate(new long[] { 1000, 1000, 1000, 1000, 1000 })
+                        .setSound(alarmSound)
+                        .build());
     }
 }

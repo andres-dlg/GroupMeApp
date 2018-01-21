@@ -3,16 +3,22 @@ package com.andresdlg.groupmeapp.DialogFragments;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.ColorStateList;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffColorFilter;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.speech.RecognizerIntent;
 import android.support.annotation.NonNull;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -28,6 +34,7 @@ import android.widget.Toast;
 
 import com.andresdlg.groupmeapp.Entities.Users;
 import com.andresdlg.groupmeapp.R;
+import com.andresdlg.groupmeapp.Utils.FriendshipStatus;
 import com.andresdlg.groupmeapp.Utils.NotificationStatus;
 import com.andresdlg.groupmeapp.Utils.NotificationTypes;
 import com.andresdlg.groupmeapp.firebasePackage.FilterableFirebaseArray;
@@ -36,9 +43,12 @@ import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.firebase.ui.database.FirebaseRecyclerOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
 import com.miguelcatalan.materialsearchview.MaterialSearchView;
 import com.squareup.picasso.Picasso;
 
@@ -243,6 +253,7 @@ public class AddFriendsDialogFragment extends DialogFragment {
     public static class UsersViewHolder extends RecyclerView.ViewHolder {
 
         View mView;
+        private boolean wasSent;
 
         UsersViewHolder(View itemView) {
             super(itemView);
@@ -254,7 +265,11 @@ public class AddFriendsDialogFragment extends DialogFragment {
             CircleImageView mContactPhoto = mView.findViewById(R.id.contact_photo);
             TextView mContactName = mView.findViewById(R.id.contact_name);
             TextView mContactAlias = mView.findViewById(R.id.contact_alias);
-            CircleImageView mContactAdd = mView.findViewById(R.id.btn_add_contact);
+
+            CircleImageView mContactAdd = null;
+            //Reviso si ya se envio la solicitud al usuario. En ese caso cambio el icono y deshabilito envio
+            wasSent(id, context);
+            //mContactAdd = mView.findViewById(R.id.btn_add_contact);
 
             mContactAlias.setText(String.format("@%s", contactAlias));
             mContactAlias.setSelected(true);
@@ -263,35 +278,85 @@ public class AddFriendsDialogFragment extends DialogFragment {
             mContactName.setSelected(true);
 
             Picasso.with(context).load(contactPhoto).into(mContactPhoto);
+        }
 
-            mContactAdd.setOnClickListener(new View.OnClickListener() {
+        private void wasSent(final String id, final Context context) {
+
+            //Obtengo el reloj de arena y lo pinto
+            final Drawable mDrawablePending = context.getResources().getDrawable(R.drawable.timer_sand);
+            mDrawablePending.setTint(context.getResources().getColor(R.color.add_photo));
+
+            //Obtengo el reloj de arena y lo pinto
+            final Drawable mDrawableAccepted = context.getResources().getDrawable(R.drawable.account_check);
+            mDrawableAccepted.setTint(context.getResources().getColor(R.color.add_photo));
+
+            final String idCurrentUser = FirebaseAuth.getInstance().getCurrentUser().getUid();
+            wasSent = false;
+            DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("Users").child(id).child("friends");
+            databaseReference.addValueEventListener(new ValueEventListener() {
                 @Override
-                public void onClick(View view) {
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    CircleImageView mContactAdd = null;
+                    for(DataSnapshot data : dataSnapshot.getChildren()){
+                        if(data.getKey().equals(idCurrentUser) && data.child("status").getValue().equals(FriendshipStatus.PENDING.toString())){
+                            wasSent = true;
+                            mContactAdd = mView.findViewById(R.id.btn_add_contact);
+                            mContactAdd.setImageDrawable(mDrawablePending);
+                            mContactAdd.setEnabled(false);
+                            break;
+                        }
+                        if(data.getKey().equals(idCurrentUser) && data.child("status").getValue().equals(FriendshipStatus.ACCEPTED.toString())){
+                            wasSent = true;
+                            mContactAdd = mView.findViewById(R.id.btn_add_contact);
+                            mContactAdd.setImageDrawable(mDrawableAccepted);
+                            mContactAdd.setEnabled(false);
+                            break;
+                        }
+                    }
+                    if(!wasSent){
+                        mContactAdd = mView.findViewById(R.id.btn_add_contact);
+                    }
 
-                    String userFrom = FirebaseAuth.getInstance().getUid();
-
-                    DatabaseReference userTo = FirebaseDatabase
-                            .getInstance()
-                            .getReference("Users")
-                            .child(id)
-                            .child("notifications");
-
-                    String notificationKey = userTo.push().getKey();
-
-                    Map<String,Object> notification = new HashMap<>();
-                    notification.put("title","Solicitud de amistad");
-                    notification.put("message","Has recibido una solicitud de amistad de ");
-                    notification.put("from",userFrom);
-                    notification.put("state", NotificationStatus.UNREAD);
-                    notification.put("date", Calendar.getInstance().getTime());
-                    notification.put("type", NotificationTypes.FRIENDSHIP);
-
-                    userTo.child(notificationKey).setValue(notification).addOnSuccessListener(new OnSuccessListener<Void>() {
+                    mContactAdd.setOnClickListener(new View.OnClickListener() {
                         @Override
-                        public void onSuccess(Void aVoid) {
-                            Toast.makeText(context, "Solicitud enviada", Toast.LENGTH_SHORT).show();
+                        public void onClick(View view) {
+                            String userFrom = FirebaseAuth.getInstance().getUid();
+
+                            DatabaseReference userTo = FirebaseDatabase
+                                    .getInstance()
+                                    .getReference("Users")
+                                    .child(id);
+
+                            //Envio y almacenamiento de notificación
+                            DatabaseReference userToNotifications = userTo.child("notifications");
+                            String notificationKey = userToNotifications.push().getKey();
+                            Map<String,Object> notification = new HashMap<>();
+                            notification.put("title","Solicitud de amistad");
+                            notification.put("message","Has recibido una solicitud de amistad de ");
+                            notification.put("from",userFrom);
+                            notification.put("state", NotificationStatus.UNREAD);
+                            notification.put("date", Calendar.getInstance().getTime());
+                            notification.put("type", NotificationTypes.FRIENDSHIP);
+
+                            userToNotifications.child(notificationKey).setValue(notification).addOnSuccessListener(new OnSuccessListener<Void>() {
+                                @Override
+                                public void onSuccess(Void aVoid) {
+                                    Toast.makeText(context, "Solicitud enviada", Toast.LENGTH_SHORT).show();
+                                }
+                            });
+
+                            //Almacenamiento de nodo friend
+                            DatabaseReference userToFriends = userTo.child("friends");
+                            Map<String,Object> friend = new HashMap<>();
+                            friend.put("status", FriendshipStatus.PENDING);
+                            userToFriends.child(userFrom).updateChildren(friend);
                         }
                     });
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
                 }
             });
         }

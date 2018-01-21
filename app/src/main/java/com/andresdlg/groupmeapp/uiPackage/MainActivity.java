@@ -26,6 +26,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.andresdlg.groupmeapp.DialogFragments.AddFriendsDialogFragment;
+import com.andresdlg.groupmeapp.DialogFragments.FriendsDialogFragment;
 import com.andresdlg.groupmeapp.Entities.Users;
 import com.andresdlg.groupmeapp.R;
 import com.andresdlg.groupmeapp.uiPackage.fragments.GroupsFragment;
@@ -47,7 +48,6 @@ import com.ogaclejapan.smarttablayout.SmartTabLayout;
 import com.ogaclejapan.smarttablayout.utils.v4.FragmentPagerItemAdapter;
 import com.ogaclejapan.smarttablayout.utils.v4.FragmentPagerItems;
 import com.squareup.picasso.Picasso;
-//import com.squareup.picasso.Picasso;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -245,10 +245,15 @@ public class MainActivity extends AppCompatActivity
             case R.id.add_contact:
                 showHeaderDialogFragment();
                 return true;
+            case R.id.contacts:
+                showContactsDialogFragment();
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
     }
+
+
 
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
@@ -304,6 +309,15 @@ public class MainActivity extends AppCompatActivity
     private void showHeaderDialogFragment() {
         FragmentManager fragmentManager = getSupportFragmentManager();
         AddFriendsDialogFragment newFragment = new AddFriendsDialogFragment();
+        newFragment.setStyle(DialogFragment.STYLE_NORMAL,R.style.AppTheme_DialogFragment);
+        FragmentTransaction transaction = fragmentManager.beginTransaction();
+        transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
+        transaction.add(android.R.id.content, newFragment).addToBackStack(null).commit();
+    }
+
+    private void showContactsDialogFragment() {
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FriendsDialogFragment newFragment = new FriendsDialogFragment();
         newFragment.setStyle(DialogFragment.STYLE_NORMAL,R.style.AppTheme_DialogFragment);
         FragmentTransaction transaction = fragmentManager.beginTransaction();
         transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);

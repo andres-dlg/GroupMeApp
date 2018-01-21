@@ -22,6 +22,8 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -67,7 +69,7 @@ public class NotificationFragment extends Fragment {
                 for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
                     //Getting the data from snapshot
                     Notification n = postSnapshot.getValue(Notification.class);
-                    notifications.add(n);
+                    notifications.add(0,n);
                     adapter.notifyDataSetChanged();
                     tvNoNotifications.setVisibility(View.INVISIBLE);
                 }
