@@ -7,6 +7,9 @@ import com.google.firebase.auth.FirebaseAuth;
  */
 
 public class StaticFirebaseSettings {
-    public static String currentUserId = FirebaseAuth.getInstance().getUid();
+    public static String currentUserId;
 
+    public static void setCurrentUserId(String currentUserId) {
+        StaticFirebaseSettings.currentUserId = currentUserId;
+    }
 }
