@@ -187,13 +187,7 @@ public class RVContactAdapter extends RecyclerView.Adapter<RVContactAdapter.Cont
 
                 }
             });
-
-
-
-
-
         }
-
         private void deleteContact(String iduser, final Context context) {
             DatabaseReference userToRef = FirebaseDatabase.getInstance().getReference("Users").child(iduser).child("friends");
             Map<String,Object> newFriend = new HashMap<>();
@@ -204,7 +198,6 @@ public class RVContactAdapter extends RecyclerView.Adapter<RVContactAdapter.Cont
             Map<String,Object> newFriend2 = new HashMap<>();
             newFriend2.put("status", FriendshipStatus.REJECTED);
             currentUserRef.child(iduser).updateChildren(newFriend2);
-
         }
     }
 

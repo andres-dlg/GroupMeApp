@@ -21,7 +21,6 @@ import com.andresdlg.groupmeapp.Entities.Users;
 import com.andresdlg.groupmeapp.R;
 import com.andresdlg.groupmeapp.Entities.Message;
 import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
-import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -69,9 +68,6 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         final TextView tv = toolbar.findViewById(R.id.action_bar_title_1);
         final CircleImageView civ = toolbar.findViewById(R.id.conversation_contact_photo);
 
-        /*getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setDisplayShowHomeEnabled(true);*/
-
         contactIds = getIntent().getStringArrayListExtra("contactIds");
         conversationKey = getIntent().getStringExtra("conversationKey");
 
@@ -87,9 +83,6 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
                 DatabaseReference currentUserRef = FirebaseDatabase.getInstance().getReference("Users").child(StaticFirebaseSettings.currentUserId);
                 tv.setText(userTo.getName());
                 Picasso.with(ChatActivity.this).load(userTo.getImageURL()).into(civ);
-                //getSupportActionBar().setTitle(userTo.getName());
-                /*getSupportActionBar().setLogo(getResources().getDrawable(R.drawable.ic_account_check_white_48dp));
-                getSupportActionBar().setDisplayUseLogoEnabled(true);*/
                 currentUserRef.addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {

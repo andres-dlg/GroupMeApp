@@ -2,17 +2,21 @@ package com.andresdlg.groupmeapp.Adapters;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.Intent;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Adapter;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.andresdlg.groupmeapp.Entities.ConversationFirebase;
 import com.andresdlg.groupmeapp.Entities.Users;
 import com.andresdlg.groupmeapp.R;
 import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
+import com.andresdlg.groupmeapp.uiPackage.ChatActivity;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -20,7 +24,11 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.squareup.picasso.Picasso;
 
+import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -28,6 +36,7 @@ import java.util.List;
  */
 
 public class RVMessageAdapter extends RecyclerView.Adapter<RVMessageAdapter.MessageViewHolder>{
+
 
     private List<ConversationFirebase> conversations;
     private Context context;
@@ -38,14 +47,41 @@ public class RVMessageAdapter extends RecyclerView.Adapter<RVMessageAdapter.Mess
     }
 
     @Override
-    public MessageViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.fragment_notifications_list, parent, false);
+    public MessageViewHolder onCreateViewHolder(final ViewGroup parent, int viewType) {
+        View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.fragment_messages_list, parent, false);
         return new MessageViewHolder(v);
     }
 
     @Override
     public void onBindViewHolder(final MessageViewHolder messageViewHolder, @SuppressLint("RecyclerView") final int position) {
-        ///TODO: Recuperar información del usuario que envio la notificacion con FirebaseDatabase
+
+        Collections.sort(conversations, new Comparator<ConversationFirebase>() {
+            @Override
+            public int compare(ConversationFirebase c1, ConversationFirebase c2) {
+                Calendar c = Calendar.getInstance();
+                c.setTimeInMillis(c1.getMessage().getTimestamp());
+                Calendar cl2 = Calendar.getInstance();
+                cl2.setTimeInMillis(c2.getMessage().getTimestamp());
+                return cl2.compareTo(c);
+            }
+        });
+
+        messageViewHolder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Toast.makeText(context,"hola",Toast.LENGTH_SHORT).show();
+                Intent i = new Intent(view.getContext(), ChatActivity.class);
+                ArrayList<String> arrayList = new ArrayList<>();
+                if(conversations.get(position).getUser1().equals(StaticFirebaseSettings.currentUserId)){
+                    arrayList.add(conversations.get(position).getUser2());
+                }else{
+                    arrayList.add(conversations.get(position).getUser1());
+                }
+                i.putExtra("conversationKey",conversations.get(position).getId());
+                i.putExtra("contactIds",arrayList);
+                context.startActivity(i);
+            }
+        });
 
         DatabaseReference conversationRef = FirebaseDatabase.getInstance().getReference("Conversations").child(conversations.get(position).getId());
         conversationRef.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -84,7 +120,10 @@ public class RVMessageAdapter extends RecyclerView.Adapter<RVMessageAdapter.Mess
     }
 
 
-
+    @Override
+    public int getItemViewType(int position) {
+        return position;
+    }
 
     @Override
     public int getItemCount() {
@@ -126,8 +165,9 @@ public class RVMessageAdapter extends RecyclerView.Adapter<RVMessageAdapter.Mess
             userAlias = itemView.findViewById(R.id.userAlias);
             userAlias.setSelected(true);
             userPhoto = itemView.findViewById(R.id.contact_photo);
-            messageText = itemView.findViewById(R.id.notificationText);
+            messageText = itemView.findViewById(R.id.messageText);
             messageDate = itemView.findViewById(R.id.date);
         }
+
     }
 }

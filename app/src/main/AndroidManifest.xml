@@ -38,8 +38,8 @@
             android:name=".uiPackage.MainActivity"
             android:label="@string/app_name"
             android:theme="@style/AppTheme.NoActionBar"
-            android:windowSoftInputMode="adjustPan">
-
+            android:windowSoftInputMode="adjustPan"
+            android:configChanges="orientation|screenSize">
             <intent-filter>
                 <action android:name="com.andresdlg.groupmeapp.firebasepushnotifications.TARGETNOTIFICATION" />
                 <category android:name="android.intent.category.DEFAULT" />

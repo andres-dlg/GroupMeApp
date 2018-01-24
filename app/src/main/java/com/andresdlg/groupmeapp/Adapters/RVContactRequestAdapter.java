@@ -132,6 +132,8 @@ public class RVContactRequestAdapter extends RecyclerView.Adapter<RVContactReque
             Map<String,Object> newFriend2 = new HashMap<>();
             newFriend2.put("status", FriendshipStatus.ACCEPTED);
             currentUserRef.child(iduser).updateChildren(newFriend2);
+
+
         }
 
         private void rejectRequest(String iduser) {

@@ -51,6 +51,9 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.miguelcatalan.materialsearchview.MaterialSearchView;
+import com.squareup.picasso.Callback;
+import com.squareup.picasso.NetworkPolicy;
+import com.squareup.picasso.OkHttpDownloader;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
@@ -71,6 +74,7 @@ public class AddFriendsDialogFragment extends DialogFragment {
     MaterialSearchView searchView;
     private RecyclerView rvContactsResult;
     DatabaseReference mUserDatabase;
+
 
     public AddFriendsDialogFragment(){
         setRetainInstance(true);
@@ -253,6 +257,7 @@ public class AddFriendsDialogFragment extends DialogFragment {
 
     public static class UsersViewHolder extends RecyclerView.ViewHolder {
 
+
         View mView;
         private boolean wasSent;
 
@@ -262,8 +267,8 @@ public class AddFriendsDialogFragment extends DialogFragment {
 
         }
 
-        void setDetails(final Context context, String contactName, final String contactAlias, String contactPhoto, final String id){
-            CircleImageView mContactPhoto = mView.findViewById(R.id.contact_photo);
+        void setDetails(final Context context, String contactName, final String contactAlias, final String contactPhoto, final String id){
+            final CircleImageView mContactPhoto = mView.findViewById(R.id.contact_photo);
             TextView mContactName = mView.findViewById(R.id.contact_name);
             TextView mContactAlias = mView.findViewById(R.id.contact_alias);
 
@@ -278,7 +283,34 @@ public class AddFriendsDialogFragment extends DialogFragment {
             mContactName.setText(contactName);
             mContactName.setSelected(true);
 
-            Picasso.with(context).load(contactPhoto).into(mContactPhoto);
+            //new Picasso.Builder(context).downloader(new OkHttpDownloader(context,Integer.MAX_VALUE)).build().load(contactPhoto).placeholder(R.drawable.progress_animation).into(mContactPhoto);
+
+            Picasso.with(context)
+                    .load(contactPhoto)
+                    .into(mContactPhoto, new Callback() {
+                        @Override
+                        public void onSuccess() {
+                            itemView.findViewById(R.id.homeprogress).setVisibility(View.GONE);
+                        }
+
+                        @Override
+                        public void onError() {
+                            Picasso.with(context)
+                                    .load(contactPhoto)
+                                    .networkPolicy(NetworkPolicy.OFFLINE)
+                                    .into(mContactPhoto, new Callback() {
+                                        @Override
+                                        public void onSuccess() {
+                                            itemView.findViewById(R.id.homeprogress).setVisibility(View.GONE);
+                                        }
+
+                                        @Override
+                                        public void onError() {
+                                            Log.v("Picasso","No se ha podido cargar la foto");
+                                        }
+                                    });
+                        }
+                    });
         }
 
         private void wasSent(final String id, final Context context) {

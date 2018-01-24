@@ -2,6 +2,7 @@ package com.andresdlg.groupmeapp.uiPackage;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -75,7 +76,10 @@ public class MainActivity extends AppCompatActivity
 
     ValueEventListener valueEventListener;
 
-
+    SmartTabLayout viewPagerTab;
+    ViewPager viewPager;
+    Resources res;
+    LayoutInflater inflater;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -92,14 +96,14 @@ public class MainActivity extends AppCompatActivity
                 .add(R.string.messages_fragment, MessagesFragment.class)
                 .create());
 
-        ViewPager viewPager = findViewById(R.id.viewpager);
+        viewPager = findViewById(R.id.viewpager);
         viewPager.setAdapter(adapter);
         viewPager.setOffscreenPageLimit(3);
 
-        final LayoutInflater inflater = LayoutInflater.from(this);
-        final Resources res = getResources();
+        inflater = LayoutInflater.from(this);
+        res = getResources();
 
-        final SmartTabLayout viewPagerTab = (SmartTabLayout) findViewById(R.id.viewpagertab);
+        viewPagerTab = findViewById(R.id.viewpagertab);
         viewPagerTab.setCustomTabView(new SmartTabLayout.TabProvider() {
             @Override
             public View createTabView(ViewGroup container, int position, PagerAdapter adapter) {
@@ -180,6 +184,49 @@ public class MainActivity extends AppCompatActivity
             nav_user.setText(String.format("@%s", users.getAlias()));
             nav_name.setText(users.getName());
         }
+
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+
+        viewPagerTab = findViewById(R.id.viewpagertab);
+        viewPagerTab.setCustomTabView(new SmartTabLayout.TabProvider() {
+            @Override
+            public View createTabView(ViewGroup container, int position, PagerAdapter adapter) {
+                View itemView = inflater.inflate(R.layout.tab_icon, container, false);
+                ImageView icon = (ImageView) itemView.findViewById(R.id.custom_tab_icon);
+
+                //Obtengo las metricas de la pantalla
+                DisplayMetrics metrics = new DisplayMetrics();
+                getWindowManager().getDefaultDisplay().getMetrics(metrics);
+
+                //Divido por la cantidad de fragmentos y determino el ancho del imageview que va en
+                // cada tab
+                icon.getLayoutParams().width = metrics.widthPixels / 4;
+
+                switch (position) {
+                    case 0:
+                        icon.setImageDrawable(res.getDrawable(R.drawable.newspaper));
+                        break;
+                    case 1:
+                        icon.setImageDrawable(res.getDrawable(R.drawable.account_multiple));
+                        break;
+                    case 2:
+                        icon.setImageDrawable(res.getDrawable(R.drawable.bell));
+                        break;
+                    case 3:
+                        icon.setImageDrawable(res.getDrawable(R.drawable.message));
+                        break;
+                    default:
+                        throw new IllegalStateException("Invalid position: " + position);
+                }
+                return itemView;
+            }
+        });
+
+        viewPagerTab.setViewPager(viewPager);
 
     }
 

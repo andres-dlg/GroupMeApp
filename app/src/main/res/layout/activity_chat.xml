@@ -66,8 +66,7 @@
         android:inputType="textMultiLine"
         android:hint="Escribe tu mensaje"
         android:scrollbars="vertical"
-        android:paddingLeft="7dp"
-        android:paddingRight="7dp"
+        android:padding="10dp"
         android:textColorHint="#aeafaf"
         android:textSize="15sp" />
 

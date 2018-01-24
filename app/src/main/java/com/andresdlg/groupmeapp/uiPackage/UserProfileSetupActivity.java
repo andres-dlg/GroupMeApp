@@ -198,7 +198,12 @@ public class UserProfileSetupActivity extends AppCompatActivity {
             focusView = mAlias;
             focusView.requestFocus();
             pass = true;
-        } else if(!isAliasValid(alias)){
+        }if (TextUtils.isEmpty(userName)) {
+            mAlias.setError("Este campo es necesario");
+            focusView = mName;
+            focusView.requestFocus();
+            pass = true;
+        }else if(!isAliasValid(alias)){
             mAlias.setError("Sin espacios ni caracteres especiales");
             focusView = mAlias;
             focusView.requestFocus();

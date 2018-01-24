@@ -75,6 +75,7 @@ public class FriendRequestsFragment extends Fragment {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 users.clear();
+                adapter.notifyDataSetChanged();
                 for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
                     //Getting the data from snapshot
                     if(postSnapshot.child("status").getValue().equals(FriendshipStatus.PENDING.toString())){
