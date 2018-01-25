@@ -2,6 +2,7 @@ package com.andresdlg.groupmeapp.Adapters;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -21,6 +22,8 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.squareup.picasso.Callback;
+import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
 
 import java.util.HashMap;
@@ -78,8 +81,8 @@ public class RVContactRequestAdapter extends RecyclerView.Adapter<RVContactReque
             mView = itemView;
         }
 
-        void setDetails(final Context context, final String contactName, final String contactAlias, String contactPhoto, final String iduser){
-            CircleImageView mContactPhoto = mView.findViewById(R.id.contact_photo);
+        void setDetails(final Context context, final String contactName, final String contactAlias, final String contactPhoto, final String iduser){
+            final CircleImageView mContactPhoto = mView.findViewById(R.id.contact_photo);
             TextView mContactName = mView.findViewById(R.id.contact_name);
             TextView mContactAlias = mView.findViewById(R.id.contact_alias);
 
@@ -89,7 +92,32 @@ public class RVContactRequestAdapter extends RecyclerView.Adapter<RVContactReque
             mContactName.setText(contactName);
             mContactName.setSelected(true);
 
-            Picasso.with(context).load(contactPhoto).into(mContactPhoto);
+            Picasso.with(context)
+                    .load(contactPhoto)
+                    .into(mContactPhoto, new Callback() {
+                        @Override
+                        public void onSuccess() {
+                            itemView.findViewById(R.id.homeprogress).setVisibility(View.GONE);
+                        }
+
+                        @Override
+                        public void onError() {
+                            Picasso.with(context)
+                                    .load(contactPhoto)
+                                    .networkPolicy(NetworkPolicy.OFFLINE)
+                                    .into(mContactPhoto, new Callback() {
+                                        @Override
+                                        public void onSuccess() {
+                                            itemView.findViewById(R.id.homeprogress).setVisibility(View.GONE);
+                                        }
+
+                                        @Override
+                                        public void onError() {
+                                            Log.v("Picasso","No se ha podido cargar la foto");
+                                        }
+                                    });
+                        }
+                    });
 
             CircleImageView btn = mView.findViewById(R.id.btn_menu);
             btn.setOnClickListener(new View.OnClickListener() {

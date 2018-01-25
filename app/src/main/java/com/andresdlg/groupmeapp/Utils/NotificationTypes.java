@@ -6,5 +6,6 @@ package com.andresdlg.groupmeapp.Utils;
 
 public enum NotificationTypes {
     FRIENDSHIP,
+    MESSAGE,
     NEWS,
 }

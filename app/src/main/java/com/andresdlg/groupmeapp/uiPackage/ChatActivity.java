@@ -15,22 +15,30 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.andresdlg.groupmeapp.Entities.Conversation;
 import com.andresdlg.groupmeapp.Entities.Users;
 import com.andresdlg.groupmeapp.R;
 import com.andresdlg.groupmeapp.Entities.Message;
+import com.andresdlg.groupmeapp.Utils.NotificationStatus;
+import com.andresdlg.groupmeapp.Utils.NotificationTypes;
 import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.squareup.picasso.Callback;
+import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
+import java.util.Map;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -246,8 +254,30 @@ class ItemMessageUserHolder extends RecyclerView.ViewHolder {
         avata = (CircleImageView) itemView.findViewById(R.id.imageView2);
     }
 
-    public void setAvatar(Context context, String currentUserUrl) {
-        Picasso.with(context).load(currentUserUrl).into(avata);
+    public void setAvatar(final Context context, final String currentUserUrl) {
+        Picasso.with(context).load(currentUserUrl).into(avata, new Callback() {
+            @Override
+            public void onSuccess() {
+
+            }
+            @Override
+            public void onError() {
+                Picasso.with(context)
+                        .load(currentUserUrl)
+                        .networkPolicy(NetworkPolicy.OFFLINE)
+                        .into(avata, new Callback() {
+                            @Override
+                            public void onSuccess() {
+
+                            }
+
+                            @Override
+                            public void onError() {
+                                Log.v("Picasso","No se ha podido cargar la foto");
+                            }
+                        });
+            }
+        });
     }
 }
 
@@ -262,7 +292,29 @@ class ItemMessageFriendHolder extends RecyclerView.ViewHolder {
         avata = (CircleImageView) itemView.findViewById(R.id.imageView3);
     }
 
-    public void setAvatar(Context context,String userToUrl) {
-        Picasso.with(context).load(userToUrl).into(avata);
+    public void setAvatar(final Context context, final String userToUrl) {
+        Picasso.with(context).load(userToUrl).into(avata, new Callback() {
+            @Override
+            public void onSuccess() {
+
+            }
+            @Override
+            public void onError() {
+                Picasso.with(context)
+                        .load(userToUrl)
+                        .networkPolicy(NetworkPolicy.OFFLINE)
+                        .into(avata, new Callback() {
+                            @Override
+                            public void onSuccess() {
+
+                            }
+
+                            @Override
+                            public void onError() {
+                                Log.v("Picasso","No se ha podido cargar la foto");
+                            }
+                        });
+            }
+        });
     }
 }

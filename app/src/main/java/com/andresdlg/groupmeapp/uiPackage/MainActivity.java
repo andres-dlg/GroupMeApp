@@ -146,6 +146,9 @@ public class MainActivity extends AppCompatActivity
             if(fragment.equals("NotificationFragment")){
                 viewPager.setCurrentItem(2);
             }
+            if (fragment.equals("MessagesFragment")){
+                viewPager.setCurrentItem(3);
+            }
         }
 
         Toolbar toolbar = findViewById(R.id.toolbar);

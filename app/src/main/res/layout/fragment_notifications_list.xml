@@ -14,24 +14,38 @@
         android:foreground="?android:attr/selectableItemBackground"
         android:layout_weight="100">
 
-        <de.hdodenhof.circleimageview.CircleImageView
-            android:id="@+id/contact_photo"
-            android:layout_width="70dp"
-            android:layout_height="70dp"
-            android:src="@drawable/new_user"
+        <FrameLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/flo"
             android:layout_marginTop="10dp"
             android:layout_marginRight="10dp"
             android:layout_marginBottom="10dp"
-            android:layout_marginLeft="20dp"
-            />
+            android:layout_marginLeft="20dp">
+
+            <de.hdodenhof.circleimageview.CircleImageView
+                android:id="@+id/contact_photo"
+                android:layout_width="70dp"
+                android:layout_height="70dp"
+                android:src="@drawable/new_user"
+                />
+
+            <ProgressBar
+                android:id="@+id/homeprogress"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                android:indeterminateTint="@color/celestito"/>
+
+        </FrameLayout>
 
         <TextView
             android:id="@+id/userAlias"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_alignTop="@+id/contact_photo"
+            android:layout_alignTop="@+id/flo"
             android:layout_marginRight="20dp"
-            android:layout_toEndOf="@+id/contact_photo"
+            android:layout_toEndOf="@+id/flo"
             android:text="Alias"
             android:textSize="13sp"
             android:focusable="true"
@@ -47,7 +61,7 @@
             android:layout_height="wrap_content"
             android:layout_below="@id/userAlias"
             android:layout_marginRight="20dp"
-            android:layout_toEndOf="@+id/contact_photo"
+            android:layout_toEndOf="@+id/flo"
             android:text="Mensaje de la notificación"
             android:textSize="17sp"
             android:focusable="true"
@@ -62,8 +76,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginRight="20dp"
-            android:layout_alignBottom="@id/contact_photo"
-            android:layout_toEndOf="@+id/contact_photo"
+            android:layout_alignBottom="@id/flo"
+            android:layout_toEndOf="@+id/flo"
             android:text="Fecha de la notificación"
             android:textSize="11sp"
             android:focusable="true"
@@ -75,7 +89,7 @@
 
         <View
             android:id="@+id/divider"
-            android:layout_below="@id/contact_photo"
+            android:layout_below="@id/flo"
             android:layout_width="match_parent"
             android:layout_height="1dp"
             android:layout_marginLeft="15dp"

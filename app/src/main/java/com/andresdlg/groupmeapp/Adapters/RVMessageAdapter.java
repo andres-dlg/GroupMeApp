@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,6 +23,8 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.squareup.picasso.Callback;
+import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayDeque;
@@ -100,7 +103,7 @@ public class RVMessageAdapter extends RecyclerView.Adapter<RVMessageAdapter.Mess
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         Users u = dataSnapshot.getValue(Users.class);
                         messageViewHolder.userAlias.setText(new StringBuilder().append("@").append(u.getAlias()).toString());
-                        Picasso.with(context).load(u.getImageURL()).into(messageViewHolder.userPhoto);
+                        messageViewHolder.setPhoto(context,u.getImageURL());//Picasso.with(context).load(u.getImageURL()).into(messageViewHolder.userPhoto);
                         messageViewHolder.messageText.setText(conversations.get(position).getMessage().getText());
                         messageViewHolder.messageDate.setText(dateDifference(conversations.get(position).getMessage().getTimestamp()));
                     }
@@ -169,5 +172,31 @@ public class RVMessageAdapter extends RecyclerView.Adapter<RVMessageAdapter.Mess
             messageDate = itemView.findViewById(R.id.date);
         }
 
+        public void setPhoto(final Context context, final String imageURL) {
+            Picasso.with(context).load(imageURL).into(userPhoto, new Callback() {
+                @Override
+                public void onSuccess() {
+                    itemView.findViewById(R.id.homeprogress).setVisibility(View.GONE);
+                }
+                @Override
+                public void onError() {
+                    Picasso.with(context)
+                            .load(imageURL)
+                            .networkPolicy(NetworkPolicy.OFFLINE)
+                            .into(userPhoto, new Callback() {
+                                @Override
+                                public void onSuccess() {
+                                    itemView.findViewById(R.id.homeprogress).setVisibility(View.GONE);
+                                }
+
+                                @Override
+                                public void onError() {
+                                    Log.v("Picasso","No se ha podido cargar la foto");
+                                }
+                            });
+                }
+            });
+
+        }
     }
 }
