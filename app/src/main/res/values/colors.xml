@@ -10,4 +10,7 @@
     <color name="add_photo">#9e9e9e</color>
     <color name="gray_noti">#696969</color>
     <color name="gray_200">#eeeeee</color>
+
+    <color name="theme_primary_text_inverted">#ffffff</color>
+    <color name="theme_secondary_text_inverted">#8affffff</color>
 </resources>

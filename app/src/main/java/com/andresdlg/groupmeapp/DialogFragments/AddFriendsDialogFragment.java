@@ -231,7 +231,6 @@ public class AddFriendsDialogFragment extends DialogFragment {
         FirebaseRecyclerOptions options =
                 new FirebaseRecyclerOptions.Builder<Users>()
                         .setSnapshotArray(filterableFirebaseArray)
-                        //.setQuery(filterableFirebaseArray, Users.class)
                         .build();
 
         final FirebaseRecyclerAdapter<Users,UsersViewHolder> firebaseRecyclerAdapter = new FirebaseRecyclerAdapter<Users, UsersViewHolder>(options) {

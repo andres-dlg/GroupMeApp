@@ -13,21 +13,32 @@ import android.support.v4.app.DialogFragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.view.GestureDetector;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ImageView;
 
+import com.andresdlg.groupmeapp.Adapters.RVGroupAddContactAdapter;
+import com.andresdlg.groupmeapp.Entities.Users;
 import com.andresdlg.groupmeapp.R;
 import com.andresdlg.groupmeapp.uiPackage.MainActivity;
+import com.andresdlg.groupmeapp.uiPackage.SearchContactsActivity;
+import com.miguelcatalan.materialsearchview.MaterialSearchView;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by andresdlg on 13/07/17.
@@ -42,6 +53,10 @@ public class HeaderDialogFragment extends DialogFragment {
     ImageView mGroupPhoto;
     Uri mCropImageUri;
     Uri imageHoldUri;
+    RecyclerView rvGroupAddContact;
+    RVGroupAddContactAdapter rvGroupAddContactAdapter;
+    List<Users> users = new ArrayList<>();
+    static MaterialSearchView searchView;
 
 
     public HeaderDialogFragment(){
@@ -52,6 +67,12 @@ public class HeaderDialogFragment extends DialogFragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_groups_dialog, container, false);
+
+        final GestureDetector mGestureDetector = new GestureDetector(getContext(), new GestureDetector.SimpleOnGestureListener() {
+            @Override public boolean onSingleTapUp(MotionEvent e) {
+                return true;
+            }
+        });
 
         Toolbar toolbar = view.findViewById(R.id.toolbar);
         toolbar.setTitle("Nuevo grupo");
@@ -77,6 +98,47 @@ public class HeaderDialogFragment extends DialogFragment {
             }
         });
 
+        rvGroupAddContact = view.findViewById(R.id.rvGroupAddContact);
+        rvGroupAddContact.setLayoutManager(new LinearLayoutManager(getContext()));
+        rvGroupAddContact.setHasFixedSize(true);
+
+        users.add(new Users(null,null,null,null,null));
+        rvGroupAddContactAdapter = new RVGroupAddContactAdapter(users,getContext());
+        rvGroupAddContact.setAdapter(rvGroupAddContactAdapter);
+
+        rvGroupAddContact.addOnItemTouchListener(new RecyclerView.OnItemTouchListener() {
+            @Override
+            public boolean onInterceptTouchEvent(RecyclerView rv, MotionEvent e) {
+                try {
+                    View child = rv.findChildViewUnder(e.getX(), e.getY());
+
+                    if (child != null && mGestureDetector.onTouchEvent(e)) {
+
+                        int position = rv.getChildAdapterPosition(child);
+                        if(position == 0){
+                            Intent i = new Intent(getContext(), SearchContactsActivity.class);
+                            startActivity(i);
+                            getActivity().overridePendingTransition(android.R.anim.slide_in_left, android.R.anim.fade_out);
+                            return true;
+                        }
+                    }
+                }catch (Exception ex){
+                    ex.printStackTrace();
+                }
+
+                return false;
+            }
+
+            @Override
+            public void onTouchEvent(RecyclerView rv, MotionEvent e) {
+
+            }
+
+            @Override
+            public void onRequestDisallowInterceptTouchEvent(boolean disallowIntercept) {
+
+            }
+        });
 
         return view;
     }
@@ -185,4 +247,5 @@ public class HeaderDialogFragment extends DialogFragment {
         }
         super.onDestroyView();
     }
+
 }
