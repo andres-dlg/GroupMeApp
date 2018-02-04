@@ -6,6 +6,8 @@ package com.andresdlg.groupmeapp.Entities;
 
 public class Users {
 
+    private boolean isGone = false;
+
     private String alias;
     private String imageUrl;
     private String job;
@@ -61,4 +63,14 @@ public class Users {
     public void setUserid(String userid) {
         this.userid = userid;
     }
+
+    public boolean isGone() {
+        return isGone;
+    }
+
+    public void setGone(boolean gone) {
+        isGone = gone;
+    }
+
+
 }

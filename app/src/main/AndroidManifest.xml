@@ -67,7 +67,7 @@
 
         <activity
             android:name=".uiPackage.SearchContactsActivity"
-            android:theme="@style/AppTheme.NoActionBar">
+            android:theme="@style/AppTheme.NoActionBar3">
 
             <meta-data
                 android:name="android.app.searchable"

@@ -1,20 +1,16 @@
 package com.andresdlg.groupmeapp.uiPackage;
 
 import android.app.SearchManager;
+import android.content.ComponentName;
 import android.content.Context;
-import android.content.Intent;
-import android.graphics.Color;
-import android.os.Build;
-import android.speech.RecognizerIntent;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.view.ActionMode;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
-import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -30,7 +26,6 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.miguelcatalan.materialsearchview.MaterialSearchView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -44,6 +39,10 @@ public class SearchContactsActivity extends AppCompatActivity implements RVSearc
     RVSearchContactAdapter rvSearchContactAdapter;
     RecyclerView rvAddGroupMember;
 
+
+    //Multiselect stuff
+    private ActionMode mActionMode;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -56,14 +55,6 @@ public class SearchContactsActivity extends AppCompatActivity implements RVSearc
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setTitle("Agregar miembros");
 
-        /*Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        toolbar.setTitle("Agregar miembros");
-        toolbar.setTitleTextColor(getResources().getColor(R.color.colorAccent));
-        setSupportActionBar(toolbar);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setDisplayShowHomeEnabled(true);
-        getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_action_navigation_arrow_back_inverted);
-*/
         //RECYCLERVIEW INITIALIZATION
         rvAddGroupMember = findViewById(R.id.rvAddGroupMember);
         rvAddGroupMember.setHasFixedSize(true);
@@ -78,41 +69,29 @@ public class SearchContactsActivity extends AppCompatActivity implements RVSearc
         rvSearchContactAdapter = new RVSearchContactAdapter(users,this, this);
         rvAddGroupMember.setAdapter(rvSearchContactAdapter);
 
-        // white background notification bar
-        //whiteNotificationBar(rvAddGroupMember);
-
         fetchContacts();
 
-        /*searchView = findViewById(R.id.search_view);
-        searchView.setVoiceSearch(true);
-        searchView.setCursorDrawable(R.drawable.color_cursor_white);
-        searchView.setSuggestions(getResources().getStringArray(R.array.query_suggestions));
-        searchView.setOnQueryTextListener(new MaterialSearchView.OnQueryTextListener() {
+        //Aca arranca el multiselect
+        implementRecyclerViewClickListeners();
+
+    }
+
+    private void implementRecyclerViewClickListeners() {
+        rvAddGroupMember.addOnItemTouchListener(new RecyclerTouchListener(this, rvAddGroupMember, new RecyclerClick_Listener() {
             @Override
-            public boolean onQueryTextSubmit(String query) {
-                Snackbar.make(findViewById(R.id.container), "Query: " + query, Snackbar.LENGTH_LONG)
-                        .show();
-                return false;
+            public void onClick(View view, int position) {
+
+                //If ActionMode not null select item
+                if (mActionMode != null)
+                    onListItemSelect(position);
             }
 
             @Override
-            public boolean onQueryTextChange(String newText) {
-                //Do some magic
-                return false;
+            public void onLongClick(View view, int position) {
+                //Select item on long click
+                onListItemSelect(position);
             }
-        });
-
-        searchView.setOnSearchViewListener(new MaterialSearchView.SearchViewListener() {
-            @Override
-            public void onSearchViewShown() {
-                //Do some magic
-            }
-
-            @Override
-            public void onSearchViewClosed() {
-                //Do some magic
-            }
-        });*/
+        }));
     }
 
     private void fetchContacts() {
@@ -137,20 +116,30 @@ public class SearchContactsActivity extends AppCompatActivity implements RVSearc
         });
     }
 
-    /*private void whiteNotificationBar(View view) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            int flags = view.getSystemUiVisibility();
-            flags |= View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
-            view.setSystemUiVisibility(flags);
-            getWindow().setStatusBarColor(Color.WHITE);
-        }
-    }*/
+
+    //List item select method
+    private void onListItemSelect(int position) {
+        rvSearchContactAdapter.toggleSelection(position);//Toggle the selection
+
+        boolean hasCheckedItems = rvSearchContactAdapter.getSelectedCount() > 0;//Check if any items are already selected or not
+        if (hasCheckedItems && mActionMode == null)
+            // there are some selected items, start the actionMode
+            mActionMode = this.startSupportActionMode(new Toolbar_ActionMode_Callback(this,rvSearchContactAdapter, (ArrayList<Users>) users, false));
+        else if (!hasCheckedItems && mActionMode != null)
+            // there no selected items, finish the actionMode
+            mActionMode.finish();
+
+        if (mActionMode != null)
+            //set action mode title on item selection
+            mActionMode.setTitle(String.valueOf(rvSearchContactAdapter
+                    .getSelectedCount()) + " Seleccionados");
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
 
         getMenuInflater().inflate(R.menu.fragment_groups_add_contact_activity_menu, menu);
-
+        //getSupportActionBar().setDisplayHomeAsUpEnabled(false);
         // Associate searchable configuration with the SearchView
         SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
         searchView = (SearchView) menu.findItem(R.id.action_search)
@@ -177,10 +166,6 @@ public class SearchContactsActivity extends AppCompatActivity implements RVSearc
         });
         return true;
 
-        /*getMenuInflater().inflate(R.menu.fragment_groups_add_contact_activity_menu, menu);
-        MenuItem item = menu.findItem(R.id.action_search);
-        searchView.setMenuItem(item);
-        return true;*/
     }
 
     @Override
@@ -244,4 +229,15 @@ public class SearchContactsActivity extends AppCompatActivity implements RVSearc
     public void onContactSelected(Users user) {
         Toast.makeText(getApplicationContext(), "Selected: " + user.getName(), Toast.LENGTH_LONG).show();
     }
+
+    //Set action mode null after use
+    public void setNullToActionMode() {
+        if (mActionMode != null)
+            mActionMode = null;
+    }
 }
+
+
+
+
+

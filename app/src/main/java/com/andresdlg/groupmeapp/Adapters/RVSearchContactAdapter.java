@@ -1,8 +1,10 @@
 package com.andresdlg.groupmeapp.Adapters;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -28,10 +30,14 @@ import de.hdodenhof.circleimageview.CircleImageView;
 public class RVSearchContactAdapter extends RecyclerView.Adapter<RVSearchContactAdapter.ContactsViewHolder> implements Filterable {
 
     private List<Users> users;
-    private List<Users> usersFiltered;
+    public List<Users> usersFiltered;
     private Context context;
     private LayoutInflater inflater;
     private UsersAdapterListener listener;
+    //private SparseBooleanArray mSelectedItemsIds;
+    private List<String> mSelectedItemsIds;
+
+
 
     public interface UsersAdapterListener {
         void onContactSelected(Users user);
@@ -43,6 +49,8 @@ public class RVSearchContactAdapter extends RecyclerView.Adapter<RVSearchContact
         this.context = context;
         inflater = LayoutInflater.from(context);
         this.listener = listener;
+        //mSelectedItemsIds = new SparseBooleanArray();
+        mSelectedItemsIds = new ArrayList<>();
     }
 
     @Override
@@ -55,6 +63,14 @@ public class RVSearchContactAdapter extends RecyclerView.Adapter<RVSearchContact
     public void onBindViewHolder(final ContactsViewHolder contactsViewHolder, final int position) {
         Users u = usersFiltered.get(position);
         contactsViewHolder.setDetails(context,u.getName(),u.getAlias(),u.getImageURL(),u.getUserid());
+        //Tener en cuenta si esta seleccionado
+        /** Change background color of the selected items in list view  **/
+        /*contactsViewHolder.itemView
+                .setBackgroundColor(mSelectedItemsIds.get(position) ? 0x9934B5E4
+                        : Color.TRANSPARENT);*/
+        contactsViewHolder.itemView
+                .setBackgroundColor(mSelectedItemsIds.contains(usersFiltered.get(position).getUserid()) ? 0x9934B5E4
+                        : Color.TRANSPARENT);
     }
 
     @Override
@@ -100,6 +116,40 @@ public class RVSearchContactAdapter extends RecyclerView.Adapter<RVSearchContact
             }
         };
     }
+
+    //Toggle selection methods
+    public void toggleSelection(int position) {
+        //selectView(position, !mSelectedItemsIds.get(position));
+        String id = usersFiltered.get(position).getUserid();
+        if(!mSelectedItemsIds.contains(id)){
+            mSelectedItemsIds.add(id);
+        }else{
+            mSelectedItemsIds.remove(id);
+        }
+        notifyDataSetChanged();
+    }
+
+    //Remove selected selections
+    public void removeSelection() {
+        //mSelectedItemsIds = new SparseBooleanArray();
+        mSelectedItemsIds = new ArrayList<>();
+        notifyDataSetChanged();
+    }
+
+    //Get total selected count
+    public int getSelectedCount() {
+        return mSelectedItemsIds.size();
+    }
+
+
+
+    //Return all selected ids
+    public ArrayList<String> getSelectedIds() {
+        return (ArrayList<String>) mSelectedItemsIds;
+    }
+    /*public SparseBooleanArray getSelectedIds() {
+        return mSelectedItemsIds;
+    }*/
 
 
     static class ContactsViewHolder extends RecyclerView.ViewHolder {
