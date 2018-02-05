@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
@@ -53,10 +54,12 @@ import com.ogaclejapan.smarttablayout.utils.v4.FragmentPagerItemAdapter;
 import com.ogaclejapan.smarttablayout.utils.v4.FragmentPagerItems;
 import com.squareup.picasso.Picasso;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
 import de.hdodenhof.circleimageview.CircleImageView;
+import devlight.io.library.ntb.NavigationTabBar;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -86,6 +89,8 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        final String[] colors = getResources().getStringArray(R.array.default_preview);
+
         StaticFirebaseSettings.currentUserId = FirebaseAuth.getInstance().getUid();
 
         FragmentPagerItemAdapter adapter = new FragmentPagerItemAdapter(
@@ -100,7 +105,70 @@ public class MainActivity extends AppCompatActivity
         viewPager.setAdapter(adapter);
         viewPager.setOffscreenPageLimit(3);
 
-        inflater = LayoutInflater.from(this);
+        final NavigationTabBar navigationTabBar = (NavigationTabBar) findViewById(R.id.ntb);
+        final ArrayList<NavigationTabBar.Model> models = new ArrayList<>();
+        models.add(
+                new NavigationTabBar.Model.Builder(
+                        getResources().getDrawable(R.drawable.newspaper),
+                        Color.parseColor(colors[2])
+                ).title("Noticias")
+                        .badgeTitle("NTB")
+                        .build()
+        );
+        models.add(
+                new NavigationTabBar.Model.Builder(
+                        getResources().getDrawable(R.drawable.account_multiple),
+                        Color.parseColor(colors[2])
+                ).title("Grupos")
+                        .badgeTitle("with")
+                        .build()
+        );
+        models.add(
+                new NavigationTabBar.Model.Builder(
+                        getResources().getDrawable(R.drawable.bell),
+                        Color.parseColor(colors[2])
+                ).title("Notificaciones")
+                        .badgeTitle("state")
+                        .build()
+        );
+        models.add(
+                new NavigationTabBar.Model.Builder(
+                        getResources().getDrawable(R.drawable.message),
+                        Color.parseColor(colors[2])
+                ).title("Mensajes")
+                        .badgeTitle("icon")
+                        .build()
+        );
+
+
+        navigationTabBar.setModels(models);
+        navigationTabBar.setViewPager(viewPager, 2);
+        navigationTabBar.setInactiveColor(getResources().getColor(R.color.cardview_dark_background));
+        navigationTabBar.setIsSwiped(true);
+        navigationTabBar.setIsTitled(true);
+        navigationTabBar.setTitleMode(NavigationTabBar.TitleMode.ACTIVE);
+        navigationTabBar.setTypeface("@font/simplifica_font");
+        navigationTabBar.setTitleSize(20);
+        navigationTabBar.setIconSizeFraction((float) 0.5);
+
+        /*navigationTabBar.setTitleMode(NavigationTabBar.TitleMode.ACTIVE);
+        navigationTabBar.setBadgeGravity(NavigationTabBar.BadgeGravity.BOTTOM);
+        navigationTabBar.setBadgePosition(NavigationTabBar.BadgePosition.CENTER);
+        navigationTabBar.setTypeface("fonts/custom_font.ttf");
+        navigationTabBar.setIsBadged(true);
+        navigationTabBar.setIsTitled(true);
+        navigationTabBar.setIsTinted(true);
+        navigationTabBar.setIsBadgeUseTypeface(true);
+        navigationTabBar.setBadgeBgColor(Color.RED);
+        navigationTabBar.setBadgeTitleColor(Color.WHITE);
+        navigationTabBar.setIsSwiped(true);
+        navigationTabBar.setBgColor(Color.BLACK);
+        navigationTabBar.setBadgeSize(10);
+        navigationTabBar.setTitleSize(10);
+        navigationTabBar.setIconSizeFraction((float) 0.5);*/
+
+
+        /*inflater = LayoutInflater.from(this);
         res = getResources();
 
         viewPagerTab = findViewById(R.id.viewpagertab);
@@ -138,7 +206,7 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
-        viewPagerTab.setViewPager(viewPager);
+        viewPagerTab.setViewPager(viewPager);*/
 
         //Posiciono mi activity en el fragment
         String fragment = getIntent().getStringExtra("fragment");
@@ -190,7 +258,7 @@ public class MainActivity extends AppCompatActivity
 
     }
 
-    @Override
+    /*@Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
 
@@ -231,7 +299,7 @@ public class MainActivity extends AppCompatActivity
 
         viewPagerTab.setViewPager(viewPager);
 
-    }
+    }*/
 
     @Override
     protected void onStart() {
