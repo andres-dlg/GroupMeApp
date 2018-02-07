@@ -83,7 +83,6 @@ public class AddFriendsDialogFragment extends DialogFragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-
         View view = inflater.inflate(R.layout.activity_main_add_friends_dialog, container, false);
 
 

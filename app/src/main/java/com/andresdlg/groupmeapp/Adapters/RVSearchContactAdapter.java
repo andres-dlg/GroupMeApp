@@ -1,7 +1,10 @@
 package com.andresdlg.groupmeapp.Adapters;
 
+import android.animation.ObjectAnimator;
+import android.animation.PropertyValuesHolder;
 import android.content.Context;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.util.SparseBooleanArray;
@@ -38,9 +41,12 @@ public class RVSearchContactAdapter extends RecyclerView.Adapter<RVSearchContact
     private List<String> mSelectedItemsIds;
 
 
+    Drawable mDrawablePending;
+
 
     public interface UsersAdapterListener {
         void onContactSelected(Users user);
+
     }
 
     public RVSearchContactAdapter(List<Users> users, Context context, UsersAdapterListener listener){
@@ -51,6 +57,9 @@ public class RVSearchContactAdapter extends RecyclerView.Adapter<RVSearchContact
         this.listener = listener;
         //mSelectedItemsIds = new SparseBooleanArray();
         mSelectedItemsIds = new ArrayList<>();
+        mDrawablePending = context.getResources().getDrawable(R.drawable.check_circle);
+        mDrawablePending.setTint(context.getResources().getColor(R.color.colorPrimaryDark));
+
     }
 
     @Override
@@ -68,9 +77,15 @@ public class RVSearchContactAdapter extends RecyclerView.Adapter<RVSearchContact
         /*contactsViewHolder.itemView
                 .setBackgroundColor(mSelectedItemsIds.get(position) ? 0x9934B5E4
                         : Color.TRANSPARENT);*/
-        contactsViewHolder.itemView
+        /*contactsViewHolder.itemView
                 .setBackgroundColor(mSelectedItemsIds.contains(usersFiltered.get(position).getUserid()) ? 0x9934B5E4
-                        : Color.TRANSPARENT);
+                        : Color.TRANSPARENT);*/
+
+        if(mSelectedItemsIds.contains(usersFiltered.get(position).getUserid())){
+            contactsViewHolder.setDrawable(true,mDrawablePending);
+        }else{
+            contactsViewHolder.setDrawable(false,null);
+        }
     }
 
     @Override
@@ -156,6 +171,7 @@ public class RVSearchContactAdapter extends RecyclerView.Adapter<RVSearchContact
         View mView;
         private List<Users> usersFiltered;
         private UsersAdapterListener listener;
+        CircleImageView btn;
 
         ContactsViewHolder(View itemView, List<Users> usersFiltered, UsersAdapterListener listener) {
             super(itemView);
@@ -202,15 +218,25 @@ public class RVSearchContactAdapter extends RecyclerView.Adapter<RVSearchContact
                         }
                     });
 
-            CircleImageView btn = mView.findViewById(R.id.btn_menu);
-            btn.setVisibility(View.GONE);
+            btn = mView.findViewById(R.id.btn_menu);
 
-            mView.setOnClickListener(new View.OnClickListener() {
+
+            /*mView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
                     listener.onContactSelected(usersFiltered.get(getAdapterPosition()));
                 }
-            });
+            });*/
+        }
+
+        ///TODO: REVISAR ESTE METODO QUE NO ANDA Y BORRAR SEARCH ACTIVITY
+        public void setDrawable(boolean selected,Drawable drawable) {
+            if(selected){
+                btn.setImageDrawable(drawable);
+                btn.setVisibility(View.VISIBLE);
+            }else{
+                btn.setVisibility(View.GONE);
+            }
         }
     }
 }

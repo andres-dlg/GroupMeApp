@@ -19,12 +19,13 @@
         android:layout_marginBottom="50dp"
         />
 
+
+
     <devlight.io.library.ntb.NavigationTabBar
         android:id="@+id/ntb"
         android:layout_width="match_parent"
         android:layout_height="60dp"
         android:layout_gravity="bottom"
-        android:background="@drawable/gradient"
         app:ntb_badge_size="12sp"
         app:ntb_badge_bg_color="#ffff0000"
         app:ntb_badge_gravity="top"
@@ -33,6 +34,17 @@
         app:ntb_badge_use_typeface="true"
         app:ntb_badged="true"
         app:ntb_bg_color="@color/colorAccent"
-        app:ntb_typeface="@font/simplifica_font"/>
+        app:ntb_typeface="@font/simplifica_font"
+        android:elevation="50dp"/>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_gravity="bottom"
+        android:background="@color/colorAccent"
+        android:elevation="10dp"
+        android:translationZ="10dp"
+        >
+    </View>
 
 </android.support.design.widget.CoordinatorLayout>

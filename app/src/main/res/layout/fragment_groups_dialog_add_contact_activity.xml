@@ -24,7 +24,6 @@
             android:layout_height="?attr/actionBarSize"
             android:background="@color/colorPrimary"
             app:popupTheme="@style/AppTheme.PopupOverlay" />
-
     </android.support.design.widget.AppBarLayout>
-    </RelativeLayout>
+</RelativeLayout>
     <!-- Must be last for right layering display -->
