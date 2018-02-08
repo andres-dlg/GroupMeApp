@@ -10,6 +10,22 @@ import java.util.List;
  */
 
 public class Group {
+    private int photoId;
+    private String name;
+    private String objetive;
+    private List<String> userIds;
+
+    public Group(int photoId, String name, String objetive, List<String> userIds){
+        this.photoId = photoId;
+        this.name = name;
+        this.objetive = objetive;
+        this.userIds = userIds;
+    }
+
+    public Group(){
+
+    }
+
     public int getPhotoId() {
         return photoId;
     }
@@ -26,12 +42,20 @@ public class Group {
         this.name = name;
     }
 
-    private int photoId;
-    private String name;
+    public String getObjetive() {
+        return objetive;
+    }
 
-    public Group(int photoId, String name){
-        this.photoId = photoId;
-        this.name = name;
+    public void setObjetive(String objetive) {
+        this.objetive = objetive;
+    }
+
+    public List<String> getUserIds() {
+        return userIds;
+    }
+
+    public void setUserIds(List<String> userIds) {
+        this.userIds = userIds;
     }
 }
 

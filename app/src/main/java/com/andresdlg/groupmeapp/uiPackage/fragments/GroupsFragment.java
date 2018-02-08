@@ -84,7 +84,6 @@ public class GroupsFragment extends Fragment implements View.OnClickListener {
                 showHeaderDialogFragment();
                 break;
         }
-
     }
 
     private void showHeaderDialogFragment() {

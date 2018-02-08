@@ -9,7 +9,6 @@ import android.graphics.Paint;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
@@ -247,10 +246,11 @@ public class UserProfileSetupActivity extends AppCompatActivity {
                                 @Override
                                 public void onSuccess(Uri uri) {
                                     imageHoldUri = uri;
+                                    mProgress.dismiss();
+                                    createUserData(alias,userName,job);
                                 }
                             });
-                            mProgress.dismiss();
-                            createUserData(alias,userName,job);
+
                         }
                     }else{
                         if(!yaPasoPorAca){

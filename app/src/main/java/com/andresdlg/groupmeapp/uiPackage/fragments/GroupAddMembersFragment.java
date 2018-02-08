@@ -1,13 +1,11 @@
 package com.andresdlg.groupmeapp.uiPackage.fragments;
 
-import android.app.Dialog;
-import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
-import android.support.v7.app.AppCompatDelegate;
 import android.support.v7.view.ActionMode;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
@@ -19,14 +17,12 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.andresdlg.groupmeapp.Adapters.RVSearchContactAdapter;
-import com.andresdlg.groupmeapp.DialogFragments.HeaderDialogFragment;
 import com.andresdlg.groupmeapp.Entities.Users;
 import com.andresdlg.groupmeapp.R;
 import com.andresdlg.groupmeapp.Utils.FriendshipStatus;
 import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
 import com.andresdlg.groupmeapp.uiPackage.RecyclerClick_Listener;
 import com.andresdlg.groupmeapp.uiPackage.RecyclerTouchListener;
-import com.andresdlg.groupmeapp.uiPackage.Toolbar_ActionMode_Callback;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -56,6 +52,10 @@ public class GroupAddMembersFragment extends Fragment implements RVSearchContact
     private ActionMode mActionMode;
     private boolean isShowing;
     private int pxUp;
+
+    View v;
+
+    OnUserSelectionSetListener mOnUserSelectionSetListener;
 
 
     @Override
@@ -103,7 +103,10 @@ public class GroupAddMembersFragment extends Fragment implements RVSearchContact
 
         Fragment parentFragment = getParentFragment();
 
+
         snackbar = Snackbar.make(parentFragment.getView().findViewById(R.id.viewpager), selected + " Seleccionados",Snackbar.LENGTH_INDEFINITE);
+        List<Fragment> fragments = parentFragment.getChildFragmentManager().getFragments();
+        v = fragments.get(0).getView().findViewById(R.id.nsSetup);
 
         DisplayMetrics displayMetrics = getContext().getResources().getDisplayMetrics();
         pxUp = Math.round(50 * (displayMetrics.xdpi) / DisplayMetrics.DENSITY_DEFAULT);
@@ -177,6 +180,9 @@ public class GroupAddMembersFragment extends Fragment implements RVSearchContact
     }
 
     private void onListItemSelect(int position) {
+
+        mOnUserSelectionSetListener.onUserSelectionSet(rvSearchContactAdapter.getSelectedIds());
+
         rvSearchContactAdapter.toggleSelection(position);//Toggle the selection
         selected = rvSearchContactAdapter.getSelectedCount();
         snackbar.setText( selected + ((selected > 1 ? " Seleccionados" : " Seleccionado")));
@@ -185,8 +191,10 @@ public class GroupAddMembersFragment extends Fragment implements RVSearchContact
             rvAddGroupMember.setPadding(0,0,0,pxUp);
             snackbar.show();
             isShowing = true;
+            v.setPadding(0,0,0,pxUp);
         }else if(selected == 0 && isShowing){
             rvAddGroupMember.setPadding(0,0,0,0);
+            v.setPadding(0,0,0,0);
             //rvAddGroupMember.setTranslationY(pxDown);
             snackbar.dismiss();
             isShowing = false;
@@ -199,4 +207,22 @@ public class GroupAddMembersFragment extends Fragment implements RVSearchContact
             mActionMode = null;
     }
 
+    public interface OnUserSelectionSetListener{
+        public void onUserSelectionSet(List<String> userIds);
+    }
+
+    public void onAttachToParentFragment(Fragment fragment){
+        try {
+            mOnUserSelectionSetListener = (OnUserSelectionSetListener) fragment;
+        }
+        catch (ClassCastException e){
+            throw new ClassCastException(fragment.toString() + " must implement OnUserSelectionSetListener");
+        }
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        onAttachToParentFragment(getParentFragment());
+    }
 }

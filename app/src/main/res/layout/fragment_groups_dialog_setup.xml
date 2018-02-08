@@ -8,7 +8,8 @@
     android:orientation="vertical"
     android:clipToPadding="false"
     android:theme="@style/AppTheme.DialogFragment"
-    xmlns:android="http://schemas.android.com/apk/res/android">
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/nsSetup">
 
         <RelativeLayout
             android:layout_width="match_parent"

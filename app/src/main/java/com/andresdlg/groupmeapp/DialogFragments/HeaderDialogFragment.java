@@ -1,50 +1,47 @@
 package com.andresdlg.groupmeapp.DialogFragments;
 
-import android.Manifest;
-import android.app.Activity;
 import android.app.Dialog;
-import android.content.Intent;
+import android.app.ProgressDialog;
 import android.graphics.Color;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.RequiresApi;
-import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.DialogFragment;
-import android.support.v4.content.ContextCompat;
+import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.view.GestureDetector;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.ImageView;
+import android.widget.ProgressBar;
+import android.widget.TextView;
+import android.widget.Toast;
 
-import com.andresdlg.groupmeapp.Adapters.RVGroupAddContactAdapter;
-import com.andresdlg.groupmeapp.Entities.Users;
 import com.andresdlg.groupmeapp.R;
-import com.andresdlg.groupmeapp.uiPackage.MainActivity;
-import com.andresdlg.groupmeapp.uiPackage.SearchContactsActivity;
+import com.andresdlg.groupmeapp.Utils.GroupStatus;
+import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
 import com.andresdlg.groupmeapp.uiPackage.fragments.GroupAddMembersFragment;
 import com.andresdlg.groupmeapp.uiPackage.fragments.GroupSetupFragment;
-import com.miguelcatalan.materialsearchview.MaterialSearchView;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 import com.ogaclejapan.smarttablayout.utils.v4.FragmentPagerItemAdapter;
 import com.ogaclejapan.smarttablayout.utils.v4.FragmentPagerItems;
-import com.theartofdev.edmodo.cropper.CropImage;
-import com.theartofdev.edmodo.cropper.CropImageView;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import devlight.io.library.ntb.NavigationTabBar;
 
@@ -52,9 +49,25 @@ import devlight.io.library.ntb.NavigationTabBar;
  * Created by andresdlg on 13/07/17.
  */
 
-public class HeaderDialogFragment extends DialogFragment {
+public class HeaderDialogFragment extends DialogFragment implements GroupAddMembersFragment.OnUserSelectionSetListener, GroupSetupFragment.OnGroupImageSetListener{
 
     private ViewPager viewPager;
+    private List<Fragment> fragments;
+
+    //FIREBASE DATABASE FIELDS
+    DatabaseReference mUsersDatabase;
+    DatabaseReference mGroupsDatabase;
+    StorageReference mStorageReference;
+
+    List<String> userIds;
+    TextView nameText;
+    TextView objetiveText;
+    private Uri imageUrl;
+
+    //PROGRESS DIALOG
+    ProgressDialog mProgress;
+    private StorageReference mGroupsStorage;
+
 
     public HeaderDialogFragment(){
         setRetainInstance(true);
@@ -70,6 +83,12 @@ public class HeaderDialogFragment extends DialogFragment {
                 return true;
             }
         });*/
+
+        userIds = new ArrayList<>();
+
+        mUsersDatabase = FirebaseDatabase.getInstance().getReference("Users");
+        mGroupsDatabase = FirebaseDatabase.getInstance().getReference("Groups");
+        mStorageReference = FirebaseStorage.getInstance().getReference();
 
         final String[] colors = getResources().getStringArray(R.array.default_preview);
 
@@ -155,15 +174,104 @@ public class HeaderDialogFragment extends DialogFragment {
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
+        switch (id){
+            case R.id.save:
+                return true;
+            case android.R.id.home:
+                dismiss();
+                return true;
+            case R.id.menu_save:
+                saveGroup();
 
-        if(id == R.id.save) {
-            return true;
-        }else if (id==android.R.id.home){
-            dismiss();
-            return true;
+                return true;
         }
 
+
         return super.onOptionsItemSelected(item);
+    }
+
+    private void saveGroup() {
+        fragments = new ArrayList<>();
+        fragments = getChildFragmentManager().getFragments();
+
+        if(validateFields()){
+
+            final String groupKey = mGroupsDatabase.push().getKey();
+
+            mProgress = new ProgressDialog(getContext());
+            mProgress.setCancelable(true);
+            mProgress.setMessage("Espere por favor");
+            mProgress.setTitle("Guardando grupo");
+            mProgress.show();
+
+            if(imageUrl != null){
+                mGroupsStorage = mStorageReference.child("Groups").child(groupKey).child(imageUrl.getLastPathSegment());
+                mGroupsStorage.putFile(imageUrl).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                    @Override
+                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                        imageUrl = taskSnapshot.getDownloadUrl();
+                        createGroupData(groupKey,nameText.getText().toString(),objetiveText.getText().toString(),userIds);
+                        mProgress.dismiss();
+                        dismiss();
+                    }
+                });
+            }else{
+                mStorageReference.child("new_user.png").getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                    @Override
+                    public void onSuccess(Uri uri) {
+                        imageUrl = uri;
+                        createGroupData(groupKey,nameText.getText().toString(),objetiveText.getText().toString(),userIds);
+                        mProgress.dismiss();
+                        dismiss();
+                    }
+                });
+            }
+        }
+    }
+
+    private void createGroupData(String groupKey, String name, String obj, List<String> userIds) {
+
+        userIds.add(StaticFirebaseSettings.currentUserId);
+
+        Map<Object,Object> map = new HashMap<>();
+        map.put("name", name);
+        map.put("objetive", obj);
+        map.put("imageUrl",imageUrl.toString());
+        map.put("members", userIds);
+
+        mGroupsDatabase.child(groupKey).setValue(map).addOnSuccessListener(new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void aVoid) {
+                Toast.makeText(getContext(),"Grupo guardado",Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        Map<String,Object> map2;
+        map2 = new HashMap<>();
+        map2.put("status", GroupStatus.ACCEPTED);
+
+        for(final String id : userIds){
+            mUsersDatabase.child(id).child("groups").child(groupKey).updateChildren(map2).addOnSuccessListener(new OnSuccessListener<Void>() {
+                @Override
+                public void onSuccess(Void aVoid) {
+                    Toast.makeText(getContext(),"Grupo guardado en "+id,Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+    }
+
+
+    private boolean validateFields() {
+        View focusView;
+        objetiveText = fragments.get(0).getView().findViewById(R.id.etobj);
+        nameText = fragments.get(0).getView().findViewById(R.id.etId);
+        if(TextUtils.isEmpty(nameText.getText())){
+            Toast.makeText(getContext(),"Ingrese un nombre para el grupo",Toast.LENGTH_SHORT).show();
+            focusView = nameText;
+            focusView.requestFocus();
+            return false;
+        }
+        return true;
     }
 
     @Override
@@ -174,5 +282,22 @@ public class HeaderDialogFragment extends DialogFragment {
         }
         super.onDestroyView();
     }
+
+
+    private void startDialog(){
+
+    }
+
+
+    @Override
+    public void onUserSelectionSet(List<String> userIds) {
+        this.userIds = userIds;
+    }
+
+    @Override
+    public void onGroupImageSet(Uri imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+
 
 }

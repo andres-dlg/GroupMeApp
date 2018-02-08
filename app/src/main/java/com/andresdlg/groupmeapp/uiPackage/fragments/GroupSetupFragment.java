@@ -34,37 +34,15 @@ public class GroupSetupFragment extends Fragment {
     ImageView mGroupPhoto;
     Uri mCropImageUri;
     Uri imageHoldUri;
-    //RecyclerView rvGroupAddContact;
-    //RVGroupAddContactAdapter rvGroupAddContactAdapter;
-    //List<Users> users = new ArrayList<>();
-    //static MaterialSearchView searchView;
 
 
-
+    OnGroupImageSetListener mOnGroupImageSetListener;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_groups_dialog_setup, container, false);
 
-        /*final GestureDetector mGestureDetector = new GestureDetector(getContext(), new GestureDetector.SimpleOnGestureListener() {
-            @Override public boolean onSingleTapUp(MotionEvent e) {
-                return true;
-            }
-        });
-
-        Toolbar toolbar = view.findViewById(R.id.toolbar);
-        toolbar.setTitle("Nuevo grupo");
-
-        ((AppCompatActivity)getActivity()).setSupportActionBar(toolbar);
-
-        ActionBar actionBar = ((AppCompatActivity)getActivity()).getSupportActionBar();
-        if (actionBar!=null){
-            actionBar.setDisplayHomeAsUpEnabled(true);
-            actionBar.setHomeButtonEnabled(true);
-            actionBar.setHomeAsUpIndicator(android.R.drawable.ic_menu_close_clear_cancel);
-        }
-        setHasOptionsMenu(true);*/
 
         mGroupPhoto = view.findViewById(R.id.add_group_photo);
         mGroupPhoto.setColorFilter(ContextCompat.getColor(getContext(), R.color.add_photo));
@@ -76,48 +54,6 @@ public class GroupSetupFragment extends Fragment {
                 onSelectImageClick(view);
             }
         });
-
-        /*rvGroupAddContact = view.findViewById(R.id.rvGroupAddContact);
-        rvGroupAddContact.setLayoutManager(new LinearLayoutManager(getContext()));
-        rvGroupAddContact.setHasFixedSize(true);
-
-        users.add(new Users(null,null,null,null,null));
-        rvGroupAddContactAdapter = new RVGroupAddContactAdapter(users,getContext());
-        rvGroupAddContact.setAdapter(rvGroupAddContactAdapter);
-
-        rvGroupAddContact.addOnItemTouchListener(new RecyclerView.OnItemTouchListener() {
-            @Override
-            public boolean onInterceptTouchEvent(RecyclerView rv, MotionEvent e) {
-                try {
-                    View child = rv.findChildViewUnder(e.getX(), e.getY());
-
-                    if (child != null && mGestureDetector.onTouchEvent(e)) {
-
-                        int position = rv.getChildAdapterPosition(child);
-                        if(position == 0){
-                            Intent i = new Intent(getContext(), SearchContactsActivity.class);
-                            startActivity(i);
-                            getActivity().overridePendingTransition(android.R.anim.slide_in_left, android.R.anim.fade_out);
-                            return true;
-                        }
-                    }
-                }catch (Exception ex){
-                    ex.printStackTrace();
-                }
-
-                return false;
-            }
-
-            @Override
-            public void onTouchEvent(RecyclerView rv, MotionEvent e) {
-
-            }
-
-            @Override
-            public void onRequestDisallowInterceptTouchEvent(boolean disallowIntercept) {
-
-            }
-        });*/
 
         return view;
     }
@@ -166,16 +102,21 @@ public class GroupSetupFragment extends Fragment {
                 mGroupPhoto.setColorFilter(null);
                 mGroupPhoto.setScaleType(ImageView.ScaleType.CENTER_CROP);
                 mGroupPhoto.setImageURI(imageHoldUri);
+
+                mOnGroupImageSetListener.onGroupImageSet(imageHoldUri);
+
             } else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
                 Exception error = result.getError();
             }
         }
     }
 
+
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
+        onAttachToParentFragment(getParentFragment());
     }
 
     @Override
@@ -185,6 +126,20 @@ public class GroupSetupFragment extends Fragment {
             mGroupPhoto.setColorFilter(null);
             mGroupPhoto.setScaleType(ImageView.ScaleType.CENTER_CROP);
             mGroupPhoto.setImageURI(imageHoldUri);
+        }
+    }
+
+
+    public interface OnGroupImageSetListener{
+        public void onGroupImageSet(Uri imageUri);
+    }
+
+    public void onAttachToParentFragment(Fragment fragment){
+        try {
+            mOnGroupImageSetListener = (OnGroupImageSetListener) fragment;
+        }
+        catch (ClassCastException e){
+            throw new ClassCastException(fragment.toString() + " must implement OnUserSelectionSetListener");
         }
     }
 

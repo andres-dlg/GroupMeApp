@@ -1,8 +1,8 @@
 package com.andresdlg.groupmeapp.uiPackage.fragments;
 
 import android.content.Intent;
-import android.content.res.Configuration;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
@@ -27,9 +27,6 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -46,7 +43,7 @@ public class MessagesFragment extends Fragment {
 
     @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater, @Nullable final ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable final ViewGroup container, @Nullable Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_messages,container,false);
 
         setRetainInstance(true);
@@ -79,7 +76,6 @@ public class MessagesFragment extends Fragment {
                         i.putExtra("contactIds",arrayList);
                         startActivity(i);
                         getActivity().overridePendingTransition(android.R.anim.slide_in_left, android.R.anim.fade_out);
-                        //Toast.makeText(getContext(),"The Item Clicked is: "+ position ,Toast.LENGTH_SHORT).show();
 
                         return true;
                     }
@@ -143,16 +139,6 @@ public class MessagesFragment extends Fragment {
                                     c.setUser1(dataSnapshot.child("user1").getValue().toString());
                                     c.setUser2(dataSnapshot.child("user2").getValue().toString());
                                     conversations.add(c);
-                                    /*Collections.sort(conversations, new Comparator<ConversationFirebase>() {
-                                        @Override
-                                        public int compare(ConversationFirebase c1, ConversationFirebase c2) {
-                                            Calendar c = Calendar.getInstance();
-                                            c.setTimeInMillis(c1.getMessage().getTimestamp());
-                                            Calendar cl2 = Calendar.getInstance();
-                                            cl2.setTimeInMillis(c2.getMessage().getTimestamp());
-                                            return cl2.compareTo(c);
-                                        }
-                                    });*/
                                     adapter.notifyDataSetChanged();
                                     tvNoMessages.setVisibility(View.INVISIBLE);
                                 }
