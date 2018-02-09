@@ -10,28 +10,22 @@ import java.util.List;
  */
 
 public class Group {
-    private int photoId;
+    private String groupKey;
+    private String imageUrl;
     private String name;
     private String objetive;
-    private List<String> userIds;
+    private List<String> members;
 
-    public Group(int photoId, String name, String objetive, List<String> userIds){
-        this.photoId = photoId;
+    public Group(String groupKey, String imageUrl, String name, String objetive, List<String> members){
+        this.groupKey = groupKey;
+        this.imageUrl = imageUrl;
         this.name = name;
         this.objetive = objetive;
-        this.userIds = userIds;
+        this.members = members;
     }
 
     public Group(){
 
-    }
-
-    public int getPhotoId() {
-        return photoId;
-    }
-
-    public void setPhotoId(int photoId) {
-        this.photoId = photoId;
     }
 
     public String getName() {
@@ -50,12 +44,28 @@ public class Group {
         this.objetive = objetive;
     }
 
-    public List<String> getUserIds() {
-        return userIds;
+    public String getImageUrl() {
+        return imageUrl;
     }
 
-    public void setUserIds(List<String> userIds) {
-        this.userIds = userIds;
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+
+    public List<String> getMembers() {
+        return members;
+    }
+
+    public void setMembers(List<String> members) {
+        this.members = members;
+    }
+
+    public String getGroupKey() {
+        return groupKey;
+    }
+
+    public void setGroupKey(String groupKey) {
+        this.groupKey = groupKey;
     }
 }
 

@@ -24,6 +24,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.afollestad.materialdialogs.MaterialDialog;
 import com.andresdlg.groupmeapp.R;
 import com.andresdlg.groupmeapp.Utils.GroupStatus;
 import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
@@ -65,7 +66,12 @@ public class HeaderDialogFragment extends DialogFragment implements GroupAddMemb
     private Uri imageUrl;
 
     //PROGRESS DIALOG
-    ProgressDialog mProgress;
+    //ProgressDialog mProgress;
+
+    //MaterialDialog mProgress;
+
+    ProgressBar mProgressBar;
+
     private StorageReference mGroupsStorage;
 
 
@@ -85,6 +91,8 @@ public class HeaderDialogFragment extends DialogFragment implements GroupAddMemb
         });*/
 
         userIds = new ArrayList<>();
+
+        mProgressBar = view.findViewById(R.id.progressBar);
 
         mUsersDatabase = FirebaseDatabase.getInstance().getReference("Users");
         mGroupsDatabase = FirebaseDatabase.getInstance().getReference("Groups");
@@ -198,11 +206,18 @@ public class HeaderDialogFragment extends DialogFragment implements GroupAddMemb
 
             final String groupKey = mGroupsDatabase.push().getKey();
 
-            mProgress = new ProgressDialog(getContext());
+            /*mProgress = new ProgressDialog(getContext());
             mProgress.setCancelable(true);
             mProgress.setMessage("Espere por favor");
             mProgress.setTitle("Guardando grupo");
-            mProgress.show();
+            mProgress.show();*/
+
+            /*mProgress = new MaterialDialog.Builder(getContext())
+                    .title("Guardando grupo")
+                    .content("Espere por favor")
+                    .progress(true,0)
+                    .show();*/
+            mProgressBar.setVisibility(View.VISIBLE);
 
             if(imageUrl != null){
                 mGroupsStorage = mStorageReference.child("Groups").child(groupKey).child(imageUrl.getLastPathSegment());
@@ -211,7 +226,7 @@ public class HeaderDialogFragment extends DialogFragment implements GroupAddMemb
                     public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                         imageUrl = taskSnapshot.getDownloadUrl();
                         createGroupData(groupKey,nameText.getText().toString(),objetiveText.getText().toString(),userIds);
-                        mProgress.dismiss();
+                        mProgressBar.setVisibility(View.INVISIBLE);
                         dismiss();
                     }
                 });
@@ -221,7 +236,7 @@ public class HeaderDialogFragment extends DialogFragment implements GroupAddMemb
                     public void onSuccess(Uri uri) {
                         imageUrl = uri;
                         createGroupData(groupKey,nameText.getText().toString(),objetiveText.getText().toString(),userIds);
-                        mProgress.dismiss();
+                        mProgressBar.setVisibility(View.INVISIBLE);
                         dismiss();
                     }
                 });
@@ -238,6 +253,7 @@ public class HeaderDialogFragment extends DialogFragment implements GroupAddMemb
         map.put("objetive", obj);
         map.put("imageUrl",imageUrl.toString());
         map.put("members", userIds);
+        map.put("groupKey", groupKey);
 
         mGroupsDatabase.child(groupKey).setValue(map).addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
@@ -283,10 +299,6 @@ public class HeaderDialogFragment extends DialogFragment implements GroupAddMemb
         super.onDestroyView();
     }
 
-
-    private void startDialog(){
-
-    }
 
 
     @Override

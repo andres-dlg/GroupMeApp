@@ -1,7 +1,9 @@
 package com.andresdlg.groupmeapp.Adapters;
 
+import android.content.Context;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,6 +12,9 @@ import android.widget.TextView;
 
 import com.andresdlg.groupmeapp.Entities.Group;
 import com.andresdlg.groupmeapp.R;
+import com.squareup.picasso.Callback;
+import com.squareup.picasso.NetworkPolicy;
+import com.squareup.picasso.Picasso;
 
 import java.util.List;
 
@@ -20,23 +25,23 @@ import java.util.List;
 
 public class RVGroupAdapter extends RecyclerView.Adapter<RVGroupAdapter.GroupViewHolder> {
 
-    List<Group> groups;
+    private Context context;
+    private List<Group> groups;
 
-    public RVGroupAdapter(List<Group> groups){
+    public RVGroupAdapter(Context context, List<Group> groups){
+        this.context = context;
         this.groups = groups;
     }
 
     @Override
     public GroupViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.fragment_groups_carview, parent, false);
-        GroupViewHolder gvh = new GroupViewHolder(v);
-        return gvh;
+        return new GroupViewHolder(v);
     }
 
     @Override
     public void onBindViewHolder(GroupViewHolder groupViewHolder, int position) {
-        groupViewHolder.groupName.setText(groups.get(position).getName());
-        groupViewHolder.groupPhoto.setImageResource(groups.get(position).getPhotoId());
+        groupViewHolder.setDetails(context,groups.get(position).getName(),groups.get(position).getImageUrl());
     }
 
     @Override
@@ -66,6 +71,34 @@ public class RVGroupAdapter extends RecyclerView.Adapter<RVGroupAdapter.GroupVie
             groupPhoto = itemView.findViewById(R.id.ivGroupPhoto);
         }
 
+        public void setDetails(final Context context, String name, final String imageUrl) {
+            groupName.setText(name);
+
+
+            Picasso.with(context).load(imageUrl).into(groupPhoto, new Callback() {
+                @Override
+                public void onSuccess() {
+                    itemView.findViewById(R.id.homeprogress).setVisibility(View.GONE);
+                }
+                @Override
+                public void onError() {
+                    Picasso.with(context)
+                            .load(imageUrl)
+                            .networkPolicy(NetworkPolicy.OFFLINE)
+                            .into(groupPhoto, new Callback() {
+                                @Override
+                                public void onSuccess() {
+                                    itemView.findViewById(R.id.homeprogress).setVisibility(View.GONE);
+                                }
+
+                                @Override
+                                public void onError() {
+                                    Log.v("Picasso","No se ha podido cargar la foto");
+                                }
+                            });
+                }
+            });
+        }
     }
 }
 

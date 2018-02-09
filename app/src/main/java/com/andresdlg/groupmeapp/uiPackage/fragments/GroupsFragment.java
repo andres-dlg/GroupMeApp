@@ -18,6 +18,13 @@ import com.andresdlg.groupmeapp.Adapters.RVGroupAdapter;
 import com.andresdlg.groupmeapp.DialogFragments.HeaderDialogFragment;
 import com.andresdlg.groupmeapp.Entities.Group;
 import com.andresdlg.groupmeapp.R;
+import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FirebaseStorage;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,6 +37,9 @@ public class GroupsFragment extends Fragment implements View.OnClickListener {
 
     TextView tvNoGroups;
     RVGroupAdapter adapter;
+    DatabaseReference mUserGroupsRef;
+    DatabaseReference groupsRef;
+    List<Group> groups;
 
     @Nullable
     @Override
@@ -42,28 +52,69 @@ public class GroupsFragment extends Fragment implements View.OnClickListener {
     }
 
     @Override
-    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+    public void onViewCreated(final View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        final List<Group> groups = new ArrayList<>();
+        groups = new ArrayList<>();
 
         //Recicler view
         RecyclerView rv = view.findViewById(R.id.rvGroups);
         rv.setHasFixedSize(true); //El tamaño queda fijo, mejora el desempeño
+        LinearLayoutManager llm = new LinearLayoutManager(getContext());
+        rv.setLayoutManager(llm);
 
         //Floating action button
         FloatingActionButton mFloatingActionButton = view.findViewById(R.id.fabGroups);
         mFloatingActionButton.setOnClickListener(this);
 
-        //Linear Layout Manager para manejar el recicler view
-        LinearLayoutManager llm = new LinearLayoutManager(getContext());
-        rv.setLayoutManager(llm);
+        groupsRef = FirebaseDatabase.getInstance().getReference("Groups");
 
-        adapter = new RVGroupAdapter(groups);
+        mUserGroupsRef = FirebaseDatabase.getInstance().getReference("Users").child(StaticFirebaseSettings.currentUserId).child("groups");
+        mUserGroupsRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for(DataSnapshot data : dataSnapshot.getChildren()){
+                    getGroup(data.getKey());
+                    view.findViewById(R.id.tvNoGroups).setVisibility(View.INVISIBLE);
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
+        adapter = new RVGroupAdapter(getContext(),groups);
         rv.setAdapter(adapter);
 
         tvNoGroups = view.findViewById(R.id.tvNoGroups);
         checkGroupsQuantity();
+    }
+
+    private void getGroup(String key) {
+        DatabaseReference groupRef = groupsRef.child(key);
+        groupRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                boolean contains = false;
+                Group u = dataSnapshot.getValue(Group.class);
+                for(Group g : groups){
+                    if(g.getGroupKey().equals(u.getGroupKey())){
+                        contains = true;
+                    }
+                }
+                if(!contains){
+                    groups.add(u);
+                    adapter.notifyDataSetChanged();
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
     }
 
     private void checkGroupsQuantity() {

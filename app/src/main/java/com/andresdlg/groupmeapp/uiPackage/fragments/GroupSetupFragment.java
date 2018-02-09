@@ -71,6 +71,8 @@ public class GroupSetupFragment extends Fragment {
                 .setCropShape(CropImageView.CropShape.RECTANGLE)
                 .setAspectRatio(16,9)
                 .setFixAspectRatio(true)
+                //.setMaxCropResultSize(480,270)
+                .setRequestedSize(1280,720, CropImageView.RequestSizeOptions.RESIZE_INSIDE)
                 .start(getContext(),this);
     }
 
