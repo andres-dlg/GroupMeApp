@@ -27,6 +27,8 @@ import android.widget.Toast;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.andresdlg.groupmeapp.R;
 import com.andresdlg.groupmeapp.Utils.GroupStatus;
+import com.andresdlg.groupmeapp.Utils.NotificationStatus;
+import com.andresdlg.groupmeapp.Utils.NotificationTypes;
 import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
 import com.andresdlg.groupmeapp.uiPackage.fragments.GroupAddMembersFragment;
 import com.andresdlg.groupmeapp.uiPackage.fragments.GroupSetupFragment;
@@ -40,6 +42,7 @@ import com.ogaclejapan.smarttablayout.utils.v4.FragmentPagerItemAdapter;
 import com.ogaclejapan.smarttablayout.utils.v4.FragmentPagerItems;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -142,8 +145,6 @@ public class HeaderDialogFragment extends DialogFragment implements GroupAddMemb
                         .badgeTitle("with")
                         .build()
         );
-
-
         navigationTabBar.setModels(models);
         navigationTabBar.setViewPager(viewPager, 0);
         navigationTabBar.setInactiveColor(getResources().getColor(R.color.cardview_dark_background));
@@ -246,7 +247,7 @@ public class HeaderDialogFragment extends DialogFragment implements GroupAddMemb
 
     private void createGroupData(String groupKey, String name, String obj, List<String> userIds) {
 
-        userIds.add(StaticFirebaseSettings.currentUserId);
+        //userIds.add(StaticFirebaseSettings.currentUserId);
 
         Map<Object,Object> map = new HashMap<>();
         map.put("name", name);
@@ -262,18 +263,50 @@ public class HeaderDialogFragment extends DialogFragment implements GroupAddMemb
             }
         });
 
+
         Map<String,Object> map2;
+
+        if(!userIds.isEmpty()){
+            map2 = new HashMap<>();
+            map2.put("status", GroupStatus.PENDING);
+
+            for(final String id : userIds){
+                mUsersDatabase.child(id).child("groups").child(groupKey).updateChildren(map2).addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Toast.makeText(getContext(),"Grupo guardado en "+id,Toast.LENGTH_SHORT).show();
+                    }
+                });
+
+                DatabaseReference userToNotifications = mUsersDatabase.child(id).child("notifications");
+                String notificationKey = userToNotifications.push().getKey();
+                Map<String,Object> notification = new HashMap<>();
+                notification.put("notificationKey",notificationKey);
+                notification.put("title","Invitación a grupo");
+                notification.put("message","Has recibido una invitación para unirte al grupo " + name);
+                notification.put("from", groupKey);
+                notification.put("state", NotificationStatus.UNREAD);
+                notification.put("date", Calendar.getInstance().getTime());
+                notification.put("type", NotificationTypes.GROUP_INVITATION);
+
+                userToNotifications.child(notificationKey).setValue(notification).addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Toast.makeText(getContext(), "Invitación de grupo enviada", Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
+        }
+
         map2 = new HashMap<>();
         map2.put("status", GroupStatus.ACCEPTED);
+        mUsersDatabase.child(StaticFirebaseSettings.currentUserId).child("groups").child(groupKey).updateChildren(map2).addOnSuccessListener(new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void aVoid) {
+                Toast.makeText(getContext(),"Grupo guardado en "+StaticFirebaseSettings.currentUserId,Toast.LENGTH_SHORT).show();
+            }
+        });
 
-        for(final String id : userIds){
-            mUsersDatabase.child(id).child("groups").child(groupKey).updateChildren(map2).addOnSuccessListener(new OnSuccessListener<Void>() {
-                @Override
-                public void onSuccess(Void aVoid) {
-                    Toast.makeText(getContext(),"Grupo guardado en "+id,Toast.LENGTH_SHORT).show();
-                }
-            });
-        }
     }
 
 

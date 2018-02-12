@@ -1,6 +1,12 @@
 package com.andresdlg.groupmeapp.Adapters;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
+import android.os.Bundle;
+import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -12,6 +18,7 @@ import android.widget.TextView;
 
 import com.andresdlg.groupmeapp.Entities.Group;
 import com.andresdlg.groupmeapp.R;
+import com.andresdlg.groupmeapp.uiPackage.GroupActivity;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
@@ -41,7 +48,7 @@ public class RVGroupAdapter extends RecyclerView.Adapter<RVGroupAdapter.GroupVie
 
     @Override
     public void onBindViewHolder(GroupViewHolder groupViewHolder, int position) {
-        groupViewHolder.setDetails(context,groups.get(position).getName(),groups.get(position).getImageUrl());
+        groupViewHolder.setDetails(context,groups.get(position).getName(),groups.get(position).getImageUrl(),groups.get(position).getGroupKey());
     }
 
     @Override
@@ -71,10 +78,8 @@ public class RVGroupAdapter extends RecyclerView.Adapter<RVGroupAdapter.GroupVie
             groupPhoto = itemView.findViewById(R.id.ivGroupPhoto);
         }
 
-        public void setDetails(final Context context, String name, final String imageUrl) {
+        public void setDetails(final Context context, final String name, final String imageUrl, final String groupKey) {
             groupName.setText(name);
-
-
             Picasso.with(context).load(imageUrl).into(groupPhoto, new Callback() {
                 @Override
                 public void onSuccess() {
@@ -96,6 +101,22 @@ public class RVGroupAdapter extends RecyclerView.Adapter<RVGroupAdapter.GroupVie
                                     Log.v("Picasso","No se ha podido cargar la foto");
                                 }
                             });
+                }
+            });
+
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+
+                    Intent i = new Intent(context, GroupActivity.class);
+                    i.putExtra("groupImage", imageUrl);
+                    i.putExtra("groupName",name);
+                    i.putExtra("groupKey",groupKey);
+
+                    ActivityOptionsCompat options = ActivityOptionsCompat
+                            .makeSceneTransitionAnimation((Activity) context, (View)groupName,"groupName");
+                    //context.startActivity(i,options.toBundle());
+                    context.startActivity(i);
                 }
             });
         }

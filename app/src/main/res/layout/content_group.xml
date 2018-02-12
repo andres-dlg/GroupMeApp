@@ -8,14 +8,15 @@
     android:background="#FFFFFF"
     android:fitsSystemWindows="true"
     android:orientation="vertical"
-    android:theme="@style/AppTheme">
+    android:theme="@style/AppTheme"
+    android:layout_gravity="bottom">
 
     <android.support.v4.view.ViewPager
         android:id="@+id/viewpager"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
-        android:layout_marginTop="58dp"
+        android:layout_marginTop="30dp"
         android:layout_marginBottom="50dp"
         />
 
@@ -42,7 +43,6 @@
         android:background="@color/colorAccent"
         android:elevation="10dp"
         android:translationZ="10dp"
-        >
-    </View>
+        />
 
 </android.support.design.widget.CoordinatorLayout>

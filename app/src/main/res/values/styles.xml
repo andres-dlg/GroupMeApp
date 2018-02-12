@@ -5,6 +5,7 @@
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
+        <item name="android:windowContentTransitions">true</item>
     </style>
 
     <style name="AppTheme.NoActionBar">
@@ -18,7 +19,7 @@
         <item name="colorAccent">@color/celestito</item>
     </style>
 
-    <style name="AppTheme.NoActionBar3"  parent="AppTheme.NoActionBar">
+    <style name="AppTheme.NoActionBar3" parent="AppTheme.NoActionBar">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
         <!--  It should be true otherwise action mode will not overlay toolbar -->
@@ -44,8 +45,8 @@
     </style>
 
     <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
-    <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
 
+    <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
 
 
     <style name="MyDialogTheme" parent="Theme.AppCompat.Light.Dialog.Alert">

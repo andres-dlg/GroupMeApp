@@ -7,7 +7,7 @@
     android:weightSum="100">
 
     <RelativeLayout
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:clickable="true"
         android:focusable="true"
@@ -96,5 +96,14 @@
             android:layout_marginRight="15dp"
             android:background="@color/bg_add_photo" />
     </RelativeLayout>
+
+    <ImageButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/dots_vertical"
+        android:layout_gravity="center"
+        android:layout_marginRight="20dp"
+        android:background="#ffffff"
+        android:id="@+id/menu_btn"/>
 
 </LinearLayout>

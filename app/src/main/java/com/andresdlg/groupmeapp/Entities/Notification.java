@@ -8,7 +8,7 @@ import java.util.Date;
 
 public class Notification {
 
-
+    private String notificationKey;
     private Date date;
     private String from;
     private String message;
@@ -16,8 +16,8 @@ public class Notification {
     private String title;
     private String type;
 
-    private Notification(Date date, String from, String message, String state, String title, String type ){
-
+    private Notification(String notificationKey, Date date, String from, String message, String state, String title, String type ){
+        this.notificationKey = notificationKey;
         this.date = date;
         this.from = from;
         this.message = message;
@@ -76,5 +76,13 @@ public class Notification {
 
     public void setDate(Date date) {
         this.date = date;
+    }
+
+    public String getNotificationKey() {
+        return notificationKey;
+    }
+
+    public void setNotificationKey(String notificationKey) {
+        this.notificationKey = notificationKey;
     }
 }

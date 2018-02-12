@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
@@ -67,7 +68,6 @@ public class MainActivity extends AppCompatActivity
 
     //FIREBASE AUTHENTICATION FIELDS
     FirebaseAuth mAuth;
-    FirebaseAuth.AuthStateListener mAuthListener;
     FirebaseUser user;
 
     //FIREBASE DATABASE REFERENCE
@@ -80,15 +80,20 @@ public class MainActivity extends AppCompatActivity
 
     ValueEventListener valueEventListener;
 
-    SmartTabLayout viewPagerTab;
     ViewPager viewPager;
-    Resources res;
-    LayoutInflater inflater;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        TextView tv = findViewById(R.id.custom_title);
+        Typeface customFont = Typeface.createFromAsset(this.getAssets(),"fonts/Simplifica.ttf");
+        tv.setTypeface(customFont);
+        tv.setTextColor(getResources().getColor(R.color.colorAccent));
+        tv.setTextSize(30);
+        setSupportActionBar(toolbar);
 
         final String[] colors = getResources().getStringArray(R.array.default_preview);
 
@@ -141,74 +146,15 @@ public class MainActivity extends AppCompatActivity
                         .build()
         );
 
-
         navigationTabBar.setModels(models);
         navigationTabBar.setViewPager(viewPager, 0);
         navigationTabBar.setInactiveColor(getResources().getColor(R.color.cardview_dark_background));
         navigationTabBar.setIsSwiped(true);
         navigationTabBar.setIsTitled(true);
         navigationTabBar.setTitleMode(NavigationTabBar.TitleMode.ACTIVE);
-        navigationTabBar.setTypeface("@font/simplifica_font");
-        navigationTabBar.setTitleSize(25);
+        navigationTabBar.setTypeface(customFont);
+        navigationTabBar.setTitleSize(30);
         navigationTabBar.setIconSizeFraction((float) 0.5);
-
-
-        /*navigationTabBar.setTitleMode(NavigationTabBar.TitleMode.ACTIVE);
-        navigationTabBar.setBadgeGravity(NavigationTabBar.BadgeGravity.BOTTOM);
-        navigationTabBar.setBadgePosition(NavigationTabBar.BadgePosition.CENTER);
-        navigationTabBar.setTypeface("fonts/custom_font.ttf");
-        navigationTabBar.setIsBadged(true);
-        navigationTabBar.setIsTitled(true);
-        navigationTabBar.setIsTinted(true);
-        navigationTabBar.setIsBadgeUseTypeface(true);
-        navigationTabBar.setBadgeBgColor(Color.RED);
-        navigationTabBar.setBadgeTitleColor(Color.WHITE);
-        navigationTabBar.setIsSwiped(true);
-        navigationTabBar.setBgColor(Color.BLACK);
-        navigationTabBar.setBadgeSize(10);
-        navigationTabBar.setTitleSize(10);
-        navigationTabBar.setIconSizeFraction((float) 0.5);*/
-
-
-        /*inflater = LayoutInflater.from(this);
-        res = getResources();
-
-        viewPagerTab = findViewById(R.id.viewpagertab);
-        viewPagerTab.setCustomTabView(new SmartTabLayout.TabProvider() {
-            @Override
-            public View createTabView(ViewGroup container, int position, PagerAdapter adapter) {
-                View itemView = inflater.inflate(R.layout.tab_icon, container, false);
-                ImageView icon = (ImageView) itemView.findViewById(R.id.custom_tab_icon);
-
-                //Obtengo las metricas de la pantalla
-                DisplayMetrics metrics = new DisplayMetrics();
-                getWindowManager().getDefaultDisplay().getMetrics(metrics);
-
-                //Divido por la cantidad de fragmentos y determino el ancho del imageview que va en
-                // cada tab
-                icon.getLayoutParams().width = metrics.widthPixels / 4;
-
-                switch (position) {
-                    case 0:
-                        icon.setImageDrawable(res.getDrawable(R.drawable.newspaper));
-                        break;
-                    case 1:
-                        icon.setImageDrawable(res.getDrawable(R.drawable.account_multiple));
-                        break;
-                    case 2:
-                        icon.setImageDrawable(res.getDrawable(R.drawable.bell));
-                        break;
-                    case 3:
-                        icon.setImageDrawable(res.getDrawable(R.drawable.message));
-                        break;
-                    default:
-                        throw new IllegalStateException("Invalid position: " + position);
-                }
-                return itemView;
-            }
-        });
-
-        viewPagerTab.setViewPager(viewPager);*/
 
         //Posiciono mi activity en el fragment
         String fragment = getIntent().getStringExtra("fragment");
@@ -220,9 +166,6 @@ public class MainActivity extends AppCompatActivity
                 viewPager.setCurrentItem(3);
             }
         }
-
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
 
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -242,6 +185,7 @@ public class MainActivity extends AppCompatActivity
         mStorageReference = FirebaseStorage.getInstance().getReference();
     }
 
+
     private void fillDrawer(Users users) {
         View hView =  navigationView.getHeaderView(0);
         TextView nav_user = hView.findViewById(R.id.nav_user);
@@ -260,49 +204,6 @@ public class MainActivity extends AppCompatActivity
 
     }
 
-    /*@Override
-    public void onConfigurationChanged(Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
-
-        viewPagerTab = findViewById(R.id.viewpagertab);
-        viewPagerTab.setCustomTabView(new SmartTabLayout.TabProvider() {
-            @Override
-            public View createTabView(ViewGroup container, int position, PagerAdapter adapter) {
-                View itemView = inflater.inflate(R.layout.tab_icon, container, false);
-                ImageView icon = (ImageView) itemView.findViewById(R.id.custom_tab_icon);
-
-                //Obtengo las metricas de la pantalla
-                DisplayMetrics metrics = new DisplayMetrics();
-                getWindowManager().getDefaultDisplay().getMetrics(metrics);
-
-                //Divido por la cantidad de fragmentos y determino el ancho del imageview que va en
-                // cada tab
-                icon.getLayoutParams().width = metrics.widthPixels / 4;
-
-                switch (position) {
-                    case 0:
-                        icon.setImageDrawable(res.getDrawable(R.drawable.newspaper));
-                        break;
-                    case 1:
-                        icon.setImageDrawable(res.getDrawable(R.drawable.account_multiple));
-                        break;
-                    case 2:
-                        icon.setImageDrawable(res.getDrawable(R.drawable.bell));
-                        break;
-                    case 3:
-                        icon.setImageDrawable(res.getDrawable(R.drawable.message));
-                        break;
-                    default:
-                        throw new IllegalStateException("Invalid position: " + position);
-                }
-                return itemView;
-            }
-        });
-
-        viewPagerTab.setViewPager(viewPager);
-
-    }*/
-
     @Override
     protected void onStart() {
         super.onStart();
@@ -315,7 +216,6 @@ public class MainActivity extends AppCompatActivity
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     // Si no configuro su perfil le abro la pantalla de configuración
                     // sino no hago nada y muestro la pantalla principal
-                    //if(!dataSnapshot.hasChild(user.getUid())){
                     if(!dataSnapshot.child(user.getUid()).child("alias").exists()){
                         Intent moveToSetupProfile = new Intent(MainActivity.this,UserProfileSetupActivity.class);
                         moveToSetupProfile.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -346,7 +246,6 @@ public class MainActivity extends AppCompatActivity
             mDatabaseRef.addListenerForSingleValueEvent(valueEventListener);
         }
     }
-
 
     @Override
     public void onBackPressed() {
@@ -380,8 +279,6 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-
-
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
@@ -395,7 +292,6 @@ public class MainActivity extends AppCompatActivity
         } else if (id == R.id.nav_share) {
 
         } else if (id == R.id.nav_log_out){
-
             Map<String,Object> tokenMap = new HashMap<>();
             tokenMap.put("token_id","");
 
@@ -413,11 +309,8 @@ public class MainActivity extends AppCompatActivity
                     startActivity(moveToLogin);
                     overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
                     finish();
-
                 }
             });
-
-
         }
 
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
@@ -433,7 +326,6 @@ public class MainActivity extends AppCompatActivity
         overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
         finish();
     }
-
 
     private void showHeaderDialogFragment() {
         FragmentManager fragmentManager = getSupportFragmentManager();

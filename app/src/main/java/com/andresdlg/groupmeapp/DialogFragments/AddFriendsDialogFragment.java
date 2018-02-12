@@ -362,6 +362,7 @@ public class AddFriendsDialogFragment extends DialogFragment {
                             DatabaseReference userToNotifications = userTo.child("notifications");
                             String notificationKey = userToNotifications.push().getKey();
                             Map<String,Object> notification = new HashMap<>();
+                            notification.put("notificationKey",notificationKey);
                             notification.put("title","Solicitud de amistad");
                             notification.put("message","Has recibido una solicitud de amistad de ");
                             notification.put("from",userFrom);

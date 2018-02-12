@@ -1,4 +1,4 @@
-package com.andresdlg.groupmeapp.uiPackage;
+package com.andresdlg.groupmeapp.uiPackage.ReciclerViewClickListener;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;

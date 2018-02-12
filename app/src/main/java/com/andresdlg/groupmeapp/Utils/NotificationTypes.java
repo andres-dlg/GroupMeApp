@@ -8,4 +8,5 @@ public enum NotificationTypes {
     FRIENDSHIP,
     MESSAGE,
     NEWS,
+    GROUP_INVITATION,
 }

@@ -38,6 +38,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintBottom_toTopOf="@+id/tvGroupName"
             app:layout_constraintVertical_chainStyle="spread_inside"
+            android:transitionName="groupPhoto"
             />
 
         <ImageView
@@ -59,7 +60,8 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintBottom_toBottomOf="@+id/ivGroupPhoto"
             tools:layout_editor_absoluteX="16dp"
-            android:textSize="20sp"/>
+            android:textSize="20sp"
+            android:transitionName="groupName"/>
 
         <ImageButton
             android:layout_width="wrap_content"
