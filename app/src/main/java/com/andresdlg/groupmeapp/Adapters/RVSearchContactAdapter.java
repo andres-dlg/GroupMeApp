@@ -17,6 +17,7 @@ import android.widget.TextView;
 
 import com.andresdlg.groupmeapp.Entities.Users;
 import com.andresdlg.groupmeapp.R;
+import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
@@ -188,7 +189,11 @@ public class RVSearchContactAdapter extends RecyclerView.Adapter<RVSearchContact
             mContactAlias.setText(String.format("@%s", contactAlias));
             mContactAlias.setSelected(true);
 
-            mContactName.setText(contactName);
+            if(iduser.equals(StaticFirebaseSettings.currentUserId)){
+                mContactName.setText("Tú");
+            }else{
+                mContactName.setText(contactName);
+            }
             mContactName.setSelected(true);
 
             Picasso.with(context)

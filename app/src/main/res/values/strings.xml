@@ -56,6 +56,8 @@
 
     <string name="default_notification_channel_id">ADLG_CH_01</string>
     <string name="title_activity_group">GroupActivity</string>
+    <string name="sub_groups_fragment">Sub Grupos</string>
+    <string name="no_sub_groups">No hay Subgrupos</string>
 
 
 </resources>

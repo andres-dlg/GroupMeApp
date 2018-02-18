@@ -1,26 +1,19 @@
 package com.andresdlg.groupmeapp.uiPackage;
 
-import android.content.Intent;
-import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Typeface;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.graphics.drawable.DrawerArrowDrawable;
 import android.support.v7.widget.Toolbar;
-import android.view.View;
-import android.widget.ImageView;
 
-import com.andresdlg.groupmeapp.Entities.Group;
+import com.andresdlg.groupmeapp.Entities.Users;
 import com.andresdlg.groupmeapp.R;
+import com.andresdlg.groupmeapp.Utils.GroupStatus;
+import com.andresdlg.groupmeapp.firebasePackage.FireApp;
 import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
-import com.andresdlg.groupmeapp.uiPackage.fragments.GroupsFragment;
 import com.andresdlg.groupmeapp.uiPackage.fragments.NewsFragment;
+import com.andresdlg.groupmeapp.uiPackage.fragments.SubGroupsFragment;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -31,12 +24,15 @@ import com.ogaclejapan.smarttablayout.utils.v4.FragmentPagerItemAdapter;
 import com.ogaclejapan.smarttablayout.utils.v4.FragmentPagerItems;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import devlight.io.library.ntb.NavigationTabBar;
 
 public class GroupActivity extends AppCompatActivity {
 
     ViewPager viewPager;
+    String groupKey;
+    List<Users> groupUsers;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,7 +41,7 @@ public class GroupActivity extends AppCompatActivity {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        String groupKey = getIntent().getStringExtra("groupKey");
+        groupKey = getIntent().getStringExtra("groupKey");
         String groupName = getIntent().getStringExtra("groupName");
         String groupPhotoUrl = getIntent().getStringExtra("groupImage");
         getSupportActionBar().setTitle(groupName);
@@ -57,10 +53,12 @@ public class GroupActivity extends AppCompatActivity {
 
         StaticFirebaseSettings.currentUserId = FirebaseAuth.getInstance().getUid();
 
+        ((FireApp) this.getApplication()).setGroupKey(groupKey);
+
         FragmentPagerItemAdapter adapter = new FragmentPagerItemAdapter(
                 getSupportFragmentManager(), FragmentPagerItems.with(this)
                 .add(R.string.news_fragment, NewsFragment.class)
-                .add(R.string.groups_fragment, GroupsFragment.class)
+                .add(R.string.sub_groups_fragment, SubGroupsFragment.class)
                 /*.add(R.string.notifications_fragment, NotificationFragment.class)
                 .add(R.string.messages_fragment, MessagesFragment.class)*/
                 .create());
@@ -106,25 +104,58 @@ public class GroupActivity extends AppCompatActivity {
         navigationTabBar.setTitleSize(35);
         navigationTabBar.setIconSizeFraction((float) 0.5);
 
-        /*DatabaseReference groupRef = FirebaseDatabase.getInstance().getReference("Groups").child(groupKey);
-        groupRef.addListenerForSingleValueEvent(new ValueEventListener() {
+        groupUsers = new ArrayList<>();
+
+        //((FireApp) getApplicationContext()).setGroupKey(groupKey);
+
+        DatabaseReference groupRef = FirebaseDatabase.getInstance().getReference("Groups").child(groupKey).child("members");
+        groupRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-
-                Group g = dataSnapshot.getValue(Group.class);
+                for(DataSnapshot data : dataSnapshot.getChildren()){
+                    String s = data.getValue().toString();
+                    getUser(data.getValue().toString());
+                }
+                //((FireApp) getApplicationContext()).setGroupUsers(groupUsers);
             }
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
 
             }
-        });*/
+        });
+    }
 
+    private void getUser(String userId) {
+        DatabaseReference userRef = FirebaseDatabase.getInstance().getReference("Users").child(userId);
+        userRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if(dataSnapshot.child("groups").child(groupKey).exists()){
+                    if(dataSnapshot.child("groups").child(groupKey).child("status").getValue().toString().equals(GroupStatus.ACCEPTED.toString())){
+                        Users u = dataSnapshot.getValue(Users.class);
+                        groupUsers.add(u);
+                        ((FireApp) getApplicationContext()).setGroupUsers(groupUsers);
+                    }
+                }
+            }
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
     }
 
     @Override
     public void onBackPressed() {
         super.onBackPressed();
         supportFinishAfterTransition();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        ((FireApp) this.getApplication()).setGroupKey(null);
+        ((FireApp) this.getApplication()).setGroupUsers(null);
     }
 }

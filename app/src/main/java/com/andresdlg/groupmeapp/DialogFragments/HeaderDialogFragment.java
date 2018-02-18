@@ -1,10 +1,10 @@
 package com.andresdlg.groupmeapp.DialogFragments;
 
 import android.app.Dialog;
-import android.app.ProgressDialog;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
@@ -23,10 +23,9 @@ import android.view.WindowManager;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import com.afollestad.materialdialogs.MaterialDialog;
 import com.andresdlg.groupmeapp.R;
 import com.andresdlg.groupmeapp.Utils.GroupStatus;
+import com.andresdlg.groupmeapp.Utils.GroupType;
 import com.andresdlg.groupmeapp.Utils.NotificationStatus;
 import com.andresdlg.groupmeapp.Utils.NotificationTypes;
 import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
@@ -55,7 +54,6 @@ import devlight.io.library.ntb.NavigationTabBar;
 
 public class HeaderDialogFragment extends DialogFragment implements GroupAddMembersFragment.OnUserSelectionSetListener, GroupSetupFragment.OnGroupImageSetListener{
 
-    private ViewPager viewPager;
     private List<Fragment> fragments;
 
     //FIREBASE DATABASE FIELDS
@@ -68,22 +66,24 @@ public class HeaderDialogFragment extends DialogFragment implements GroupAddMemb
     TextView objetiveText;
     private Uri imageUrl;
 
-    //PROGRESS DIALOG
-    //ProgressDialog mProgress;
-
-    //MaterialDialog mProgress;
-
     ProgressBar mProgressBar;
 
-    private StorageReference mGroupsStorage;
+    GroupType type;
+    String parentGroupKey;
 
-
-    public HeaderDialogFragment(){
+    public HeaderDialogFragment(GroupType type){
         setRetainInstance(true);
+        this.type = type;
+    }
+
+    public HeaderDialogFragment(GroupType type, String groupKey){
+        this.parentGroupKey = groupKey;
+        setRetainInstance(true);
+        this.type = type;
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_groups_dialog, container, false);
 
@@ -104,7 +104,13 @@ public class HeaderDialogFragment extends DialogFragment implements GroupAddMemb
         final String[] colors = getResources().getStringArray(R.array.default_preview);
 
         Toolbar toolbar = view.findViewById(R.id.toolbar);
-        toolbar.setTitle("Nuevo grupo");
+
+        if(type == GroupType.GROUP){
+            toolbar.setTitle("Nuevo grupo");
+        }else{
+            toolbar.setTitle("Nuevo subgrupo");
+        }
+
 
         ((AppCompatActivity)getActivity()).setSupportActionBar(toolbar);
 
@@ -123,11 +129,11 @@ public class HeaderDialogFragment extends DialogFragment implements GroupAddMemb
                 .add("Add contacts", GroupAddMembersFragment.class)
                 .create());
 
-        viewPager = view.findViewById(R.id.viewpager);
+        ViewPager viewPager = view.findViewById(R.id.viewpager);
         viewPager.setAdapter(adapter);
         //viewPager.setOffscreenPageLimit(2);
 
-        final NavigationTabBar navigationTabBar = (NavigationTabBar) view.findViewById(R.id.ntb);
+        final NavigationTabBar navigationTabBar =  view.findViewById(R.id.ntb);
         final ArrayList<NavigationTabBar.Model> models = new ArrayList<>();
         models.add(
                 new NavigationTabBar.Model.Builder(
@@ -158,6 +164,7 @@ public class HeaderDialogFragment extends DialogFragment implements GroupAddMemb
         return view;
     }
 
+    @NonNull
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         // The only reason you might override this method when using onCreateView() is
@@ -200,45 +207,121 @@ public class HeaderDialogFragment extends DialogFragment implements GroupAddMemb
     }
 
     private void saveGroup() {
+
         fragments = new ArrayList<>();
         fragments = getChildFragmentManager().getFragments();
 
         if(validateFields()){
+            String groupKey = null;
+            String subGroupKey = null;
+            if(type == GroupType.GROUP) {
+                groupKey = mGroupsDatabase.push().getKey();
+            }else {
+                subGroupKey = mGroupsDatabase.child(parentGroupKey).child("subgroups").push().getKey();
+            }
 
-            final String groupKey = mGroupsDatabase.push().getKey();
-
-            /*mProgress = new ProgressDialog(getContext());
-            mProgress.setCancelable(true);
-            mProgress.setMessage("Espere por favor");
-            mProgress.setTitle("Guardando grupo");
-            mProgress.show();*/
-
-            /*mProgress = new MaterialDialog.Builder(getContext())
-                    .title("Guardando grupo")
-                    .content("Espere por favor")
-                    .progress(true,0)
-                    .show();*/
             mProgressBar.setVisibility(View.VISIBLE);
 
-            if(imageUrl != null){
-                mGroupsStorage = mStorageReference.child("Groups").child(groupKey).child(imageUrl.getLastPathSegment());
-                mGroupsStorage.putFile(imageUrl).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+            if(type == GroupType.GROUP){
+                if(imageUrl != null){
+                    StorageReference mGroupsStorage = mStorageReference.child("Groups").child(groupKey).child(imageUrl.getLastPathSegment());
+                    final String finalGroupKey = groupKey;
+                    mGroupsStorage.putFile(imageUrl).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                        @Override
+                        public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                            imageUrl = taskSnapshot.getDownloadUrl();
+                            createGroupData(finalGroupKey,nameText.getText().toString(),objetiveText.getText().toString(),userIds);
+                            mProgressBar.setVisibility(View.INVISIBLE);
+                            dismiss();
+                        }
+                    });
+                }else{
+                    final String finalGroupKey1 = groupKey;
+                    mStorageReference.child("new_user.png").getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                        @Override
+                        public void onSuccess(Uri uri) {
+                            imageUrl = uri;
+                            createGroupData(finalGroupKey1,nameText.getText().toString(),objetiveText.getText().toString(),userIds);
+                            mProgressBar.setVisibility(View.INVISIBLE);
+                            dismiss();
+                        }
+                    });
+                }
+            }
+
+            if(type == GroupType.SUBGROUP){
+                if(imageUrl != null){
+                    StorageReference mSubGroupsStorage = mStorageReference.child("Groups").child(parentGroupKey).child(subGroupKey).child(imageUrl.getLastPathSegment());
+                    final String finalSubGroupKey = subGroupKey;
+                    mSubGroupsStorage.putFile(imageUrl).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                        @Override
+                        public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                            imageUrl = taskSnapshot.getDownloadUrl();
+                            createSubGroupData(finalSubGroupKey,nameText.getText().toString(),userIds);
+                            mProgressBar.setVisibility(View.INVISIBLE);
+                            dismiss();
+                        }
+                    });
+                }else{
+                    final String finalSubGroupKey1 = subGroupKey;
+                    mStorageReference.child("new_user.png").getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                        @Override
+                        public void onSuccess(Uri uri) {
+                            imageUrl = uri;
+                            createSubGroupData(finalSubGroupKey1,nameText.getText().toString(),userIds);
+                            mProgressBar.setVisibility(View.INVISIBLE);
+                            dismiss();
+                        }
+                    });
+                }
+            }
+
+        }
+    }
+
+    private void createSubGroupData(String subGroupKey, String name, List<String> userIds) {
+
+        Map<Object,Object> map = new HashMap<>();
+        map.put("name", name);
+        map.put("imageUrl",imageUrl.toString());
+        map.put("members", userIds);
+        map.put("groupKey", subGroupKey);
+
+        mGroupsDatabase.child(parentGroupKey).child("subgroups").child(subGroupKey).setValue(map).addOnSuccessListener(new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void aVoid) {
+                Toast.makeText(getContext(),"Subgrupo guardado",Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        Map<String,Object> map2;
+
+        if(!userIds.isEmpty()){
+            map2 = new HashMap<>();
+            map2.put("status", GroupStatus.ACCEPTED);
+            for(final String id : userIds){
+                mUsersDatabase.child(id).child("groups").child(parentGroupKey).child("subgroups").child(subGroupKey).updateChildren(map2).addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
-                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                        imageUrl = taskSnapshot.getDownloadUrl();
-                        createGroupData(groupKey,nameText.getText().toString(),objetiveText.getText().toString(),userIds);
-                        mProgressBar.setVisibility(View.INVISIBLE);
-                        dismiss();
+                    public void onSuccess(Void aVoid) {
+                        Toast.makeText(getContext(),"Subgrupo guardado en "+id,Toast.LENGTH_SHORT).show();
                     }
                 });
-            }else{
-                mStorageReference.child("new_user.png").getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+
+                DatabaseReference userToNotifications = mUsersDatabase.child(id).child("notifications");
+                String notificationKey = userToNotifications.push().getKey();
+                Map<String,Object> notification = new HashMap<>();
+                notification.put("notificationKey",notificationKey);
+                notification.put("title","Invitación a grupo");
+                notification.put("message","Te han añadido al subgrupo " + name);
+                notification.put("from", parentGroupKey);
+                notification.put("state", NotificationStatus.UNREAD);
+                notification.put("date", Calendar.getInstance().getTime());
+                notification.put("type", NotificationTypes.GROUP_INVITATION);
+
+                userToNotifications.child(notificationKey).setValue(notification).addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
-                    public void onSuccess(Uri uri) {
-                        imageUrl = uri;
-                        createGroupData(groupKey,nameText.getText().toString(),objetiveText.getText().toString(),userIds);
-                        mProgressBar.setVisibility(View.INVISIBLE);
-                        dismiss();
+                    public void onSuccess(Void aVoid) {
+                        Toast.makeText(getContext(), "Noti de agregación a subgrupo enviada", Toast.LENGTH_SHORT).show();
                     }
                 });
             }
@@ -247,7 +330,7 @@ public class HeaderDialogFragment extends DialogFragment implements GroupAddMemb
 
     private void createGroupData(String groupKey, String name, String obj, List<String> userIds) {
 
-        //userIds.add(StaticFirebaseSettings.currentUserId);
+        userIds.add(StaticFirebaseSettings.currentUserId);
 
         Map<Object,Object> map = new HashMap<>();
         map.put("name", name);
@@ -306,7 +389,6 @@ public class HeaderDialogFragment extends DialogFragment implements GroupAddMemb
                 Toast.makeText(getContext(),"Grupo guardado en "+StaticFirebaseSettings.currentUserId,Toast.LENGTH_SHORT).show();
             }
         });
-
     }
 
 
@@ -331,7 +413,6 @@ public class HeaderDialogFragment extends DialogFragment implements GroupAddMemb
         }
         super.onDestroyView();
     }
-
 
 
     @Override

@@ -22,6 +22,7 @@ import com.andresdlg.groupmeapp.DialogFragments.HeaderDialogFragment;
 import com.andresdlg.groupmeapp.Entities.Group;
 import com.andresdlg.groupmeapp.R;
 import com.andresdlg.groupmeapp.Utils.GroupStatus;
+import com.andresdlg.groupmeapp.Utils.GroupType;
 import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
 import com.andresdlg.groupmeapp.uiPackage.GroupActivity;
 import com.andresdlg.groupmeapp.uiPackage.ReciclerViewClickListener.RecyclerClick_Listener;
@@ -149,7 +150,7 @@ public class GroupsFragment extends Fragment implements View.OnClickListener{
 
     private void showHeaderDialogFragment() {
         FragmentManager fragmentManager = getFragmentManager();
-        HeaderDialogFragment newFragment = new HeaderDialogFragment();
+        HeaderDialogFragment newFragment = new HeaderDialogFragment(GroupType.GROUP);
         newFragment.setStyle(DialogFragment.STYLE_NORMAL,R.style.AppTheme_DialogFragment);
         FragmentTransaction transaction = fragmentManager.beginTransaction();
         transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);

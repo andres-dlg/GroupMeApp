@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
+    android:theme="@style/AppTheme.DialogFragment">
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/fabSubGroups"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:clickable="true"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:layout_marginBottom="15dp"
+        android:layout_marginRight="15dp"
+        android:tint="@color/common_google_signin_btn_text_dark"
+        app:backgroundTint="@color/colorPrimaryDark"
+        app:fabSize="normal"
+        app:srcCompat="@android:drawable/ic_input_add" />
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/rvSubGroups"
+        android:layout_height="match_parent"
+        android:layout_width="match_parent">
+    </android.support.v7.widget.RecyclerView>
+
+    <TextView
+        android:id="@+id/tvNoGroups"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:text="@string/no_sub_groups"
+        android:textSize="40sp"
+        android:textColor="#e0e0e0" />
+
+</RelativeLayout>

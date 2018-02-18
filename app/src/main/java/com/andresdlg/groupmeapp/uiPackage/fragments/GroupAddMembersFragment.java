@@ -20,6 +20,7 @@ import com.andresdlg.groupmeapp.Adapters.RVSearchContactAdapter;
 import com.andresdlg.groupmeapp.Entities.Users;
 import com.andresdlg.groupmeapp.R;
 import com.andresdlg.groupmeapp.Utils.FriendshipStatus;
+import com.andresdlg.groupmeapp.firebasePackage.FireApp;
 import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
 import com.andresdlg.groupmeapp.uiPackage.ReciclerViewClickListener.RecyclerClick_Listener;
 import com.andresdlg.groupmeapp.uiPackage.ReciclerViewClickListener.RecyclerTouchListener;
@@ -57,6 +58,8 @@ public class GroupAddMembersFragment extends Fragment implements RVSearchContact
 
     OnUserSelectionSetListener mOnUserSelectionSetListener;
 
+    List<Users> groupUsers;
+
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
@@ -71,6 +74,7 @@ public class GroupAddMembersFragment extends Fragment implements RVSearchContact
         rvAddGroupMember.setItemAnimator(new DefaultItemAnimator());
 
         users = new ArrayList<>();
+        //groupUsers = new ArrayList<>();
 
         LinearLayoutManager llm = new LinearLayoutManager(getContext());
         llm.setOrientation(LinearLayoutManager.VERTICAL);
@@ -111,6 +115,10 @@ public class GroupAddMembersFragment extends Fragment implements RVSearchContact
         DisplayMetrics displayMetrics = getContext().getResources().getDisplayMetrics();
         pxUp = Math.round(50 * (displayMetrics.xdpi) / DisplayMetrics.DENSITY_DEFAULT);
 
+
+        //groupKey = ((FireApp) getActivity().getApplication()).getGroupKey();
+        groupUsers = ((FireApp) getActivity().getApplication()).getGroupUsers();
+
         //Aca arranca el multiselect
         implementRecyclerViewClickListeners();
 
@@ -150,6 +158,9 @@ public class GroupAddMembersFragment extends Fragment implements RVSearchContact
                         getUser(postSnapshot.getKey());
                     }
                 }
+                if(groupUsers != null){
+                    getUser(StaticFirebaseSettings.currentUserId);
+                }
             }
 
             @Override
@@ -165,11 +176,21 @@ public class GroupAddMembersFragment extends Fragment implements RVSearchContact
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 Users u = dataSnapshot.getValue(Users.class);
-                if(!users.contains(u)){
-                    users.add(u);
-                    rvSearchContactAdapter.notifyDataSetChanged();
-                    //rvSearchContactAdapter.setUsers(users);
+                if(groupUsers == null){
+                    if(!users.contains(u)){
+                        users.add(u);
+                        rvSearchContactAdapter.notifyDataSetChanged();
+                        //rvSearchContactAdapter.setUsers(users);
+                    }
+                }else{
+                    if(!users.contains(u) && validateExistingMembers(u)){
+                        users.add(u);
+                        rvSearchContactAdapter.notifyDataSetChanged();
+                        //rvSearchContactAdapter.setUsers(users);
+                    }
                 }
+
+
             }
 
             @Override
@@ -177,6 +198,15 @@ public class GroupAddMembersFragment extends Fragment implements RVSearchContact
 
             }
         });
+    }
+
+    private boolean validateExistingMembers(Users u) {
+        for(Users user : groupUsers){
+            if(u.getUserid().equals(user.getUserid())){
+                return true;
+            }
+        }
+        return false;
     }
 
     private void onListItemSelect(int position) {

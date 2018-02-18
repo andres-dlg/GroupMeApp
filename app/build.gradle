@@ -50,7 +50,7 @@ dependencies {
     compile 'com.miguelcatalan:materialsearchview:1.4.0'
     compile 'com.squareup.okhttp:okhttp:2.4.0'
 
-    compile 'com.afollestad.material-dialogs:core:0.9.6.0'
+    compile 'com.thoughtbot:expandablecheckrecyclerview:1.4'
 
 
 }
