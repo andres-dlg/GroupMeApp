@@ -86,26 +86,6 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
         CheckedTextView ctv;
 
         SubGroupViewHolder(View itemView,int position,ViewGroup parent) {
-            /*super(itemView);
-            context = itemView.getContext();
-            textView_parentName = itemView.findViewById(R.id.tv_parentName);
-            linearLayout_childItems = itemView.findViewById(R.id.ll_child_items);
-            linearLayout_childItems.setVisibility(View.GONE);
-            if(subGroups.get(position).getTasks() != null){
-                int intMaxNoOfChild = subGroups.get(position).getTasks().size();
-                for (int indexView = 0; indexView < intMaxNoOfChild; indexView++) {
-                    TextView textView = new TextView(context);
-                    textView.setId(indexView);
-                    textView.setPadding(30, 30, 0, 30);
-                    textView.setGravity(Gravity.CENTER);
-                    textView.setBackground(ContextCompat.getDrawable(context, R.drawable.background_sub_module_text));
-                    LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-                    textView.setOnClickListener(this);
-                    linearLayout_childItems.addView(textView, layoutParams);
-                }
-                textView_parentName.setOnClickListener(this);
-            }*/
-
             super(itemView);
             context = itemView.getContext();
             textView_parentName = itemView.findViewById(R.id.tv_parentName);
@@ -115,28 +95,19 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
                 int intMaxNoOfChild = subGroups.get(position).getTasks().size();
                 for (int indexView = 0; indexView < intMaxNoOfChild; indexView++) {
                     View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.list_item_sub_group_task, parent, false);
-                    final FrameLayout fl = v.findViewById(R.id.fltask);
+                    FrameLayout fl = v.findViewById(R.id.fltask);
+                    fl.setOnClickListener(this);
                     ctv = fl.findViewById(R.id.list_item_multicheck_task_name);
                     ctv.setText(subGroups.get(position).getTasks().get(indexView).getName());
-                    //ctv.setOnClickListener(this);
                     ctv.setId(indexView);
-                    //ctv.setClickable(true);
                     ctv.setPadding(30, 30, 0, 30);
                     LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
                     int[] attrs = new int[]{R.attr.selectableItemBackground};
                     TypedArray typedArray = context.obtainStyledAttributes(attrs);
-
                     int backgroundResource = typedArray.getResourceId(0, 0);
                     typedArray.recycle();
                     fl.setBackgroundResource(backgroundResource);
-                    fl.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-                            ((CheckedTextView) fl.findViewById(R.id.list_item_multicheck_task_name)).toggle();
-                        }
-                    });
                     linearLayout_childItems.addView(fl, layoutParams);
-
                 }
                 textView_parentName.setOnClickListener(this);
             }
@@ -151,18 +122,8 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
                     linearLayout_childItems.setVisibility(View.VISIBLE);
                 }
             } else {
-                /*TextView textViewClicked = (TextView) view;
-                Toast.makeText(context, "" + textViewClicked.getText().toString(), Toast.LENGTH_SHORT).show();
-            */
-                //CheckedTextView chkBox = (CheckedTextView) findViewById(R.id.CheckedTextView01);
-                /*view.setOnClickListener(new View.OnClickListener() {
-                    public void onClick(View v)
-                    {
-                        CheckedTextView check = v.findViewById(R.id.list_item_multicheck_task_name);
-                        //((CheckedTextView) v).toggle();
-                        check.toggle();
-                    }
-                });*/
+                CheckedTextView chkBox = (CheckedTextView)((ViewGroup)view).getChildAt(1);
+                chkBox.toggle();
             }
         }
     }
