@@ -285,7 +285,7 @@ public class HeaderDialogFragment extends DialogFragment implements GroupAddMemb
         map.put("name", name);
         map.put("imageUrl",imageUrl.toString());
         map.put("members", userIds);
-        map.put("groupKey", subGroupKey);
+        map.put("subGroupKey", subGroupKey);
 
         mGroupsDatabase.child(parentGroupKey).child("subgroups").child(subGroupKey).setValue(map).addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override

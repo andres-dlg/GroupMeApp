@@ -1,23 +1,30 @@
 package com.andresdlg.groupmeapp.Entities;
 
-import com.thoughtbot.expandablerecyclerview.models.ExpandableGroup;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
  * Created by andresdlg on 17/02/18.
  */
 
-public class SubGroup extends ExpandableGroup<Task> {
+public class SubGroup implements Serializable{
 
     private String name;
+    private String imageUrl;
+    private String subGroupKey;
+    private List<String> members;
     private List<Task> tasks;
 
-    public SubGroup(String name, List<Task> tasks) {
-        super(name, tasks);
+    public SubGroup(String name, String imageUrl, String subGroupKey, List<String> members, List<Task> tasks) {
         this.name = name;
+        this.imageUrl = imageUrl;
+        this.subGroupKey = subGroupKey;
+        this.members = members;
         this.tasks = tasks;
     }
+
+    public SubGroup(){}
 
     public String getName() {
         return name;
@@ -33,5 +40,29 @@ public class SubGroup extends ExpandableGroup<Task> {
 
     public void setTasks(List<Task> tasks) {
         this.tasks = tasks;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+
+    public String getSubGroupKey() {
+        return subGroupKey;
+    }
+
+    public void setSubGroupKey(String subGroupKey) {
+        this.subGroupKey = subGroupKey;
+    }
+
+    public List<String> getMembers() {
+        return members;
+    }
+
+    public void setMembers(List<String> members) {
+        this.members = members;
     }
 }

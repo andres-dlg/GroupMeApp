@@ -12,15 +12,19 @@ import java.util.Calendar;
 public class Task implements Parcelable {
 
     private String name;
-    private Calendar startDate;
-    private Calendar endDate;
+    private String startDate;
+    private String endDate;
     private Boolean finished;
 
-    public Task(String name,Calendar startDate ,Calendar endDate, Boolean finished){
+    public Task(String name,String startDate ,String endDate, Boolean finished){
         this.name = name;
         this.startDate = startDate;
         this.endDate = endDate;
         this.finished = finished;
+    }
+
+    public Task(){
+
     }
 
     protected Task(Parcel in) {
@@ -47,19 +51,19 @@ public class Task implements Parcelable {
         this.name = name;
     }
 
-    public Calendar getStartDate() {
+    public String getStartDate() {
         return startDate;
     }
 
-    public void setStartDate(Calendar startDate) {
+    public void setStartDate(String startDate) {
         this.startDate = startDate;
     }
 
-    public Calendar getEndDate() {
+    public String getEndDate() {
         return endDate;
     }
 
-    public void setEndDate(Calendar endDate) {
+    public void setEndDate(String endDate) {
         this.endDate = endDate;
     }
 
@@ -84,11 +88,11 @@ public class Task implements Parcelable {
     @Override
     public int hashCode() {
         int result = getName() != null ? getName().hashCode() : 0;
-        result = 31 * result + (isFinished() ? 1 : 0);
+        result = 31 * result + (getFinished() ? 1 : 0);
         return result;
     }
 
-    public boolean isFinished() {
+    /*public boolean isFinished() {
         return finished;
-    }
+    }*/
 }

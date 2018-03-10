@@ -157,25 +157,4 @@ public class GroupsFragment extends Fragment implements View.OnClickListener{
         transaction.add(android.R.id.content, newFragment).addToBackStack(null).commit();
     }
 
-    /*private void implementRecyclerViewClickListeners() {
-        rv.addOnItemTouchListener(new RecyclerTouchListener(getContext(), rv, new RecyclerClick_Listener() {
-            @Override
-            public void onClick(View view, int position) {
-
-                Intent i = new Intent(getContext(), GroupActivity.class);
-                i.putExtra("groupName",groups.get(position).getName());
-                i.putExtra("groupKey",groups.get(position).getGroupKey());
-                ActivityOptionsCompat options = ActivityOptionsCompat
-                        .makeSceneTransitionAnimation(getContext(), (View))
-                startActivity(i);
-            }
-
-            @Override
-            public void onLongClick(View view, int position) {
-                //Select item on long click
-                //onListItemSelect(position);
-            }
-        }));
-    }*/
-
 }
