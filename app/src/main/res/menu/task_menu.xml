@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/task_details"
+        android:title="Ver detalles">
+    </item>
+    <item android:id="@+id/docs"
+        android:title="Ver documentos">
+    </item>
+    <item android:id="@+id/calificar"
+        android:title="Calificar">
+    </item>
+</menu>

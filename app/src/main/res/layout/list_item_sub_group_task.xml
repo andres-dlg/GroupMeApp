@@ -17,19 +17,77 @@
         android:background="@color/bg_add_photo"
         />
 
-    <CheckedTextView
-        android:id="@+id/list_item_multicheck_task_name"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
         android:layout_marginTop="10dp"
         android:layout_marginBottom="10dp"
         android:layout_marginEnd="@dimen/horizontal_margin"
         android:layout_marginLeft="@dimen/list_item_left_margin"
         android:layout_marginRight="@dimen/horizontal_margin"
         android:layout_marginStart="@dimen/list_item_left_margin"
-        android:checkMark="?android:attr/listChoiceIndicatorMultiple"
-        android:gravity="center"
-        android:textAllCaps="true"
-        tools:text="Task Name" />
+        >
+
+        <!--<CheckedTextView
+            android:id="@+id/list_item_multicheck_task_name"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="10dp"
+            android:layout_marginEnd="@dimen/horizontal_margin"
+            android:layout_marginLeft="@dimen/list_item_left_margin"
+            android:layout_marginRight="@dimen/horizontal_margin"
+            android:layout_marginStart="@dimen/list_item_left_margin"
+            android:checkMark="?android:attr/listChoiceIndicatorMultiple"
+            android:gravity="center"
+            android:textAllCaps="true"
+            tools:text="Task Name"
+            android:layout_weight="0.5"/>-->
+
+        <TextView
+            android:id="@+id/tasktv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAllCaps="true"
+            tools:text="Task Name"
+            android:layout_weight="0.5"
+            android:textColor="#000000"/>
+
+        <CheckBox
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/checkbox"
+            />
+
+
+        <!--<CheckedTextView
+            android:id="@+id/list_item_multicheck_task_name"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:checkMark="?android:attr/listChoiceIndicatorMultiple"
+            android:gravity="center"
+            android:textAllCaps="true"
+            tools:text="Task Name"
+            android:layout_weight="0.5"
+            android:textColor="#000000"/>-->
+
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?android:attr/selectableItemBackgroundBorderless"
+            android:background="#00ffffff"
+            android:layout_marginLeft="@dimen/horizontal_margin"
+            android:id="@+id/btn_menu"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/dots_vertical"
+            android:layout_gravity="center_vertical|center_horizontal"/>
+
+
+    </LinearLayout>
+
+
 
 </FrameLayout>

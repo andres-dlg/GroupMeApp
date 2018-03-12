@@ -91,7 +91,7 @@ public class SubGroupsFragment extends Fragment {
         rvSubGroups.setHasFixedSize(true); //El tamaño queda fijo, mejora el desempeño
         LinearLayoutManager llm = new LinearLayoutManager(getContext());
         rvSubGroups.setLayoutManager(llm);
-        rvSubGroupsAdapter = new RVSubGroupAdapter(subGroups);
+        rvSubGroupsAdapter = new RVSubGroupAdapter(subGroups, getContext());
         rvSubGroups.setAdapter(rvSubGroupsAdapter);
 
         fillSubGroups(view);
