@@ -75,7 +75,6 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
 
         final TextView tv = toolbar.findViewById(R.id.action_bar_title_1);
         final CircleImageView civ = toolbar.findViewById(R.id.conversation_contact_photo);
-
         contactIds = getIntent().getStringArrayListExtra("contactIds");
         conversationKey = getIntent().getStringExtra("conversationKey");
 

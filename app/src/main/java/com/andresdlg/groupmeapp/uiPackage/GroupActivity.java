@@ -1,11 +1,20 @@
 package com.andresdlg.groupmeapp.uiPackage;
 
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
+import android.support.transition.Transition;
+import android.support.v4.app.ActivityOptionsCompat;
+import android.support.v4.util.Pair;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import com.andresdlg.groupmeapp.Entities.Users;
 import com.andresdlg.groupmeapp.R;
@@ -22,10 +31,12 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.ogaclejapan.smarttablayout.utils.v4.FragmentPagerItemAdapter;
 import com.ogaclejapan.smarttablayout.utils.v4.FragmentPagerItems;
+import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import de.hdodenhof.circleimageview.CircleImageView;
 import devlight.io.library.ntb.NavigationTabBar;
 
 public class GroupActivity extends AppCompatActivity {
@@ -41,10 +52,37 @@ public class GroupActivity extends AppCompatActivity {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
         groupKey = getIntent().getStringExtra("groupKey");
-        String groupName = getIntent().getStringExtra("groupName");
-        String groupPhotoUrl = getIntent().getStringExtra("groupImage");
-        getSupportActionBar().setTitle(groupName);
+        final String groupName = getIntent().getStringExtra("groupName");
+        final String groupPhotoUrl = getIntent().getStringExtra("groupImage");
+        //getSupportActionBar().setTitle(groupName);
+
+        final TextView tv = toolbar.findViewById(R.id.action_bar_title_1);
+        final CircleImageView civ = toolbar.findViewById(R.id.conversation_contact_photo);
+
+        tv.setText(groupName);
+        Picasso.with(this).load(groupPhotoUrl).into(civ);
+
+        View v = toolbar.findViewById(R.id.toolbar_container);
+        v.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(GroupActivity.this, GroupDetailActivity.class);
+                // Pass data object in the bundle and populate details activity.
+
+
+                intent.putExtra("groupName", groupName);
+                intent.putExtra("groupPhotoUrl", groupPhotoUrl);
+                intent.putExtra("groupKey", groupKey);
+                Pair<View, String> p1 = Pair.create((View)civ, "photo");
+                Pair<View, String> p2 = Pair.create((View)tv, "text");
+                ActivityOptionsCompat options = ActivityOptionsCompat.
+                        makeSceneTransitionAnimation(GroupActivity.this, p1, p2);
+                startActivity(intent, options.toBundle());
+            }
+        });
 
         Typeface customFont = Typeface.createFromAsset(this.getAssets(),"fonts/Simplifica.ttf");
 
@@ -114,7 +152,7 @@ public class GroupActivity extends AppCompatActivity {
             public void onDataChange(DataSnapshot dataSnapshot) {
                 for(DataSnapshot data : dataSnapshot.getChildren()){
                     String s = data.getValue().toString();
-                    getUser(data.getValue().toString());
+                    getUser(data.getKey());
                 }
                 //((FireApp) getApplicationContext()).setGroupUsers(groupUsers);
             }
@@ -157,5 +195,16 @@ public class GroupActivity extends AppCompatActivity {
         super.onDestroy();
         ((FireApp) this.getApplication()).setGroupKey(null);
         ((FireApp) this.getApplication()).setGroupUsers(null);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                this.finish();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 }

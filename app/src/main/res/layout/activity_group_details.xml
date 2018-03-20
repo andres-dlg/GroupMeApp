@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<android.support.v4.widget.NestedScrollView android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    android:fillViewport="true"
+    android:orientation="vertical"
+    android:clipToPadding="false"
+    android:theme="@style/AppTheme.DialogFragment"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/nsSetup">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <ImageView
+                android:id="@+id/add_group_photo"
+                android:transitionName="photo"
+                android:layout_width="match_parent"
+                android:layout_height="203dp"
+                android:background="@color/bg_add_photo"
+                android:src="@drawable/ic_insert_photo_black_48dp" />
+
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_alignBottom="@+id/add_group_photo"
+                android:src="@drawable/gradient_black"/>
+
+            <TextView
+                android:id="@+id/group_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="EJEMPLO"
+                android:textColor="#ffffff"
+                android:textSize="20sp"
+                android:transitionName="text"
+                android:layout_alignBottom="@+id/add_group_photo"
+                android:layout_margin="10dp" />
+
+            <android.support.design.widget.FloatingActionButton
+                android:id="@+id/fab"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignEnd="@id/add_group_photo"
+                android:layout_alignTop="@id/add_group_photo"
+                android:layout_marginRight="20dp"
+                android:layout_marginTop="175dp"
+                android:elevation="10dp"
+                android:src="@drawable/ic_add_a_photo_black_48dp"
+                android:tint="@color/colorAccent"
+                app:fabSize="normal" />
+
+            <TextView
+                android:id="@+id/textMembers"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="15sp"
+                android:text="Miembros"
+                android:layout_margin="10dp"
+                android:layout_below="@+id/add_group_photo"/>
+
+            <View
+                android:id="@+id/divider"
+                android:layout_below="@id/textMembers"
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginLeft="15dp"
+                android:layout_marginRight="15dp"
+                android:background="@color/bg_add_photo" />
+
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/rvMembers"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_below="@+id/textMembers">
+
+            </android.support.v7.widget.RecyclerView>
+        </RelativeLayout>
+    </android.support.v4.widget.NestedScrollView>

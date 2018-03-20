@@ -28,12 +28,16 @@ import com.andresdlg.groupmeapp.Utils.GroupStatus;
 import com.andresdlg.groupmeapp.Utils.GroupType;
 import com.andresdlg.groupmeapp.Utils.NotificationStatus;
 import com.andresdlg.groupmeapp.Utils.NotificationTypes;
+import com.andresdlg.groupmeapp.Utils.Roles;
 import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
 import com.andresdlg.groupmeapp.uiPackage.fragments.GroupAddMembersFragment;
 import com.andresdlg.groupmeapp.uiPackage.fragments.GroupSetupFragment;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
@@ -86,12 +90,6 @@ public class HeaderDialogFragment extends DialogFragment implements GroupAddMemb
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_groups_dialog, container, false);
-
-        /*final GestureDetector mGestureDetector = new GestureDetector(getContext(), new GestureDetector.SimpleOnGestureListener() {
-            @Override public boolean onSingleTapUp(MotionEvent e) {
-                return true;
-            }
-        });*/
 
         userIds = new ArrayList<>();
 
@@ -230,7 +228,16 @@ public class HeaderDialogFragment extends DialogFragment implements GroupAddMemb
                         @Override
                         public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                             imageUrl = taskSnapshot.getDownloadUrl();
-                            createGroupData(finalGroupKey,nameText.getText().toString(),objetiveText.getText().toString(),userIds);
+                            userIds.add(StaticFirebaseSettings.currentUserId);
+                            Map<Object,Object> map = new HashMap<>();
+                            for(String id: userIds){
+                                if(id.equals(StaticFirebaseSettings.currentUserId)){
+                                    map.put(id,Roles.ADMIN);
+                                }else{
+                                    map.put(id,Roles.MEMBER);
+                                }
+                            }
+                            createGroupData(finalGroupKey,nameText.getText().toString(),objetiveText.getText().toString(),map);
                             mProgressBar.setVisibility(View.INVISIBLE);
                             dismiss();
                         }
@@ -241,7 +248,16 @@ public class HeaderDialogFragment extends DialogFragment implements GroupAddMemb
                         @Override
                         public void onSuccess(Uri uri) {
                             imageUrl = uri;
-                            createGroupData(finalGroupKey1,nameText.getText().toString(),objetiveText.getText().toString(),userIds);
+                            userIds.add(StaticFirebaseSettings.currentUserId);
+                            Map<Object,Object> map = new HashMap<>();
+                            for(String id: userIds){
+                                if(id.equals(StaticFirebaseSettings.currentUserId)){
+                                    map.put(id,Roles.ADMIN);
+                                }else{
+                                    map.put(id,Roles.MEMBER);
+                                }
+                            }
+                            createGroupData(finalGroupKey1,nameText.getText().toString(),objetiveText.getText().toString(),map);
                             mProgressBar.setVisibility(View.INVISIBLE);
                             dismiss();
                         }
@@ -257,7 +273,16 @@ public class HeaderDialogFragment extends DialogFragment implements GroupAddMemb
                         @Override
                         public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                             imageUrl = taskSnapshot.getDownloadUrl();
-                            createSubGroupData(finalSubGroupKey,nameText.getText().toString(),userIds);
+                            userIds.add(StaticFirebaseSettings.currentUserId);
+                            Map<Object,Object> map = new HashMap<>();
+                            for(String id: userIds){
+                                if(id.equals(StaticFirebaseSettings.currentUserId)){
+                                    map.put(id,Roles.SUBGROUP_ADMIN);
+                                }else{
+                                    map.put(id,Roles.SUBGROUP_MEMBER);
+                                }
+                            }
+                            createSubGroupData(finalSubGroupKey,nameText.getText().toString(),map);
                             mProgressBar.setVisibility(View.INVISIBLE);
                             dismiss();
                         }
@@ -268,7 +293,16 @@ public class HeaderDialogFragment extends DialogFragment implements GroupAddMemb
                         @Override
                         public void onSuccess(Uri uri) {
                             imageUrl = uri;
-                            createSubGroupData(finalSubGroupKey1,nameText.getText().toString(),userIds);
+                            userIds.add(StaticFirebaseSettings.currentUserId);
+                            Map<Object,Object> map = new HashMap<>();
+                            for(String id: userIds){
+                                if(id.equals(StaticFirebaseSettings.currentUserId)){
+                                    map.put(id,Roles.SUBGROUP_ADMIN);
+                                }else{
+                                    map.put(id,Roles.SUBGROUP_MEMBER);
+                                }
+                            }
+                            createSubGroupData(finalSubGroupKey1,nameText.getText().toString(),map);
                             mProgressBar.setVisibility(View.INVISIBLE);
                             dismiss();
                         }
@@ -279,12 +313,12 @@ public class HeaderDialogFragment extends DialogFragment implements GroupAddMemb
         }
     }
 
-    private void createSubGroupData(String subGroupKey, String name, List<String> userIds) {
+    private void createSubGroupData(String subGroupKey, String name, Map<Object,Object> userIdsMap) {
 
         Map<Object,Object> map = new HashMap<>();
         map.put("name", name);
         map.put("imageUrl",imageUrl.toString());
-        map.put("members", userIds);
+        map.put("members", userIdsMap);
         map.put("subGroupKey", subGroupKey);
 
         mGroupsDatabase.child(parentGroupKey).child("subgroups").child(subGroupKey).setValue(map).addOnSuccessListener(new OnSuccessListener<Void>() {
@@ -294,8 +328,8 @@ public class HeaderDialogFragment extends DialogFragment implements GroupAddMemb
             }
         });
 
+        //Notification
         Map<String,Object> map2;
-
         if(!userIds.isEmpty()){
             map2 = new HashMap<>();
             map2.put("status", GroupStatus.ACCEPTED);
@@ -328,15 +362,13 @@ public class HeaderDialogFragment extends DialogFragment implements GroupAddMemb
         }
     }
 
-    private void createGroupData(String groupKey, String name, String obj, List<String> userIds) {
-
-        userIds.add(StaticFirebaseSettings.currentUserId);
+    private void createGroupData(String groupKey, String name, String obj, Map<Object,Object> userIdsMaps) {
 
         Map<Object,Object> map = new HashMap<>();
         map.put("name", name);
         map.put("objetive", obj);
         map.put("imageUrl",imageUrl.toString());
-        map.put("members", userIds);
+        map.put("members", userIdsMaps);
         map.put("groupKey", groupKey);
 
         mGroupsDatabase.child(groupKey).setValue(map).addOnSuccessListener(new OnSuccessListener<Void>() {
@@ -348,7 +380,6 @@ public class HeaderDialogFragment extends DialogFragment implements GroupAddMemb
 
 
         Map<String,Object> map2;
-
         if(!userIds.isEmpty()){
             map2 = new HashMap<>();
             map2.put("status", GroupStatus.PENDING);

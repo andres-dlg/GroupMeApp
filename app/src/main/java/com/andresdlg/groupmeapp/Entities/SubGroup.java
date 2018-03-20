@@ -3,6 +3,7 @@ package com.andresdlg.groupmeapp.Entities;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by andresdlg on 17/02/18.
@@ -13,10 +14,10 @@ public class SubGroup implements Serializable{
     private String name;
     private String imageUrl;
     private String subGroupKey;
-    private List<String> members;
+    private Map<String,String> members;
     private List<Task> tasks;
 
-    public SubGroup(String name, String imageUrl, String subGroupKey, List<String> members, List<Task> tasks) {
+    public SubGroup(String name, String imageUrl, String subGroupKey, Map<String,String> members, List<Task> tasks) {
         this.name = name;
         this.imageUrl = imageUrl;
         this.subGroupKey = subGroupKey;
@@ -58,11 +59,11 @@ public class SubGroup implements Serializable{
         this.subGroupKey = subGroupKey;
     }
 
-    public List<String> getMembers() {
+    public Map<String,String> getMembers() {
         return members;
     }
 
-    public void setMembers(List<String> members) {
+    public void setMembers(Map<String,String> members) {
         this.members = members;
     }
 }

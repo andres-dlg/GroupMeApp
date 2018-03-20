@@ -20,6 +20,7 @@ import com.andresdlg.groupmeapp.Adapters.RVSearchContactAdapter;
 import com.andresdlg.groupmeapp.Entities.Users;
 import com.andresdlg.groupmeapp.R;
 import com.andresdlg.groupmeapp.Utils.FriendshipStatus;
+import com.andresdlg.groupmeapp.Utils.GroupStatus;
 import com.andresdlg.groupmeapp.firebasePackage.FireApp;
 import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
 import com.andresdlg.groupmeapp.uiPackage.ReciclerViewClickListener.RecyclerClick_Listener;
@@ -59,7 +60,6 @@ public class GroupAddMembersFragment extends Fragment implements RVSearchContact
     OnUserSelectionSetListener mOnUserSelectionSetListener;
 
     List<Users> groupUsers;
-
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
@@ -103,7 +103,7 @@ public class GroupAddMembersFragment extends Fragment implements RVSearchContact
             }
         });
 
-        fetchContacts();
+
 
         Fragment parentFragment = getParentFragment();
 
@@ -118,6 +118,8 @@ public class GroupAddMembersFragment extends Fragment implements RVSearchContact
 
         //groupKey = ((FireApp) getActivity().getApplication()).getGroupKey();
         groupUsers = ((FireApp) getActivity().getApplication()).getGroupUsers();
+
+        fetchContacts();
 
         //Aca arranca el multiselect
         implementRecyclerViewClickListeners();
@@ -146,32 +148,38 @@ public class GroupAddMembersFragment extends Fragment implements RVSearchContact
     }
 
     private void fetchContacts() {
-        firebaseContacts = FirebaseDatabase.getInstance().getReference("Users").child(StaticFirebaseSettings.currentUserId).child("friends");
-        firebaseContacts.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                users.clear();
-                rvSearchContactAdapter.notifyDataSetChanged();
-                for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
-                    //Getting the data from snapshot
-                    if(postSnapshot.child("status").getValue().equals(FriendshipStatus.ACCEPTED.toString())){
-                        getUser(postSnapshot.getKey());
+        final String groupKey = ((FireApp) getActivity().getApplication()).getGroupKey();
+
+        if(groupKey == null){
+            firebaseContacts = FirebaseDatabase.getInstance().getReference("Users").child(StaticFirebaseSettings.currentUserId).child("friends");
+            firebaseContacts.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    users.clear();
+                    rvSearchContactAdapter.notifyDataSetChanged();
+                    for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
+                        //Getting the data from snapshot
+                        if(postSnapshot.child("status").getValue().equals(FriendshipStatus.ACCEPTED.toString())){
+                            getUser(postSnapshot.getKey(),groupKey);
+                        }
                     }
                 }
-                if(groupUsers != null){
-                    getUser(StaticFirebaseSettings.currentUserId);
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
                 }
+            });
+        }else{
+            for(Users u: groupUsers){
+                users.add(u);
+                rvSearchContactAdapter.notifyDataSetChanged();
             }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
+        }
     }
 
-    private void getUser(String key) {
-        final DatabaseReference user = FirebaseDatabase.getInstance().getReference("Users").child(key);
+    private void getUser(final String userKey, String groupKey) {
+        final DatabaseReference user = FirebaseDatabase.getInstance().getReference("Users").child(userKey);
         user.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -189,8 +197,6 @@ public class GroupAddMembersFragment extends Fragment implements RVSearchContact
                         //rvSearchContactAdapter.setUsers(users);
                     }
                 }
-
-
             }
 
             @Override

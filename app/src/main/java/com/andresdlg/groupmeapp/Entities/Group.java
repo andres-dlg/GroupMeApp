@@ -4,6 +4,7 @@ import com.andresdlg.groupmeapp.R;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by andresdlg on 11/07/17.
@@ -14,9 +15,9 @@ public class Group {
     private String imageUrl;
     private String name;
     private String objetive;
-    private List<String> members;
+    private Map<String,String> members;
 
-    public Group(String groupKey, String imageUrl, String name, String objetive, List<String> members){
+    public Group(String groupKey, String imageUrl, String name, String objetive, Map<String,String> members){
         this.groupKey = groupKey;
         this.imageUrl = imageUrl;
         this.name = name;
@@ -52,11 +53,11 @@ public class Group {
         this.imageUrl = imageUrl;
     }
 
-    public List<String> getMembers() {
+    public Map<String,String> getMembers() {
         return members;
     }
 
-    public void setMembers(List<String> members) {
+    public void setMembers(Map<String,String> members) {
         this.members = members;
     }
 
