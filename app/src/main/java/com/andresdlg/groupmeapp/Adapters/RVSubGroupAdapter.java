@@ -12,6 +12,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.PopupMenu;
 import android.widget.TextView;
@@ -48,29 +49,16 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
     public void onBindViewHolder(SubGroupViewHolder holder, int position) {
         SubGroup subGroup = subGroups.get(position);
         holder.textView_parentName.setText(subGroup.getName());
+
         //
         int noOfChildTextViews = holder.linearLayout_childItems.getChildCount();
-        //int noOfChild = subGroup.getTasks().size();
         if(subGroup.getTasks() != null){
             int noOfChild = subGroup.getTasks().size();
-            //if (noOfChild < noOfChildTextViews) {
-                for (int index = noOfChild; index < noOfChildTextViews; index++) {
-                    TextView currentTextView = (TextView) holder.linearLayout_childItems.getChildAt(index);
-                    currentTextView.setVisibility(View.GONE);
-                }
-            //}
-            /*for (int textViewIndex = 0; textViewIndex < noOfChild; textViewIndex++) {
-                TextView currentTextView = (TextView) holder.linearLayout_childItems.getChildAt(textViewIndex);
-                currentTextView.setText(subGroup.getTasks().get(textViewIndex).getName());
-                /*currentTextView.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        Toast.makeText(mContext, "" + ((TextView) view).getText().toString(), Toast.LENGTH_SHORT).show();
-                    }
-                });*/
-            /*}*/
+            for (int index = noOfChild; index < noOfChildTextViews; index++) {
+                TextView currentTextView = (TextView) holder.linearLayout_childItems.getChildAt(index);
+                currentTextView.setVisibility(View.GONE);
+            }
         }
-
     }
 
     @Override
@@ -95,6 +83,7 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
             super(itemView);
             context = itemView.getContext();
             textView_parentName = itemView.findViewById(R.id.tv_parentName);
+            ((ImageView) itemView.findViewById(R.id.add_task)).bringToFront();
             linearLayout_childItems = itemView.findViewById(R.id.ll_child_items);
             linearLayout_childItems.setVisibility(View.GONE);
             if(subGroups.get(position).getTasks() != null){

@@ -22,12 +22,33 @@
         android:gravity="center_vertical"
         tools:text="Sub Grupo" />
 
-    <ImageView
-        android:id="@+id/list_item_sub_group_arrow"
+    <LinearLayout
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
+        android:orientation="horizontal"
         android:layout_gravity="center_vertical|end"
-        android:layout_marginRight="@dimen/horizontal_margin"
-        android:src="@drawable/ic_arrow_down" />
+        android:elevation="10dp"
+        android:visibility="visible"
+        >
+
+        <ImageView
+            android:id="@+id/add_task"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_marginRight="@dimen/horizontal_margin"
+            android:layout_marginLeft="@dimen/horizontal_margin"
+            android:src="@drawable/playlist_plus" />
+
+        <ImageView
+            android:id="@+id/list_item_sub_group_arrow"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical|end"
+            android:layout_marginRight="@dimen/horizontal_margin"
+            android:src="@drawable/ic_arrow_down" />
+
+    </LinearLayout>
+
 
 </FrameLayout>

@@ -34,16 +34,15 @@
             <TextView
                 android:id="@+id/action_bar_title_1"
                 android:layout_width="wrap_content"
-                android:layout_height="0dp"
+                android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
                 android:layout_marginLeft="6dp"
-                android:layout_weight="0.6"
                 android:ellipsize="end"
                 android:gravity="center_vertical"
                 android:maxLines="1"
-                android:textSize="18sp"
+                android:textSize="20sp"
                 android:text="shanraisshan"
-                android:textStyle="bold"
+                android:textColor="#fff"
                 android:transitionName="text"/>
         </LinearLayout>
     </LinearLayout>
