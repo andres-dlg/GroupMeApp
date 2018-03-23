@@ -11,12 +11,14 @@ import java.util.Calendar;
 
 public class Task implements Parcelable {
 
+    private String taskKey;
     private String name;
     private String startDate;
     private String endDate;
     private Boolean finished;
 
-    public Task(String name,String startDate ,String endDate, Boolean finished){
+    public Task(String taskKey, String name,String startDate ,String endDate, Boolean finished){
+        this.taskKey = taskKey;
         this.name = name;
         this.startDate = startDate;
         this.endDate = endDate;
@@ -90,6 +92,14 @@ public class Task implements Parcelable {
         int result = getName() != null ? getName().hashCode() : 0;
         result = 31 * result + (getFinished() ? 1 : 0);
         return result;
+    }
+
+    public String getTaskKey() {
+        return taskKey;
+    }
+
+    public void setTaskKey(String taskKey) {
+        this.taskKey = taskKey;
     }
 
     /*public boolean isFinished() {

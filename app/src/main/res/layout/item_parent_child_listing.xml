@@ -59,7 +59,8 @@
                     android:layout_gravity="center_vertical"
                     android:layout_marginRight="@dimen/horizontal_margin"
                     android:layout_marginLeft="@dimen/horizontal_margin"
-                    android:src="@drawable/playlist_plus" />
+                    android:src="@drawable/playlist_plus"
+                    android:background="?attr/selectableItemBackground"/>
 
                 <ImageView
                     android:id="@+id/list_item_sub_group_arrow"
@@ -67,8 +68,8 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical|end"
                     android:layout_marginRight="@dimen/horizontal_margin"
-                    android:src="@drawable/ic_arrow_down" />
-
+                    android:src="@drawable/ic_arrow_down"
+                    android:background="?attr/selectableItemBackground"/>
             </LinearLayout>
 
         </RelativeLayout>

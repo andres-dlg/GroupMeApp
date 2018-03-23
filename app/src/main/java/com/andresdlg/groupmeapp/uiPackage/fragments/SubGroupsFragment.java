@@ -7,6 +7,7 @@ import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -17,6 +18,7 @@ import com.andresdlg.groupmeapp.Adapters.RVSubGroupAdapter;
 import com.andresdlg.groupmeapp.DialogFragments.HeaderDialogFragment;
 import com.andresdlg.groupmeapp.Entities.SubGroup;
 
+import com.andresdlg.groupmeapp.Entities.Task;
 import com.andresdlg.groupmeapp.R;
 import com.andresdlg.groupmeapp.Utils.GroupType;
 import com.andresdlg.groupmeapp.firebasePackage.FireApp;
@@ -28,12 +30,15 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by andresdlg on 02/05/17.
  */
 
 public class SubGroupsFragment extends Fragment {
+
+    SwipeRefreshLayout swipeContainer;
 
     FloatingActionButton fab;
     String groupKey;
@@ -52,12 +57,27 @@ public class SubGroupsFragment extends Fragment {
         subGroupsRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
+                rvSubGroupsAdapter.clear();
                 subGroups.clear();
                 for (DataSnapshot data : dataSnapshot.getChildren()){
-                    SubGroup sgf = data.getValue(SubGroup.class);
+                    SubGroup sgf = new SubGroup();
+                    sgf.setName(data.child("name").getValue().toString());
+                    sgf.setImageUrl(data.child("imageUrl").getValue().toString());
+                    sgf.setMembers((Map<String,String>) data.child("members").getValue());
+                    sgf.setSubGroupKey(data.child("subGroupKey").getValue().toString());
+                    List<Task> tasks = new ArrayList();
+                    for(DataSnapshot d : data.child("tasks").getChildren()){
+                        Task task = d.getValue(Task.class);
+                        tasks.add(task);
+                    }
+                    sgf.setTasks(tasks);
+                    //SubGroup sgf = data.getValue(SubGroup.class);
                     subGroups.add(sgf);
                 }
                 v.findViewById(R.id.tvNoGroups).setVisibility(View.GONE);
+                //rvSubGroupsAdapter.addAll(subGroups);
+                swipeContainer.setRefreshing(false);
+                //rvSubGroupsAdapter.notify(subGroups);
                 rvSubGroupsAdapter.notifyDataSetChanged();
             }
 
@@ -88,13 +108,35 @@ public class SubGroupsFragment extends Fragment {
         subGroups = new ArrayList<>();
 
         rvSubGroups = view.findViewById(R.id.rvSubGroups);
-        rvSubGroups.setHasFixedSize(true); //El tamaño queda fijo, mejora el desempeño
-        LinearLayoutManager llm = new LinearLayoutManager(getContext());
+        rvSubGroups.setHasFixedSize(false); //El tamaño queda fijo, mejora el desempeño
+        LinearLayoutManager llm = new LinearLayoutManager(getContext(),LinearLayoutManager.VERTICAL,false);
         rvSubGroups.setLayoutManager(llm);
-        rvSubGroupsAdapter = new RVSubGroupAdapter(subGroups, getContext());
+        rvSubGroupsAdapter = new RVSubGroupAdapter(subGroups,groupKey,getContext());
         rvSubGroups.setAdapter(rvSubGroupsAdapter);
 
         fillSubGroups(view);
+
+        swipeContainer = (SwipeRefreshLayout) view.findViewById(R.id.swipeContainer);
+        // Setup refresh listener which triggers new data loading
+        swipeContainer.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                // Your code to refresh the list here.
+                // Make sure you call swipeContainer.setRefreshing(false)
+                // once the network request has completed successfully.
+                //fetchTimelineAsync(0);
+                fillSubGroups(view);
+            }
+        });
+
+        // Configure the refreshing colors
+        swipeContainer.setColorSchemeResources(android.R.color.holo_blue_bright,
+                android.R.color.holo_green_light,
+                android.R.color.holo_orange_light,
+                android.R.color.holo_red_light);
+
+        swipeContainer.setRefreshing(true);
+
 
     }
 
@@ -111,5 +153,4 @@ public class SubGroupsFragment extends Fragment {
         transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
         transaction.add(android.R.id.content, newFragment).addToBackStack(null).commit();
     }
-
 }

@@ -7,6 +7,28 @@
     android:fitsSystemWindows="true"
     android:theme="@style/AppTheme.DialogFragment">
 
+    <android.support.v4.widget.SwipeRefreshLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/swipeContainer">
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/rvSubGroups"
+            android:layout_height="match_parent"
+            android:layout_width="match_parent">
+        </android.support.v7.widget.RecyclerView>
+
+        <TextView
+            android:id="@+id/tvNoGroups"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:text="@string/no_sub_groups"
+            android:textSize="40sp"
+            android:textColor="#e0e0e0" />
+
+    </android.support.v4.widget.SwipeRefreshLayout>
+
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fabSubGroups"
         android:layout_width="wrap_content"
@@ -21,19 +43,5 @@
         app:fabSize="normal"
         app:srcCompat="@android:drawable/ic_input_add" />
 
-    <android.support.v7.widget.RecyclerView
-        android:id="@+id/rvSubGroups"
-        android:layout_height="match_parent"
-        android:layout_width="match_parent">
-    </android.support.v7.widget.RecyclerView>
-
-    <TextView
-        android:id="@+id/tvNoGroups"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:gravity="center"
-        android:text="@string/no_sub_groups"
-        android:textSize="40sp"
-        android:textColor="#e0e0e0" />
 
 </RelativeLayout>
