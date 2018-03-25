@@ -50,6 +50,7 @@ dependencies {
     compile 'com.miguelcatalan:materialsearchview:1.4.0'
     compile 'com.squareup.okhttp:okhttp:2.4.0'
     implementation 'com.afollestad.material-dialogs:core:0.9.6.0'
+    compile 'com.borax12.materialdaterangepicker:library:1.9'
 }
 
 
