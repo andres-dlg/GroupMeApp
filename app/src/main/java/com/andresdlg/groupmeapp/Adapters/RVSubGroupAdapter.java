@@ -37,6 +37,8 @@ import com.andresdlg.groupmeapp.uiPackage.GroupActivity;
 import com.andresdlg.groupmeapp.uiPackage.MainActivity;
 import com.andresdlg.groupmeapp.uiPackage.fragments.SubGroupsFragment;
 import com.borax12.materialdaterangepicker.date.DatePickerDialog;
+import com.borax12.materialdaterangepicker.time.RadialPickerLayout;
+import com.borax12.materialdaterangepicker.time.TimePickerDialog;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
@@ -161,20 +163,20 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
 
                     //Fecha de comienzo de la tarea
                     startDate = fl.findViewById(R.id.taskStartDateTv);
-                    String startDateText = subGroups.get(position).getTasks().get(indexView).getStartDate();
+                    final String startDateText = subGroups.get(position).getTasks().get(indexView).getStartDate();
                     if(!TextUtils.isEmpty(startDateText)){
-                        startDate.setText(String.format("Desde: %s", subGroups.get(position).getTasks().get(indexView).getStartDate()));
+                        startDate.setText(subGroups.get(position).getTasks().get(indexView).getStartDate());
                     }else{
-                        startDate.setText("Desde: No definida");
+                        startDate.setText("No definida");
                     }
 
                     //Nombre de la tarea
                     endDate = fl.findViewById(R.id.taskEndDateTv);
-                    String endDateText = subGroups.get(position).getTasks().get(indexView).getEndDate();
+                    final String endDateText = subGroups.get(position).getTasks().get(indexView).getEndDate();
                     if(!TextUtils.isEmpty(endDateText)){
-                        endDate.setText(String.format("Hasta: %s", subGroups.get(position).getTasks().get(indexView).getEndDate()));
+                        endDate.setText(subGroups.get(position).getTasks().get(indexView).getEndDate());
                     }else{
-                        endDate.setText("Hasta: No definida");
+                        endDate.setText("No definida");
                     }//Fecha de fin de la tarea
 
                     //Checkbox de la tarea
@@ -212,9 +214,10 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
                             taskRef.child("endDate").setValue(endDateTxt);
 
                             FrameLayout fl = (FrameLayout)linearLayout_childItems.getChildAt(finalIndexView);
-                            ((TextView)fl.findViewById(R.id.taskStartDateTv)).setText(String.format("Desde: %s", startDateTxt));
-                            ((TextView)fl.findViewById(R.id.taskEndDateTv)).setText(String.format("Hasta: %s", endDateTxt));
+                            ((TextView)fl.findViewById(R.id.taskStartDateTv)).setText(startDateTxt);
+                            ((TextView)fl.findViewById(R.id.taskEndDateTv)).setText(endDateTxt);
 
+                            Toast.makeText(context,"Fechas guardadas",Toast.LENGTH_SHORT).show();
                         }
                     };
 
@@ -232,6 +235,65 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
                             dpd.setEndTitle("HASTA");
                             dpd.setAccentColor(R.color.colorPrimary);
                             dpd.show(((Activity)RVSubGroupAdapter.this.contexto).getFragmentManager(),"Datepickerdialog");
+                        }
+                    });
+
+                    //TimeRangePicker
+                    final TimePickerDialog.OnTimeSetListener timeListener =  new TimePickerDialog.OnTimeSetListener() {
+                        @Override
+                        public void onTimeSet(RadialPickerLayout view, int hourOfDay, int minute, int hourOfDayEnd, int minuteEnd) {
+                            DatabaseReference taskRef = FirebaseDatabase.getInstance().getReference("Groups")
+                                    .child(groupKey)
+                                    .child("subgroups")
+                                    .child(subGroups.get(position).getSubGroupKey())
+                                    .child("tasks").child(subGroups.get(position).getTasks().get(finalIndexView).getTaskKey());
+
+                            String hourString = hourOfDay < 10 ? "0"+hourOfDay : ""+hourOfDay;
+                            String minuteString = minute < 10 ? "0"+minute : ""+minute;
+                            String hourStringEnd = hourOfDayEnd < 10 ? "0"+hourOfDayEnd : ""+hourOfDayEnd;
+                            String minuteStringEnd = minuteEnd < 10 ? "0"+minuteEnd : ""+minuteEnd;
+                            String time = "You picked the following time: From - "+hourString+"h"+minuteString+" To - "+hourStringEnd+"h"+minuteStringEnd;
+
+                            String startTime = hourString+":"+minuteString;
+                            String endTime = hourStringEnd+":"+minuteStringEnd;
+
+                            FrameLayout fl = (FrameLayout)linearLayout_childItems.getChildAt(finalIndexView);
+                            TextView tvStartDate = (TextView)fl.findViewById(R.id.taskStartDateTv);
+                            TextView tvEndDate = (TextView)fl.findViewById(R.id.taskEndDateTv);
+
+                            String startDate = tvStartDate.getText().toString();
+                            String endDate = tvEndDate.getText().toString();
+
+                            String startDateTime = startDate+" "+startTime;
+                            String endDateTime = endDate+" "+endTime;
+
+                            tvStartDate.setText(startDateTime);
+                            tvEndDate.setText(endDateTime);
+
+                            taskRef.child("startDate").setValue(startDateTime);
+                            taskRef.child("endDate").setValue(endDateTime);
+
+                            Toast.makeText(context,"Horarios guardados",Toast.LENGTH_SHORT).show();
+                        }
+                    };
+
+                    fl.findViewById(R.id.btn_task_time).setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            if(TextUtils.isEmpty(startDateText) || TextUtils.isEmpty(endDateText)){
+                                Toast.makeText(context,"Primero defina las fechas de la tarea",Toast.LENGTH_SHORT).show();
+                            }else{
+                                Calendar now = Calendar.getInstance();
+                                TimePickerDialog dpd = com.borax12.materialdaterangepicker.time.TimePickerDialog.newInstance(
+                                        timeListener,
+                                        now.get(Calendar.HOUR_OF_DAY),
+                                        now.get(Calendar.MINUTE),
+                                        false
+                                );
+                                dpd.setAccentColor(R.color.colorPrimary);
+                                dpd.setTabIndicators("DESDE","HASTA");
+                                dpd.show(((Activity)RVSubGroupAdapter.this.contexto).getFragmentManager(),"Timepickerdialog");
+                            }
                         }
                     });
 

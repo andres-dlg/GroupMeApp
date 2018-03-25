@@ -1,12 +1,17 @@
 package com.andresdlg.groupmeapp.uiPackage;
 
+import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
+import android.view.MenuItem;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -46,6 +51,13 @@ public class GroupDetailActivity extends AppCompatActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_group_details);
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        toolbar.bringToFront();
+        toolbar.setTitle(" ");
+        toolbar.setBackground(getResources().getDrawable(R.drawable.gradient_black_rotated));
+        setSupportActionBar(toolbar);
+
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         usersList = new ArrayList<>();
         usersRoles = new HashMap<>();
@@ -120,6 +132,17 @@ public class GroupDetailActivity extends AppCompatActivity {
 
                 }
             });
+        }
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                this.finish();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
         }
     }
 }

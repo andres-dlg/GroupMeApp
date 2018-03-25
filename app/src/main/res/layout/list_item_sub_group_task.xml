@@ -2,7 +2,7 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="70dp"
+    android:layout_height="75dp"
     android:id="@+id/fltask"
     android:background="?android:attr/selectableItemBackground"
     android:focusable="true"
@@ -20,82 +20,139 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:layout_marginTop="10dp"
-        android:layout_marginBottom="10dp"
-        android:layout_marginEnd="@dimen/horizontal_margin"
-        android:layout_marginLeft="@dimen/horizontal_margin"
-        android:layout_marginRight="@dimen/horizontal_margin"
-        android:layout_marginStart="@dimen/horizontal_margin"
-        android:baselineAligned="false">
+        android:orientation="vertical">
 
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_weight="0.5">
-
-            <TextView
-                android:id="@+id/tasktv"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textAllCaps="true"
-                tools:text="Task Name"
-                android:textColor="#000000"/>
-
-            <TextView
-                android:id="@+id/taskStartDateTv"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                tools:text="Desde: "
-                android:textSize="12sp"
-                android:textColor="@color/gray_noti"/>
-
-            <TextView
-                android:id="@+id/taskEndDateTv"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                tools:text="Hasta: "
-                android:textSize="12sp"
-                android:textColor="@color/gray_noti"/>
-        </LinearLayout>
-
-        <LinearLayout
+        <TextView
+            android:id="@+id/tasktv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:textAllCaps="true"
+            tools:text="Task Name"
+            android:textColor="#000000"
+            android:layout_marginTop="10dp"
+            android:layout_marginEnd="@dimen/horizontal_margin"
+            android:layout_marginLeft="@dimen/horizontal_margin"
+            android:layout_marginRight="@dimen/horizontal_margin"
+            android:layout_marginStart="@dimen/horizontal_margin"
+            />
 
-            <CheckBox
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="10dp"
+            android:layout_marginEnd="@dimen/horizontal_margin"
+            android:layout_marginLeft="@dimen/horizontal_margin"
+            android:layout_marginRight="@dimen/horizontal_margin"
+            android:layout_marginStart="@dimen/horizontal_margin"
+            android:baselineAligned="false">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_weight="0.5">
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Desde: "
+                        android:textStyle="bold"
+                        android:textSize="12sp"
+                        android:textColor="@color/gray_noti"/>
+
+                    <TextView
+                        android:id="@+id/taskStartDateTv"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text=""
+                        android:textSize="12sp"
+                        android:textColor="@color/gray_noti"/>
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Hasta: "
+                        android:textStyle="bold"
+                        android:textSize="12sp"
+                        android:textColor="@color/gray_noti"/>
+
+                    <TextView
+                        android:id="@+id/taskEndDateTv"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text=""
+                        android:textSize="12sp"
+                        android:textColor="@color/gray_noti"/>
+
+                </LinearLayout>
+
+            </LinearLayout>
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:id="@+id/checkbox"
-                />
+                android:orientation="horizontal">
 
-            <de.hdodenhof.circleimageview.CircleImageView
-                android:clickable="true"
-                android:focusable="true"
-                android:foreground="?android:attr/selectableItemBackgroundBorderless"
-                android:background="#00ffffff"
-                android:layout_marginLeft="@dimen/horizontal_margin"
-                android:id="@+id/btn_task_calendar"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:src="@drawable/calendar"
-                android:layout_gravity="center_vertical|center_horizontal"/>
+                <CheckBox
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/checkbox"
+                    />
 
-            <de.hdodenhof.circleimageview.CircleImageView
-                android:clickable="true"
-                android:focusable="true"
-                android:foreground="?android:attr/selectableItemBackgroundBorderless"
-                android:background="#00ffffff"
-                android:layout_marginLeft="@dimen/horizontal_margin"
-                android:id="@+id/btn_menu"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:src="@drawable/dots_vertical"
-                android:layout_gravity="center_vertical|center_horizontal"/>
+                <de.hdodenhof.circleimageview.CircleImageView
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?android:attr/selectableItemBackgroundBorderless"
+                    android:background="#00ffffff"
+                    android:layout_marginLeft="@dimen/horizontal_margin"
+                    android:id="@+id/btn_task_calendar"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/calendar_range"
+                    android:layout_gravity="center_vertical|center_horizontal"/>
+
+                <de.hdodenhof.circleimageview.CircleImageView
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?android:attr/selectableItemBackgroundBorderless"
+                    android:background="#00ffffff"
+                    android:layout_marginLeft="@dimen/horizontal_margin"
+                    android:id="@+id/btn_task_time"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/clock"
+                    android:layout_gravity="center_vertical|center_horizontal"/>
+
+
+                <de.hdodenhof.circleimageview.CircleImageView
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?android:attr/selectableItemBackgroundBorderless"
+                    android:background="#00ffffff"
+                    android:layout_marginLeft="@dimen/horizontal_margin"
+                    android:id="@+id/btn_menu"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/dots_vertical"
+                    android:layout_gravity="center_vertical|center_horizontal"/>
+            </LinearLayout>
+
         </LinearLayout>
+
+
     </LinearLayout>
 
 

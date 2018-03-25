@@ -29,10 +29,15 @@
     </style>
 
     <style name="AppTheme.DialogFragment">
+
         <item name="android:windowSoftInputMode">adjustPan</item>
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
         <item name="colorAccent">@color/celestito</item>
+    </style>
+
+    <style name="ToolbarGroupDetail" parent="AppTheme.DialogFragment">
+        <item name="colorControlNormal">@color/colorAccent</item>
     </style>
 
     <style name="AppTheme.ChatNoActionBar" parent="Theme.AppCompat.Light.DarkActionBar">
