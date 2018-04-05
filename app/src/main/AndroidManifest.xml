@@ -95,10 +95,11 @@
             android:name=".uiPackage.GroupActivity"
             android:label="@string/title_activity_group"
             android:theme="@style/AppTheme.NoActionBar" />
-
         <activity
             android:name=".uiPackage.GroupDetailActivity"
             android:theme="@style/AppTheme.NoActionBar" />
+        <activity android:name=".uiPackage.TaskWeekViewBaseActivty"></activity>
+        <activity android:name=".uiPackage.TaskWeekViewActivity" />
     </application>
 
 </manifest>

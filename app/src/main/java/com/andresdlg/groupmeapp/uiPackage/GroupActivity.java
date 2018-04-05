@@ -15,9 +15,12 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.alamkanak.weekview.WeekViewEvent;
+import com.andresdlg.groupmeapp.Entities.Task;
 import com.andresdlg.groupmeapp.Entities.Users;
 import com.andresdlg.groupmeapp.R;
 import com.andresdlg.groupmeapp.Utils.GroupStatus;
@@ -35,7 +38,10 @@ import com.ogaclejapan.smarttablayout.utils.v4.FragmentPagerItemAdapter;
 import com.ogaclejapan.smarttablayout.utils.v4.FragmentPagerItems;
 import com.squareup.picasso.Picasso;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 import de.hdodenhof.circleimageview.CircleImageView;
@@ -46,6 +52,7 @@ public class GroupActivity extends AppCompatActivity {
     ViewPager viewPager;
     String groupKey;
     List<Users> groupUsers;
+    boolean clicked;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,6 +62,8 @@ public class GroupActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        clicked = false;
 
         groupKey = getIntent().getStringExtra("groupKey");
         final String groupName = getIntent().getStringExtra("groupName");
@@ -197,6 +206,7 @@ public class GroupActivity extends AppCompatActivity {
         super.onDestroy();
         ((FireApp) this.getApplication()).setGroupKey(null);
         ((FireApp) this.getApplication()).setGroupUsers(null);
+        ((FireApp) this.getApplication()).setEvents(null);
     }
 
     @Override
@@ -206,7 +216,81 @@ public class GroupActivity extends AppCompatActivity {
                 this.finish();
                 return true;
             case R.id.dates:
-                Toast.makeText(this, "Fechas!!!", Toast.LENGTH_SHORT).show();
+                clicked = true;
+                final Intent intent = new Intent(GroupActivity.this, TaskWeekViewActivity.class);
+                intent.putExtra("groupKey",groupKey);
+
+                ((FireApp) getApplicationContext()).setEvents(null);
+
+                final List<WeekViewEvent> events = new ArrayList<>();
+
+                final ProgressBar progressBar = new ProgressBar(this);
+                progressBar.setVisibility(View.VISIBLE);
+
+                DatabaseReference subGroupsRef = FirebaseDatabase.getInstance().getReference("Groups")
+                        .child(groupKey)
+                        .child("subgroups");
+
+                subGroupsRef.addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        ((FireApp) getApplicationContext()).setEvents(null);
+                        int i = 0;
+                        for(DataSnapshot subgroupRef: dataSnapshot.getChildren()){
+                            for(DataSnapshot taskRef: subgroupRef.child("tasks").getChildren()){
+                                Task task = taskRef.getValue(Task.class);
+
+                                Calendar taskStartDateTime = Calendar.getInstance();
+                                SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy hh:mm");
+                                try {
+                                    taskStartDateTime.setTime(dateFormat.parse(task.getStartDate()));
+                                } catch (ParseException e) {
+                                    e.printStackTrace();
+                                }
+
+                                Calendar taskEndDateTime = Calendar.getInstance();
+                                try {
+                                    taskEndDateTime.setTime(dateFormat.parse(task.getEndDate()));
+                                } catch (ParseException e) {
+                                    e.printStackTrace();
+                                }
+
+                                /*Calendar startTime = Calendar.getInstance();
+                                startTime.set(Calendar.HOUR_OF_DAY, taskStartDateTime.get(Calendar.HOUR_OF_DAY));
+                                startTime.set(Calendar.MINUTE, taskStartDateTime.get(Calendar.MINUTE));
+                                startTime.set(Calendar.MONTH, taskStartDateTime.get(Calendar.MONTH));
+                                startTime.set(Calendar.YEAR, taskStartDateTime.get(Calendar.YEAR));
+
+                                Calendar endTime = Calendar.getInstance();
+                                endTime.set(Calendar.HOUR_OF_DAY, taskEndDateTime.get(Calendar.HOUR_OF_DAY));
+                                endTime.set(Calendar.MINUTE, taskEndDateTime.get(Calendar.MINUTE));
+                                endTime.set(Calendar.MONTH, taskEndDateTime.get(Calendar.MONTH));
+                                endTime.set(Calendar.YEAR, taskEndDateTime.get(Calendar.YEAR));*/
+
+                                //WeekViewEvent event = new WeekViewEvent(i, task.getName(), startTime, endTime);
+                                WeekViewEvent event = new WeekViewEvent(i, task.getName(), taskStartDateTime, taskEndDateTime);
+                                event.setColor(getResources().getColor(R.color.colorPrimary));
+                                events.add(event);
+                                i++;
+                            }
+                        }
+                        i = 0;
+                        progressBar.setVisibility(View.GONE);
+                        ((FireApp) getApplicationContext()).setEvents(events);
+                        if (clicked){
+                            startActivity(intent);
+                            clicked = false;
+                        }
+                        clicked = false;
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
+
+                //startActivity(intent);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);

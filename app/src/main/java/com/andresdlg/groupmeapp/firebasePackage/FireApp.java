@@ -2,6 +2,7 @@ package com.andresdlg.groupmeapp.firebasePackage;
 
 import android.app.Application;
 
+import com.alamkanak.weekview.WeekViewEvent;
 import com.andresdlg.groupmeapp.Entities.Users;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.database.FirebaseDatabase;
@@ -15,6 +16,7 @@ import java.util.List;
 public class FireApp extends Application {
 
     private String groupKey;
+    private List<WeekViewEvent> events;
 
     public String getGroupKey() {
         return groupKey;
@@ -34,6 +36,14 @@ public class FireApp extends Application {
         this.groupUsers = groupUsers;
     }
 
+    public void setEvents(List<WeekViewEvent> events) {
+        this.events = events;
+    }
+
+    public List<WeekViewEvent> getEvents() {
+        return events;
+    }
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -42,4 +52,6 @@ public class FireApp extends Application {
             FirebaseDatabase.getInstance().setPersistenceEnabled(true);
         }
     }
+
+
 }

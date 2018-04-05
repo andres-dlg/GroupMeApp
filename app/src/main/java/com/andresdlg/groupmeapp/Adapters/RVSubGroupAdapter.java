@@ -203,9 +203,9 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
                                     .child("tasks").child(subGroups.get(position).getTasks().get(finalIndexView).getTaskKey());
 
                             String newDayOfMonth = String.valueOf(dayOfMonth).length() > 1 ? String.valueOf(dayOfMonth) : "0"+String.valueOf(dayOfMonth);
-                            String newMonthOfYear = String.valueOf(monthOfYear).length() > 1 ? String.valueOf(monthOfYear) : "0"+String.valueOf(monthOfYear);
+                            String newMonthOfYear = String.valueOf(monthOfYear+1).length() > 1 ? String.valueOf(monthOfYear+1) : "0"+String.valueOf(monthOfYear+1);
                             String newDayOfMonthEnd = String.valueOf(dayOfMonthEnd).length() > 1 ? String.valueOf(dayOfMonthEnd) : "0"+String.valueOf(dayOfMonthEnd);
-                            String newMonthOfYearEnd = String.valueOf(monthOfYearEnd).length() > 1 ? String.valueOf(monthOfYearEnd) : "0"+String.valueOf(monthOfYearEnd);
+                            String newMonthOfYearEnd = String.valueOf(monthOfYearEnd+1).length() > 1 ? String.valueOf(monthOfYearEnd+1) : "0"+String.valueOf(monthOfYearEnd+1);
 
                             String startDateTxt = newDayOfMonth + "-" + newMonthOfYear +"-" + String.valueOf(year);
                             String endDateTxt = newDayOfMonthEnd + "-" + newMonthOfYearEnd +"-" + String.valueOf(yearEnd);
