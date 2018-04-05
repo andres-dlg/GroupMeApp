@@ -10,6 +10,7 @@ import android.support.v4.util.Pair;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -240,20 +241,22 @@ public class GroupActivity extends AppCompatActivity {
                             for(DataSnapshot taskRef: subgroupRef.child("tasks").getChildren()){
                                 Task task = taskRef.getValue(Task.class);
 
-                                Calendar taskStartDateTime = Calendar.getInstance();
-                                SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy hh:mm");
-                                try {
-                                    taskStartDateTime.setTime(dateFormat.parse(task.getStartDate()));
-                                } catch (ParseException e) {
-                                    e.printStackTrace();
-                                }
+                                if(!TextUtils.isEmpty(task.getStartDate()) && !TextUtils.isEmpty(task.getEndDate())){
 
-                                Calendar taskEndDateTime = Calendar.getInstance();
-                                try {
-                                    taskEndDateTime.setTime(dateFormat.parse(task.getEndDate()));
-                                } catch (ParseException e) {
-                                    e.printStackTrace();
-                                }
+                                    Calendar taskStartDateTime = Calendar.getInstance();
+                                    SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy hh:mm");
+                                    try {
+                                        taskStartDateTime.setTime(dateFormat.parse(task.getStartDate()));
+                                    } catch (ParseException e) {
+                                        e.printStackTrace();
+                                    }
+
+                                    Calendar taskEndDateTime = Calendar.getInstance();
+                                    try {
+                                        taskEndDateTime.setTime(dateFormat.parse(task.getEndDate()));
+                                    } catch (ParseException e) {
+                                        e.printStackTrace();
+                                    }
 
                                 /*Calendar startTime = Calendar.getInstance();
                                 startTime.set(Calendar.HOUR_OF_DAY, taskStartDateTime.get(Calendar.HOUR_OF_DAY));
@@ -267,11 +270,12 @@ public class GroupActivity extends AppCompatActivity {
                                 endTime.set(Calendar.MONTH, taskEndDateTime.get(Calendar.MONTH));
                                 endTime.set(Calendar.YEAR, taskEndDateTime.get(Calendar.YEAR));*/
 
-                                //WeekViewEvent event = new WeekViewEvent(i, task.getName(), startTime, endTime);
-                                WeekViewEvent event = new WeekViewEvent(i, task.getName(), taskStartDateTime, taskEndDateTime);
-                                event.setColor(getResources().getColor(R.color.colorPrimary));
-                                events.add(event);
-                                i++;
+                                    //WeekViewEvent event = new WeekViewEvent(i, task.getName(), startTime, endTime);
+                                    WeekViewEvent event = new WeekViewEvent(i, task.getName(), taskStartDateTime, taskEndDateTime);
+                                    event.setColor(getResources().getColor(R.color.colorPrimary));
+                                    events.add(event);
+                                    i++;
+                                }
                             }
                         }
                         i = 0;

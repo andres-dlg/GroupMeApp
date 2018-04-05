@@ -63,7 +63,6 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
     private String groupKey;
     private List<SubGroup> subGroups;
     private Context contexto;
-    private SubGroupsFragment subGroupsFragment;
 
     public RVSubGroupAdapter(List<SubGroup> subGroups, String groupKey, Context context) {
         this.groupKey = groupKey;
@@ -107,11 +106,6 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
         subGroups.clear();
         notifyDataSetChanged();
     }
-// Add a list of items -- change to type used
-    /*public void addAll(List<SubGroup> list) {
-        subGroups.addAll(list);
-        notifyDataSetChanged();
-    }*/
 
     public void notify(List<SubGroup> list) {
         List<SubGroup> aux = new ArrayList<>();
@@ -170,14 +164,14 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
                         startDate.setText("No definida");
                     }
 
-                    //Nombre de la tarea
+                    //Fecha de fin de la tarea
                     endDate = fl.findViewById(R.id.taskEndDateTv);
                     final String endDateText = subGroups.get(position).getTasks().get(indexView).getEndDate();
                     if(!TextUtils.isEmpty(endDateText)){
                         endDate.setText(subGroups.get(position).getTasks().get(indexView).getEndDate());
                     }else{
                         endDate.setText("No definida");
-                    }//Fecha de fin de la tarea
+                    }
 
                     //Checkbox de la tarea
                     checkBox = fl.findViewById(R.id.checkbox);
@@ -192,53 +186,7 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
                         }
                     });
 
-                    //DateRangePicker
-                    final DatePickerDialog.OnDateSetListener dateListener =  new DatePickerDialog.OnDateSetListener() {
-                        @Override
-                        public void onDateSet(DatePickerDialog view, int year, int monthOfYear, int dayOfMonth, int yearEnd, int monthOfYearEnd, int dayOfMonthEnd) {
-                            DatabaseReference taskRef = FirebaseDatabase.getInstance().getReference("Groups")
-                                    .child(groupKey)
-                                    .child("subgroups")
-                                    .child(subGroups.get(position).getSubGroupKey())
-                                    .child("tasks").child(subGroups.get(position).getTasks().get(finalIndexView).getTaskKey());
-
-                            String newDayOfMonth = String.valueOf(dayOfMonth).length() > 1 ? String.valueOf(dayOfMonth) : "0"+String.valueOf(dayOfMonth);
-                            String newMonthOfYear = String.valueOf(monthOfYear+1).length() > 1 ? String.valueOf(monthOfYear+1) : "0"+String.valueOf(monthOfYear+1);
-                            String newDayOfMonthEnd = String.valueOf(dayOfMonthEnd).length() > 1 ? String.valueOf(dayOfMonthEnd) : "0"+String.valueOf(dayOfMonthEnd);
-                            String newMonthOfYearEnd = String.valueOf(monthOfYearEnd+1).length() > 1 ? String.valueOf(monthOfYearEnd+1) : "0"+String.valueOf(monthOfYearEnd+1);
-
-                            String startDateTxt = newDayOfMonth + "-" + newMonthOfYear +"-" + String.valueOf(year);
-                            String endDateTxt = newDayOfMonthEnd + "-" + newMonthOfYearEnd +"-" + String.valueOf(yearEnd);
-
-                            taskRef.child("startDate").setValue(startDateTxt);
-                            taskRef.child("endDate").setValue(endDateTxt);
-
-                            FrameLayout fl = (FrameLayout)linearLayout_childItems.getChildAt(finalIndexView);
-                            ((TextView)fl.findViewById(R.id.taskStartDateTv)).setText(startDateTxt);
-                            ((TextView)fl.findViewById(R.id.taskEndDateTv)).setText(endDateTxt);
-
-                            Toast.makeText(context,"Fechas guardadas",Toast.LENGTH_SHORT).show();
-                        }
-                    };
-
-                    fl.findViewById(R.id.btn_task_calendar).setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            Calendar now = Calendar.getInstance();
-                            DatePickerDialog dpd = com.borax12.materialdaterangepicker.date.DatePickerDialog.newInstance(
-                                    dateListener,
-                                    now.get(Calendar.YEAR),
-                                    now.get(Calendar.MONTH),
-                                    now.get(Calendar.DAY_OF_MONTH)
-                            );
-                            dpd.setStartTitle("DESDE");
-                            dpd.setEndTitle("HASTA");
-                            dpd.setAccentColor(R.color.colorPrimary);
-                            dpd.show(((Activity)RVSubGroupAdapter.this.contexto).getFragmentManager(),"Datepickerdialog");
-                        }
-                    });
-
-                    //TimeRangePicker
+                    //TimeRangePicker listener
                     final TimePickerDialog.OnTimeSetListener timeListener =  new TimePickerDialog.OnTimeSetListener() {
                         @Override
                         public void onTimeSet(RadialPickerLayout view, int hourOfDay, int minute, int hourOfDayEnd, int minuteEnd) {
@@ -277,25 +225,57 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
                         }
                     };
 
-                    fl.findViewById(R.id.btn_task_time).setOnClickListener(new View.OnClickListener() {
+                    //DateRangePicker
+                    final DatePickerDialog.OnDateSetListener dateListener =  new DatePickerDialog.OnDateSetListener() {
+                        @Override
+                        public void onDateSet(DatePickerDialog view, int year, int monthOfYear, int dayOfMonth, int yearEnd, int monthOfYearEnd, int dayOfMonthEnd) {
+                            DatabaseReference taskRef = FirebaseDatabase.getInstance().getReference("Groups")
+                                    .child(groupKey)
+                                    .child("subgroups")
+                                    .child(subGroups.get(position).getSubGroupKey())
+                                    .child("tasks").child(subGroups.get(position).getTasks().get(finalIndexView).getTaskKey());
+
+                            String newDayOfMonth = String.valueOf(dayOfMonth).length() > 1 ? String.valueOf(dayOfMonth) : "0"+String.valueOf(dayOfMonth);
+                            String newMonthOfYear = String.valueOf(monthOfYear+1).length() > 1 ? String.valueOf(monthOfYear+1) : "0"+String.valueOf(monthOfYear+1);
+                            String newDayOfMonthEnd = String.valueOf(dayOfMonthEnd).length() > 1 ? String.valueOf(dayOfMonthEnd) : "0"+String.valueOf(dayOfMonthEnd);
+                            String newMonthOfYearEnd = String.valueOf(monthOfYearEnd+1).length() > 1 ? String.valueOf(monthOfYearEnd+1) : "0"+String.valueOf(monthOfYearEnd+1);
+
+                            String startDateTxt = newDayOfMonth + "-" + newMonthOfYear +"-" + String.valueOf(year);
+                            String endDateTxt = newDayOfMonthEnd + "-" + newMonthOfYearEnd +"-" + String.valueOf(yearEnd);
+
+                            taskRef.child("startDate").setValue(startDateTxt);
+                            taskRef.child("endDate").setValue(endDateTxt);
+
+                            FrameLayout fl = (FrameLayout)linearLayout_childItems.getChildAt(finalIndexView);
+                            ((TextView)fl.findViewById(R.id.taskStartDateTv)).setText(startDateTxt);
+                            ((TextView)fl.findViewById(R.id.taskEndDateTv)).setText(endDateTxt);
+
+                            setTime(startDateTxt, endDateTxt, timeListener);
+
+                            Toast.makeText(context,"Fechas guardadas",Toast.LENGTH_SHORT).show();
+                        }
+                    };
+
+                    fl.findViewById(R.id.btn_task_calendar).setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                            if(TextUtils.isEmpty(startDateText) || TextUtils.isEmpty(endDateText)){
-                                Toast.makeText(context,"Primero defina las fechas de la tarea",Toast.LENGTH_SHORT).show();
-                            }else{
-                                Calendar now = Calendar.getInstance();
-                                TimePickerDialog dpd = com.borax12.materialdaterangepicker.time.TimePickerDialog.newInstance(
-                                        timeListener,
-                                        now.get(Calendar.HOUR_OF_DAY),
-                                        now.get(Calendar.MINUTE),
-                                        false
-                                );
-                                dpd.setAccentColor(R.color.colorPrimary);
-                                dpd.setTabIndicators("DESDE","HASTA");
-                                dpd.show(((Activity)RVSubGroupAdapter.this.contexto).getFragmentManager(),"Timepickerdialog");
-                            }
+                            Calendar now = Calendar.getInstance();
+                            DatePickerDialog dpd = com.borax12.materialdaterangepicker.date.DatePickerDialog.newInstance(
+                                    dateListener,
+                                    now.get(Calendar.YEAR),
+                                    now.get(Calendar.MONTH),
+                                    now.get(Calendar.DAY_OF_MONTH)
+                            );
+                            dpd.setStartTitle("DESDE");
+                            dpd.setEndTitle("HASTA");
+                            dpd.setAccentColor(R.color.colorPrimary);
+                            dpd.setCancelable(false);
+                            dpd.show(((Activity)RVSubGroupAdapter.this.contexto).getFragmentManager(),"Datepickerdialog");
                         }
                     });
+
+
+
 
                     //Menu (3 puntitos)
                     CircleImageView btnMenu = fl.findViewById(R.id.btn_menu);
@@ -310,6 +290,24 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
                     linearLayout_childItems.addView(fl, layoutParams);
                 }
                 textView_parentName.setOnClickListener(this);
+            }
+        }
+
+
+        private void setTime(String startDateText, String endDateText, TimePickerDialog.OnTimeSetListener timeListener) {
+            if(TextUtils.isEmpty(startDateText) || TextUtils.isEmpty(endDateText)){
+                Toast.makeText(context,"Primero defina las fechas de la tarea",Toast.LENGTH_SHORT).show();
+            }else{
+                Calendar now = Calendar.getInstance();
+                TimePickerDialog dpd = com.borax12.materialdaterangepicker.time.TimePickerDialog.newInstance(
+                        timeListener,
+                        now.get(Calendar.HOUR_OF_DAY),
+                        now.get(Calendar.MINUTE),
+                        false
+                );
+                dpd.setAccentColor(R.color.colorPrimary);
+                dpd.setTabIndicators("DESDE","HASTA");
+                dpd.show(((Activity)RVSubGroupAdapter.this.contexto).getFragmentManager(),"Timepickerdialog");
             }
         }
 
@@ -362,15 +360,153 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
                                 @Override
                                 public void onInput(@NonNull MaterialDialog dialog, CharSequence input) {
                                     if(!TextUtils.isEmpty(input)){
-                                        Task task = new Task(null,input.toString(),null,null,false);
+                                        final Task task = new Task(null,input.toString(),null,null,false);
 
-                                        View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.list_item_sub_group_task, parent , false);
+                                        /*View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.list_item_sub_group_task, parent , false);
                                         FrameLayout fl = v.findViewById(R.id.fltask);
                                         fl.setOnClickListener(SubGroupViewHolder.this);
                                         textView = fl.findViewById(R.id.tasktv);
                                         textView.setText(task.getName());
                                         checkBox = fl.findViewById(R.id.checkbox);
                                         //checkBox.setOnClickListener(SubGroupViewHolder.this);
+                                        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+                                        CircleImageView btnMenu = fl.findViewById(R.id.btn_menu);
+                                        btnMenu.setOnClickListener(SubGroupViewHolder.this);
+                                        int[] attrs = new int[]{R.attr.selectableItemBackground};
+                                        TypedArray typedArray = context.obtainStyledAttributes(attrs);
+                                        int backgroundResource = typedArray.getResourceId(0, 0);
+                                        typedArray.recycle();
+                                        fl.setBackgroundResource(backgroundResource);
+                                        linearLayout_childItems.addView(fl, layoutParams);*/
+
+                                        View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.list_item_sub_group_task, parent , false);
+                                        FrameLayout fl = v.findViewById(R.id.fltask);
+
+                                        //Nombre de la tarea
+                                        textView = fl.findViewById(R.id.tasktv);
+                                        textView.setText(task.getName());
+
+                                        //Fecha de comienzo de la tarea
+                                        startDate = fl.findViewById(R.id.taskStartDateTv);
+                                        final String startDateText = task.getStartDate();
+                                        if(!TextUtils.isEmpty(startDateText)){
+                                            startDate.setText(task.getStartDate());
+                                        }else{
+                                            startDate.setText("No definida");
+                                        }
+
+                                        //Fecha de fin de la tarea
+                                        endDate = fl.findViewById(R.id.taskEndDateTv);
+                                        final String endDateText = task.getEndDate();
+                                        if(!TextUtils.isEmpty(endDateText)){
+                                            endDate.setText(task.getEndDate());
+                                        }else{
+                                            endDate.setText("No definida");
+                                        }
+
+                                        //Checkbox de la tarea
+                                        checkBox = fl.findViewById(R.id.checkbox);
+                                        if(task.getFinished()){
+                                            checkBox.setChecked(true);
+                                        }
+                                        //final int finalIndexView = fl.getChildCount();
+                                        checkBox.setOnClickListener(new View.OnClickListener() {
+                                            @Override
+                                            public void onClick(View view) {
+                                                finishResumeTask((CheckBox)view,context,subGroups.get(position).getSubGroupKey(),task.getTaskKey());
+                                            }
+                                        });
+
+                                        //TimeRangePicker listener
+                                        final TimePickerDialog.OnTimeSetListener timeListener =  new TimePickerDialog.OnTimeSetListener() {
+                                            @Override
+                                            public void onTimeSet(RadialPickerLayout view, int hourOfDay, int minute, int hourOfDayEnd, int minuteEnd) {
+                                                DatabaseReference taskRef = FirebaseDatabase.getInstance().getReference("Groups")
+                                                        .child(groupKey)
+                                                        .child("subgroups")
+                                                        .child(subGroups.get(position).getSubGroupKey())
+                                                        .child("tasks").child(task.getTaskKey());
+
+                                                String hourString = hourOfDay < 10 ? "0"+hourOfDay : ""+hourOfDay;
+                                                String minuteString = minute < 10 ? "0"+minute : ""+minute;
+                                                String hourStringEnd = hourOfDayEnd < 10 ? "0"+hourOfDayEnd : ""+hourOfDayEnd;
+                                                String minuteStringEnd = minuteEnd < 10 ? "0"+minuteEnd : ""+minuteEnd;
+                                                String time = "You picked the following time: From - "+hourString+"h"+minuteString+" To - "+hourStringEnd+"h"+minuteStringEnd;
+
+                                                String startTime = hourString+":"+minuteString;
+                                                String endTime = hourStringEnd+":"+minuteStringEnd;
+
+
+
+                                                FrameLayout fl = (FrameLayout)linearLayout_childItems.getChildAt(linearLayout_childItems.getChildCount()-1);
+                                                TextView tvStartDate = (TextView)fl.findViewById(R.id.taskStartDateTv);
+                                                TextView tvEndDate = (TextView)fl.findViewById(R.id.taskEndDateTv);
+
+                                                String startDate = tvStartDate.getText().toString();
+                                                String endDate = tvEndDate.getText().toString();
+
+                                                String startDateTime = startDate+" "+startTime;
+                                                String endDateTime = endDate+" "+endTime;
+
+                                                tvStartDate.setText(startDateTime);
+                                                tvEndDate.setText(endDateTime);
+
+                                                taskRef.child("startDate").setValue(startDateTime);
+                                                taskRef.child("endDate").setValue(endDateTime);
+
+                                                Toast.makeText(context,"Horarios guardados",Toast.LENGTH_SHORT).show();
+                                            }
+                                        };
+
+                                        //DateRangePicker
+                                        final DatePickerDialog.OnDateSetListener dateListener =  new DatePickerDialog.OnDateSetListener() {
+                                            @Override
+                                            public void onDateSet(DatePickerDialog view, int year, int monthOfYear, int dayOfMonth, int yearEnd, int monthOfYearEnd, int dayOfMonthEnd) {
+                                                DatabaseReference taskRef = FirebaseDatabase.getInstance().getReference("Groups")
+                                                        .child(groupKey)
+                                                        .child("subgroups")
+                                                        .child(subGroups.get(position).getSubGroupKey())
+                                                        .child("tasks").child(task.getTaskKey());
+
+                                                String newDayOfMonth = String.valueOf(dayOfMonth).length() > 1 ? String.valueOf(dayOfMonth) : "0"+String.valueOf(dayOfMonth);
+                                                String newMonthOfYear = String.valueOf(monthOfYear+1).length() > 1 ? String.valueOf(monthOfYear+1) : "0"+String.valueOf(monthOfYear+1);
+                                                String newDayOfMonthEnd = String.valueOf(dayOfMonthEnd).length() > 1 ? String.valueOf(dayOfMonthEnd) : "0"+String.valueOf(dayOfMonthEnd);
+                                                String newMonthOfYearEnd = String.valueOf(monthOfYearEnd+1).length() > 1 ? String.valueOf(monthOfYearEnd+1) : "0"+String.valueOf(monthOfYearEnd+1);
+
+                                                String startDateTxt = newDayOfMonth + "-" + newMonthOfYear +"-" + String.valueOf(year);
+                                                String endDateTxt = newDayOfMonthEnd + "-" + newMonthOfYearEnd +"-" + String.valueOf(yearEnd);
+
+                                                taskRef.child("startDate").setValue(startDateTxt);
+                                                taskRef.child("endDate").setValue(endDateTxt);
+
+                                                FrameLayout fl = (FrameLayout)linearLayout_childItems.getChildAt(linearLayout_childItems.getChildCount()-1);
+                                                ((TextView)fl.findViewById(R.id.taskStartDateTv)).setText(startDateTxt);
+                                                ((TextView)fl.findViewById(R.id.taskEndDateTv)).setText(endDateTxt);
+
+                                                setTime(startDateTxt, endDateTxt, timeListener);
+
+                                                Toast.makeText(context,"Fechas guardadas",Toast.LENGTH_SHORT).show();
+                                            }
+                                        };
+
+                                        fl.findViewById(R.id.btn_task_calendar).setOnClickListener(new View.OnClickListener() {
+                                            @Override
+                                            public void onClick(View v) {
+                                                Calendar now = Calendar.getInstance();
+                                                DatePickerDialog dpd = com.borax12.materialdaterangepicker.date.DatePickerDialog.newInstance(
+                                                        dateListener,
+                                                        now.get(Calendar.YEAR),
+                                                        now.get(Calendar.MONTH),
+                                                        now.get(Calendar.DAY_OF_MONTH)
+                                                );
+                                                dpd.setStartTitle("DESDE");
+                                                dpd.setEndTitle("HASTA");
+                                                dpd.setAccentColor(R.color.colorPrimary);
+                                                dpd.setCancelable(false);
+                                                dpd.show(((Activity)RVSubGroupAdapter.this.contexto).getFragmentManager(),"Datepickerdialog");
+                                            }
+                                        });
+
                                         LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
                                         CircleImageView btnMenu = fl.findViewById(R.id.btn_menu);
                                         btnMenu.setOnClickListener(SubGroupViewHolder.this);
@@ -449,6 +585,8 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
         DatabaseReference subGroupTasksRef = FirebaseDatabase.getInstance().getReference("Groups").child(groupKey).child("subgroups").child(subGroupKey).child("tasks");
 
         final String taskKey = subGroupTasksRef.push().getKey();
+
+        task.setTaskKey(taskKey);
 
         Map<String,Object> map = new HashMap<>();
         map.put("taskKey",taskKey);
