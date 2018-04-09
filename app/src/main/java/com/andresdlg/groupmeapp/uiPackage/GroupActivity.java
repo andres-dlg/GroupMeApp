@@ -181,10 +181,13 @@ public class GroupActivity extends AppCompatActivity {
         userRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
+                //groupUsers.clear();
                 if(dataSnapshot.child("groups").child(groupKey).exists()){
                     if(dataSnapshot.child("groups").child(groupKey).child("status").getValue().toString().equals(GroupStatus.ACCEPTED.toString())){
                         Users u = dataSnapshot.getValue(Users.class);
-                        groupUsers.add(u);
+                        if(!validateExistingMembers(u)){
+                            groupUsers.add(u);
+                        }
                         ((FireApp) getApplicationContext()).setGroupUsers(groupUsers);
                     }
                 }
@@ -194,6 +197,15 @@ public class GroupActivity extends AppCompatActivity {
 
             }
         });
+    }
+
+    private boolean validateExistingMembers(Users u) {
+        for(Users user : groupUsers){
+            if(u.getUserid().equals(user.getUserid())){
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override

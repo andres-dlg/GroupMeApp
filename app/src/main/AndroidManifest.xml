@@ -98,8 +98,9 @@
         <activity
             android:name=".uiPackage.GroupDetailActivity"
             android:theme="@style/AppTheme.NoActionBar" />
-        <activity android:name=".uiPackage.TaskWeekViewBaseActivty"></activity>
+        <activity android:name=".uiPackage.TaskWeekViewBaseActivty" />
         <activity android:name=".uiPackage.TaskWeekViewActivity" />
+        <activity android:name=".uiPackage.SearchContactActivity"></activity>
     </application>
 
 </manifest>

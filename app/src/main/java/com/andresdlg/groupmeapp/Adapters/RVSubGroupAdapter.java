@@ -5,9 +5,11 @@ import android.app.Fragment;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.res.TypedArray;
+import android.graphics.Color;
 import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
@@ -33,6 +35,7 @@ import com.afollestad.materialdialogs.MaterialDialog;
 import com.andresdlg.groupmeapp.Entities.SubGroup;
 import com.andresdlg.groupmeapp.Entities.Task;
 import com.andresdlg.groupmeapp.R;
+import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
 import com.andresdlg.groupmeapp.uiPackage.GroupActivity;
 import com.andresdlg.groupmeapp.uiPackage.MainActivity;
 import com.andresdlg.groupmeapp.uiPackage.fragments.SubGroupsFragment;
@@ -144,6 +147,17 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
 
             linearLayout_childItems = itemView.findViewById(R.id.ll_child_items);
             linearLayout_childItems.setVisibility(View.GONE);
+
+            boolean isSubGroupMember = false;
+            Map<String,String> members = subGroups.get(position).getMembers();
+            for(Map.Entry<String, String> entry: members.entrySet()) {
+                if(entry.getKey().equals(StaticFirebaseSettings.currentUserId)){
+                    isSubGroupMember = true;
+                    //checkBox.setEnabled(true);
+                    break;
+                }
+            }
+
             if(subGroups.get(position).getTasks() != null){
                 int intMaxNoOfChild = subGroups.get(position).getTasks().size();
                 for (int indexView = 0; indexView < intMaxNoOfChild; indexView++) {
@@ -175,6 +189,7 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
 
                     //Checkbox de la tarea
                     checkBox = fl.findViewById(R.id.checkbox);
+                    checkBox.setEnabled(false);
                     if(subGroups.get(position).getTasks().get(indexView).getFinished()){
                         checkBox.setChecked(true);
                     }
@@ -185,6 +200,10 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
                             finishResumeTask((CheckBox)view,context,subGroups.get(position).getSubGroupKey(),subGroups.get(position).getTasks().get(finalIndexView).getTaskKey());
                         }
                     });
+                    if(isSubGroupMember){
+                        checkBox.setEnabled(true);
+                    }
+
 
                     //TimeRangePicker listener
                     final TimePickerDialog.OnTimeSetListener timeListener =  new TimePickerDialog.OnTimeSetListener() {
@@ -256,7 +275,10 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
                         }
                     };
 
-                    fl.findViewById(R.id.btn_task_calendar).setOnClickListener(new View.OnClickListener() {
+                    CircleImageView btnTaskCalendar = fl.findViewById(R.id.btn_task_calendar);
+                    btnTaskCalendar.setEnabled(false);
+                    btnTaskCalendar.setColorFilter(ContextCompat.getColor(context, R.color.gray_400), android.graphics.PorterDuff.Mode.SRC_IN);
+                    btnTaskCalendar.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
                             Calendar now = Calendar.getInstance();
@@ -273,13 +295,20 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
                             dpd.show(((Activity)RVSubGroupAdapter.this.contexto).getFragmentManager(),"Datepickerdialog");
                         }
                     });
-
-
-
+                    if(isSubGroupMember){
+                        btnTaskCalendar.setEnabled(true);
+                        btnTaskCalendar.setColorFilter(ContextCompat.getColor(context, R.color.black), android.graphics.PorterDuff.Mode.SRC_IN);
+                    }
 
                     //Menu (3 puntitos)
                     CircleImageView btnMenu = fl.findViewById(R.id.btn_menu);
                     btnMenu.setOnClickListener(this);
+                    btnMenu.setEnabled(false);
+                    btnMenu.setColorFilter(ContextCompat.getColor(context, R.color.gray_400), android.graphics.PorterDuff.Mode.SRC_IN);
+                    if(isSubGroupMember){
+                        btnMenu.setEnabled(true);
+                        btnMenu.setColorFilter(ContextCompat.getColor(context, R.color.black), android.graphics.PorterDuff.Mode.SRC_IN);
+                    }
 
                     LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
                     int[] attrs = new int[]{R.attr.selectableItemBackground};

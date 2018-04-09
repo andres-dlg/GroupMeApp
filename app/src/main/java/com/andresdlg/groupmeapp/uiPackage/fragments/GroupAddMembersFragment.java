@@ -155,7 +155,7 @@ public class GroupAddMembersFragment extends Fragment implements RVSearchContact
             firebaseContacts.addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
-                    users.clear();
+                    //users.clear();
                     rvSearchContactAdapter.notifyDataSetChanged();
                     for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
                         //Getting the data from snapshot
@@ -183,6 +183,7 @@ public class GroupAddMembersFragment extends Fragment implements RVSearchContact
         user.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
+                users.clear();
                 Users u = dataSnapshot.getValue(Users.class);
                 if(groupUsers == null){
                     if(!users.contains(u)){

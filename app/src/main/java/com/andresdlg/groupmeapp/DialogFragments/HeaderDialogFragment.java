@@ -1,6 +1,7 @@
 package com.andresdlg.groupmeapp.DialogFragments;
 
 import android.app.Dialog;
+import android.content.DialogInterface;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
@@ -33,11 +34,8 @@ import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
 import com.andresdlg.groupmeapp.uiPackage.fragments.GroupAddMembersFragment;
 import com.andresdlg.groupmeapp.uiPackage.fragments.GroupSetupFragment;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
@@ -293,7 +291,7 @@ public class HeaderDialogFragment extends DialogFragment implements GroupAddMemb
                         @Override
                         public void onSuccess(Uri uri) {
                             imageUrl = uri;
-                            userIds.add(StaticFirebaseSettings.currentUserId);
+                            //userIds.add(StaticFirebaseSettings.currentUserId);
                             Map<Object,Object> map = new HashMap<>();
                             for(String id: userIds){
                                 if(id.equals(StaticFirebaseSettings.currentUserId)){
@@ -309,7 +307,6 @@ public class HeaderDialogFragment extends DialogFragment implements GroupAddMemb
                     });
                 }
             }
-
         }
     }
 
@@ -434,6 +431,11 @@ public class HeaderDialogFragment extends DialogFragment implements GroupAddMemb
             return false;
         }
         return true;
+    }
+
+    @Override
+    public void onDismiss(DialogInterface dialog) {
+        super.onDismiss(dialog);
     }
 
     @Override

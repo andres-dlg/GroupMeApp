@@ -1,24 +1,31 @@
 package com.andresdlg.groupmeapp.uiPackage;
 
+import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.andresdlg.groupmeapp.Adapters.RVGroupDetailAdapter;
 import com.andresdlg.groupmeapp.Entities.Group;
 import com.andresdlg.groupmeapp.Entities.Users;
 import com.andresdlg.groupmeapp.R;
+import com.andresdlg.groupmeapp.Utils.GroupStatus;
+import com.andresdlg.groupmeapp.Utils.Roles;
+import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -46,6 +53,7 @@ public class GroupDetailActivity extends AppCompatActivity {
     List<Users> usersList;
     Map<String, String> usersRoles;
     RVGroupDetailAdapter adapter;
+    Map<String, String> members;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -68,15 +76,15 @@ public class GroupDetailActivity extends AppCompatActivity {
 
         TextView tv = findViewById(R.id.group_name);
         final ImageView iv = findViewById(R.id.add_group_photo);
-        FloatingActionButton fab = findViewById(R.id.fab);
+        final FloatingActionButton fabAddContact = findViewById(R.id.fabAddContact);
 
-        RecyclerView rv = findViewById(R.id.rvMembers);
+        final RecyclerView rv = findViewById(R.id.rvMembers);
         rv.setHasFixedSize(true);
         LinearLayoutManager llm = new LinearLayoutManager(this);
         rv.setLayoutManager(llm);
 
-        adapter = new RVGroupDetailAdapter(usersList,usersRoles,groupKey,this);
-        rv.setAdapter(adapter);
+        //adapter = new RVGroupDetailAdapter(usersList,usersRoles,groupKey,this);
+        //rv.setAdapter(adapter);
 
         tv.setText(groupName);
 
@@ -93,15 +101,35 @@ public class GroupDetailActivity extends AppCompatActivity {
                 .networkPolicy(NetworkPolicy.OFFLINE)
                 .into(target);
 
-
-
-
         groupRef = FirebaseDatabase.getInstance().getReference("Groups").child(groupKey);
         groupRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 Group g = dataSnapshot.getValue(Group.class);
                 getMembers(g);
+
+                adapter = new RVGroupDetailAdapter(usersList,usersRoles,groupKey,GroupDetailActivity.this);
+                rv.setAdapter(adapter);
+
+                fabAddContact.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+
+                        boolean isAdmin = false;
+                        for(Map.Entry<String, String> entry : members.entrySet()) {
+                            if(entry.getValue().equals(Roles.ADMIN.toString()) && entry.getKey().equals(StaticFirebaseSettings.currentUserId)){
+                                isAdmin = true;
+                            }
+                        }
+                        if(isAdmin){
+                            Intent i = new Intent(GroupDetailActivity.this, SearchContactActivity.class);
+                            i.putExtra("groupKey",groupKey);
+                            startActivity(i);
+                        }else{
+                            Toast.makeText(GroupDetailActivity.this,"Debe ser administrador para agregar nuevos miembros",Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                });
             }
 
             @Override
@@ -110,10 +138,12 @@ public class GroupDetailActivity extends AppCompatActivity {
             }
         });
 
+
+
     }
 
     private void getMembers(final Group g) {
-        Map<String, String> members = g.getMembers();
+        members = g.getMembers();
         for(Map.Entry<String, String> entry : members.entrySet()) {
             String memberId = entry.getKey();
             //String memberRol = entry.getValue();
@@ -123,8 +153,7 @@ public class GroupDetailActivity extends AppCompatActivity {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     Users u = dataSnapshot.getValue(Users.class);
-                    usersList.add(u);
-                    adapter.notifyDataSetChanged();
+                    filterUsers(u);
                 }
 
                 @Override
@@ -133,6 +162,30 @@ public class GroupDetailActivity extends AppCompatActivity {
                 }
             });
         }
+    }
+
+    private void filterUsers(final Users u) {
+        DatabaseReference statusRef = FirebaseDatabase
+                                        .getInstance()
+                                        .getReference("Users")
+                                        .child(u.getUserid())
+                                        .child("groups")
+                                        .child(groupKey)
+                                        .child("status");
+        statusRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if(dataSnapshot.getValue().toString().equals(GroupStatus.ACCEPTED.toString())){
+                    usersList.add(u);
+                    adapter.notifyDataSetChanged();
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
     }
 
     @Override

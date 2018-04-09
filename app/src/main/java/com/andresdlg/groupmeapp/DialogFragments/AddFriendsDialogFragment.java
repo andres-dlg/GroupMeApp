@@ -75,7 +75,6 @@ public class AddFriendsDialogFragment extends DialogFragment {
     private RecyclerView rvContactsResult;
     DatabaseReference mUserDatabase;
 
-
     public AddFriendsDialogFragment(){
         setRetainInstance(true);
     }
@@ -104,12 +103,10 @@ public class AddFriendsDialogFragment extends DialogFragment {
         }
         setHasOptionsMenu(true);
 
-
         //RECYCLERVIEW INITIALIZATION
         rvContactsResult = view.findViewById(R.id.rvContactsResult);
         rvContactsResult.setLayoutManager(new LinearLayoutManager(getContext()));
         rvContactsResult.setHasFixedSize(true);
-
 
         searchView = view.findViewById(R.id.search_view);
         searchView.setVoiceSearch(true);
@@ -392,7 +389,5 @@ public class AddFriendsDialogFragment extends DialogFragment {
                 }
             });
         }
-
     }
-
 }

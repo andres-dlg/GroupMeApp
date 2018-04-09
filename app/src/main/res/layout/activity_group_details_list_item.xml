@@ -97,4 +97,17 @@
             android:background="@color/bg_add_photo" />
     </RelativeLayout>
 
+    <de.hdodenhof.circleimageview.CircleImageView
+        android:clickable="true"
+        android:focusable="true"
+        android:foreground="?android:attr/selectableItemBackgroundBorderless"
+        android:layout_margin="20dp"
+        android:background="#fff"
+        android:id="@+id/btn_menu"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/dots_vertical"
+        android:layout_gravity="center_vertical|center_horizontal"/>
+
+
 </LinearLayout>

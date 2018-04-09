@@ -13,15 +13,18 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import com.andresdlg.groupmeapp.Adapters.RVSubGroupAdapter;
 import com.andresdlg.groupmeapp.DialogFragments.HeaderDialogFragment;
+import com.andresdlg.groupmeapp.Entities.Group;
 import com.andresdlg.groupmeapp.Entities.SubGroup;
 
 import com.andresdlg.groupmeapp.Entities.Task;
 import com.andresdlg.groupmeapp.R;
 import com.andresdlg.groupmeapp.Utils.GroupType;
 import com.andresdlg.groupmeapp.firebasePackage.FireApp;
+import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -95,15 +98,43 @@ public class SubGroupsFragment extends Fragment {
 
         setRetainInstance(true);
 
+
+        groupKey = ((FireApp) getActivity().getApplication()).getGroupKey();
+
         fab = view.findViewById(R.id.fabSubGroups);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 showHeaderDialogFragment();
+                /*DatabaseReference groupRef = FirebaseDatabase
+                        .getInstance()
+                        .getReference("Groups")
+                        .child(groupKey);
+                groupRef.addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        Group g = dataSnapshot.getValue(Group.class);
+                        boolean isNotAdmin = true;
+                        for(Map.Entry<String, String> entry: g.getMembers().entrySet()) {
+                            if(entry.getKey().equals(StaticFirebaseSettings.currentUserId) && entry.getValue().equals("ADMIN")){
+                                showHeaderDialogFragment();
+                                isNotAdmin = false;
+                                break;
+                            }
+                        }
+                        if(isNotAdmin){
+                            Toast.makeText(getContext(),"Debe ser administrador para crear subgrupos",Toast.LENGTH_SHORT).show();
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });*/
             }
         });
 
-        groupKey = ((FireApp) getActivity().getApplication()).getGroupKey();
 
         subGroups = new ArrayList<>();
 

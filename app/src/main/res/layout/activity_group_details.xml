@@ -52,7 +52,7 @@
                 android:layout_height="wrap_content"
                 android:layout_alignEnd="@id/add_group_photo"
                 android:layout_alignTop="@id/add_group_photo"
-                android:layout_marginRight="20dp"
+                android:layout_marginRight="15dp"
                 android:layout_marginTop="175dp"
                 android:elevation="10dp"
                 android:src="@drawable/ic_add_a_photo_black_48dp"
@@ -82,7 +82,18 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_below="@+id/textMembers">
-
             </android.support.v7.widget.RecyclerView>
+
+            <android.support.design.widget.FloatingActionButton
+                android:id="@+id/fabAddContact"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:fabSize="normal"
+                android:src="@drawable/account_plus_white"
+                android:layout_alignParentBottom="true"
+                android:layout_alignParentRight="true"
+                android:layout_marginRight="15dp"
+                android:layout_marginBottom="15dp"
+                android:elevation="10dp"/>
         </RelativeLayout>
     </android.support.v4.widget.NestedScrollView>
