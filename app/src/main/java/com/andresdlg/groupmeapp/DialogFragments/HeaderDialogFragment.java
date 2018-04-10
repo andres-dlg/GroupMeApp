@@ -101,21 +101,38 @@ public class HeaderDialogFragment extends DialogFragment implements GroupAddMemb
 
         Toolbar toolbar = view.findViewById(R.id.toolbar);
 
+        TextView tv = ((TextView)toolbar.findViewById(R.id.dialogTitle));
         if(type == GroupType.GROUP){
-            toolbar.setTitle("Nuevo grupo");
+            tv.setText("Nuevo grupo");
         }else{
-            toolbar.setTitle("Nuevo subgrupo");
+            tv.setText("Nuevo subgrupo");
         }
 
+        (toolbar.findViewById(R.id.close)).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                dismiss();
+            }
+        });
 
-        ((AppCompatActivity)getActivity()).setSupportActionBar(toolbar);
+        (toolbar.findViewById(R.id.save)).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                saveGroup();
+            }
+        });
+
+
+        //toolbar.setNavigationIcon(android.R.drawable.ic_menu_close_clear_cancel);
+
+        /*((AppCompatActivity)getActivity()).setSupportActionBar(toolbar);
 
         ActionBar actionBar = ((AppCompatActivity)getActivity()).getSupportActionBar();
         if (actionBar!=null){
             actionBar.setDisplayHomeAsUpEnabled(true);
             actionBar.setHomeButtonEnabled(true);
             actionBar.setHomeAsUpIndicator(android.R.drawable.ic_menu_close_clear_cancel);
-        }
+        }*/
         setHasOptionsMenu(true);
 
 
@@ -194,11 +211,8 @@ public class HeaderDialogFragment extends DialogFragment implements GroupAddMemb
                 return true;
             case R.id.menu_save:
                 saveGroup();
-
                 return true;
         }
-
-
         return super.onOptionsItemSelected(item);
     }
 

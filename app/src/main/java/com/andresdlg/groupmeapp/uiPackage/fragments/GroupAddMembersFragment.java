@@ -183,7 +183,7 @@ public class GroupAddMembersFragment extends Fragment implements RVSearchContact
         user.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                users.clear();
+                //users.clear();
                 Users u = dataSnapshot.getValue(Users.class);
                 if(groupUsers == null){
                     if(!users.contains(u)){
@@ -256,6 +256,17 @@ public class GroupAddMembersFragment extends Fragment implements RVSearchContact
             throw new ClassCastException(fragment.toString() + " must implement OnUserSelectionSetListener");
         }
     }
+
+    /*@Override
+    public void onResume() {
+        super.onResume();
+        if(users == null){
+            users = new ArrayList<>();
+        }else{
+            users.clear();
+        }
+        fetchContacts();
+    }*/
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {

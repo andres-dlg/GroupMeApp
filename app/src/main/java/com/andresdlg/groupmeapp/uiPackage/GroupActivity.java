@@ -158,6 +158,11 @@ public class GroupActivity extends AppCompatActivity {
 
         //((FireApp) getApplicationContext()).setGroupKey(groupKey);
 
+        fetchContacts();
+
+    }
+
+    private void fetchContacts(){
         DatabaseReference groupRef = FirebaseDatabase.getInstance().getReference("Groups").child(groupKey).child("members");
         groupRef.addValueEventListener(new ValueEventListener() {
             @Override
@@ -208,10 +213,21 @@ public class GroupActivity extends AppCompatActivity {
         return false;
     }
 
-    @Override
+    /*@Override
     public void onBackPressed() {
         super.onBackPressed();
         supportFinishAfterTransition();
+    }*/
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if(groupUsers == null){
+            groupUsers = new ArrayList<>();
+        }else{
+            groupUsers.clear();
+        }
+        fetchContacts();
     }
 
     @Override
@@ -226,7 +242,7 @@ public class GroupActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
-                this.finish();
+                finish();
                 return true;
             case R.id.dates:
                 clicked = true;
