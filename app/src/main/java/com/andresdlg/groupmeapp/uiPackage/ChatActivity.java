@@ -17,6 +17,7 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.andresdlg.groupmeapp.Adapters.ListMessageAdapter;
 import com.andresdlg.groupmeapp.Entities.Conversation;
 import com.andresdlg.groupmeapp.Entities.Users;
 import com.andresdlg.groupmeapp.R;
@@ -98,7 +99,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
                             linearLayoutManager = new LinearLayoutManager(getBaseContext(), LinearLayoutManager.VERTICAL, false);
                             recyclerChat = (RecyclerView) findViewById(R.id.recyclerChat);
                             recyclerChat.setLayoutManager(linearLayoutManager);
-                            adapter = new ListMessageAdapter(getBaseContext(), conversation, userTo.getImageURL(), currentUser.getImageURL());
+                            adapter = new ListMessageAdapter(getBaseContext(), conversation, userTo.getImageURL(), currentUser.getImageURL(),"User");
                             FirebaseDatabase.getInstance().getReference().child("Conversations").child(conversationKey).child("messages").addChildEventListener(new ChildEventListener() {
                                 @Override
                                 public void onChildAdded(DataSnapshot dataSnapshot, String s) {
@@ -192,128 +193,5 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
                 dbRef.setValue(newMessage);
             }
         }
-    }
-}
-
-class ListMessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
-
-    private Context context;
-    private Conversation conversation;
-    private String userToUrl;
-    private String currentUserUrl;
-
-    public ListMessageAdapter(Context context, Conversation conversation, String userToUrl, String currentUserUrl) {
-        this.context = context;
-        this.conversation = conversation;
-        this.userToUrl = userToUrl;
-        this.currentUserUrl = currentUserUrl;
-    }
-
-    @Override
-    public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        if (viewType == ChatActivity.VIEW_TYPE_FRIEND_MESSAGE) {
-            View view = LayoutInflater.from(context).inflate(R.layout.rc_item_message_friend, parent, false);
-            return new ItemMessageFriendHolder(view);
-        } else if (viewType == ChatActivity.VIEW_TYPE_USER_MESSAGE) {
-            View view = LayoutInflater.from(context).inflate(R.layout.rc_item_message_user, parent, false);
-            return new ItemMessageUserHolder(view);
-        }
-        return null;
-    }
-
-    @Override
-    public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
-        if (holder instanceof ItemMessageFriendHolder) {
-            ((ItemMessageFriendHolder) holder).txtContent.setText(conversation.getListMessageData().get(position).getText());
-            ((ItemMessageFriendHolder) holder).setAvatar(context,userToUrl);
-        } else if (holder instanceof ItemMessageUserHolder) {
-            ((ItemMessageUserHolder) holder).txtContent.setText(conversation.getListMessageData().get(position).getText());
-            ((ItemMessageUserHolder) holder).setAvatar(context,currentUserUrl);
-        }
-    }
-
-    @Override
-    public int getItemViewType(int position) {
-        return conversation.getListMessageData().get(position).getIdSender().equals(StaticFirebaseSettings.currentUserId) ? ChatActivity.VIEW_TYPE_USER_MESSAGE : ChatActivity.VIEW_TYPE_FRIEND_MESSAGE;
-    }
-
-    @Override
-    public int getItemCount() {
-        return conversation.getListMessageData().size();
-    }
-}
-
-class ItemMessageUserHolder extends RecyclerView.ViewHolder {
-    public TextView txtContent;
-    public CircleImageView avata;
-
-    public ItemMessageUserHolder(View itemView) {
-        super(itemView);
-        txtContent = (TextView) itemView.findViewById(R.id.textContentUser);
-        avata = (CircleImageView) itemView.findViewById(R.id.imageView2);
-    }
-
-    public void setAvatar(final Context context, final String currentUserUrl) {
-        Picasso.with(context).load(currentUserUrl).into(avata, new Callback() {
-            @Override
-            public void onSuccess() {
-
-            }
-            @Override
-            public void onError() {
-                Picasso.with(context)
-                        .load(currentUserUrl)
-                        .networkPolicy(NetworkPolicy.OFFLINE)
-                        .into(avata, new Callback() {
-                            @Override
-                            public void onSuccess() {
-
-                            }
-
-                            @Override
-                            public void onError() {
-                                Log.v("Picasso","No se ha podido cargar la foto");
-                            }
-                        });
-            }
-        });
-    }
-}
-
-class ItemMessageFriendHolder extends RecyclerView.ViewHolder {
-    public TextView txtContent;
-    public CircleImageView avata;
-    ;
-
-    public ItemMessageFriendHolder(View itemView) {
-        super(itemView);
-        txtContent = (TextView) itemView.findViewById(R.id.textContentFriend);
-        avata = (CircleImageView) itemView.findViewById(R.id.imageView3);
-    }
-
-    public void setAvatar(final Context context, final String userToUrl) {
-        Picasso.with(context).load(userToUrl).into(avata, new Callback() {
-            @Override
-            public void onSuccess() {
-
-            }
-            @Override
-            public void onError() {
-                Picasso.with(context)
-                        .load(userToUrl)
-                        .networkPolicy(NetworkPolicy.OFFLINE)
-                        .into(avata, new Callback() {
-                            @Override
-                            public void onSuccess() {
-
-                            }
-
-                            @Override
-                            public void onError() {
-                                Log.v("Picasso","No se ha podido cargar la foto");
-                            }
-                        });
-            }
-        });
     }
 }

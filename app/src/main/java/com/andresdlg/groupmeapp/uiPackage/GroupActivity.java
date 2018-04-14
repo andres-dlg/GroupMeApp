@@ -11,10 +11,16 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
+import android.util.DisplayMetrics;
+import android.util.Log;
+import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.Transformation;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -27,6 +33,7 @@ import com.andresdlg.groupmeapp.R;
 import com.andresdlg.groupmeapp.Utils.GroupStatus;
 import com.andresdlg.groupmeapp.firebasePackage.FireApp;
 import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
+import com.andresdlg.groupmeapp.uiPackage.fragments.GroupChatFragment;
 import com.andresdlg.groupmeapp.uiPackage.fragments.NewsFragment;
 import com.andresdlg.groupmeapp.uiPackage.fragments.SubGroupsFragment;
 import com.google.firebase.auth.FirebaseAuth;
@@ -48,12 +55,14 @@ import java.util.List;
 import de.hdodenhof.circleimageview.CircleImageView;
 import devlight.io.library.ntb.NavigationTabBar;
 
-public class GroupActivity extends AppCompatActivity {
+public class GroupActivity extends AppCompatActivity implements GroupChatFragment.OnGroupFragmentVisibilityListener {
 
     ViewPager viewPager;
     String groupKey;
     List<Users> groupUsers;
     boolean clicked;
+    NavigationTabBar navigationTabBar;
+    View dummyView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,6 +74,10 @@ public class GroupActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         clicked = false;
+
+        dummyView = findViewById(R.id.dummyView);
+
+        final DisplayMetrics metrics = getResources().getDisplayMetrics();
 
         groupKey = getIntent().getStringExtra("groupKey");
         final String groupName = getIntent().getStringExtra("groupName");
@@ -109,15 +122,15 @@ public class GroupActivity extends AppCompatActivity {
                 getSupportFragmentManager(), FragmentPagerItems.with(this)
                 .add(R.string.news_fragment, NewsFragment.class)
                 .add(R.string.sub_groups_fragment, SubGroupsFragment.class)
-                /*.add(R.string.notifications_fragment, NotificationFragment.class)
-                .add(R.string.messages_fragment, MessagesFragment.class)*/
+                .add("Chat", GroupChatFragment.class)
+                //.add(R.string.messages_fragment, MessagesFragment.class)
                 .create());
 
         viewPager = findViewById(R.id.viewpager);
         viewPager.setAdapter(adapter);
         viewPager.setOffscreenPageLimit(3);
 
-        final NavigationTabBar navigationTabBar = (NavigationTabBar) findViewById(R.id.ntb);
+        navigationTabBar = (NavigationTabBar) findViewById(R.id.ntb);
         final ArrayList<NavigationTabBar.Model> models = new ArrayList<>();
         models.add(
                 new NavigationTabBar.Model.Builder(
@@ -153,6 +166,69 @@ public class GroupActivity extends AppCompatActivity {
         navigationTabBar.setTypeface(customFont);
         navigationTabBar.setTitleSize(35);
         navigationTabBar.setIconSizeFraction((float) 0.5);
+
+
+        viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+                //Toast.makeText(GroupActivity.this, String.valueOf(position), Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+                //Toast.makeText(GroupActivity.this, String.valueOf(position), Toast.LENGTH_SHORT).show();
+                if(position == 2){
+                    ((View)navigationTabBar).animate().translationY(140);
+                    dummyView.animate().translationY(140);
+                    /*int viewPagerHeight = ((View)viewPager).getLayoutParams().height;
+                    int viewPagerWidth = ((View)viewPager).getLayoutParams().width;*/
+
+                    int newMarginDp = 4;
+                    final int px = (int) (TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, newMarginDp, metrics));
+
+                    Animation a = new Animation() {
+                        @Override
+                        protected void applyTransformation(float interpolatedTime, Transformation t) {
+                            ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams)viewPager.getLayoutParams();
+                            params.bottomMargin = (int)(px * interpolatedTime);
+                            viewPager.setLayoutParams(params);
+                        }
+                    };
+                    a.setDuration(500);
+                    viewPager.startAnimation(a);
+
+
+                    /*ViewGroup.LayoutParams layoutParams = viewPager.getLayoutParams();
+                    layoutParams.
+
+                    ((View)viewPager).setLayoutParams(params);*/
+                    //((View)viewPager).animate().scaleY((float)1.1);
+                }else{
+                    ((View)navigationTabBar).animate().translationY(0);
+                    dummyView.animate().translationY(0);
+
+                    int newMarginDp = 50;
+                    final int px = (int) (TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, newMarginDp, metrics));
+
+                    Animation a = new Animation() {
+                        @Override
+                        protected void applyTransformation(float interpolatedTime, Transformation t) {
+                            ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams)viewPager.getLayoutParams();
+                            params.bottomMargin = (int)(px * interpolatedTime);
+                            viewPager.setLayoutParams(params);
+                        }
+                    };
+                    a.setDuration(500);
+                    viewPager.startAnimation(a);
+                }
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+
+            }
+        });
+
 
         groupUsers = new ArrayList<>();
 
@@ -194,6 +270,9 @@ public class GroupActivity extends AppCompatActivity {
                             groupUsers.add(u);
                         }
                         ((FireApp) getApplicationContext()).setGroupUsers(groupUsers);
+                        /*Bundle objectId = new Bundle();
+                        objectId.putBoolean("loaded", true);*/
+                        GroupChatFragment.setGroupUsers(groupUsers);
                     }
                 }
             }
@@ -334,5 +413,16 @@ public class GroupActivity extends AppCompatActivity {
         MenuInflater menuInflater = getMenuInflater();
         menuInflater.inflate(R.menu.activity_group_menu, menu);
         return true;
+    }
+
+    @Override
+    public void onGroupFragmentSet(boolean isVisibleToUser) {
+        if(isVisibleToUser){
+            ((View)navigationTabBar).animate().translationY(20);
+            Log.v("VISIBILIDAD: ","Visible al usuario");
+        }else{
+            ((View)navigationTabBar).animate().translationY(0);
+            Log.v("VISIBILIDAD: ","Invisible al usuario");
+        }
     }
 }
