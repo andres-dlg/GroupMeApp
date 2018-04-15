@@ -6,6 +6,8 @@ import com.alamkanak.weekview.WeekViewEvent;
 import com.andresdlg.groupmeapp.Entities.Users;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.database.FirebaseDatabase;
+import com.jakewharton.picasso.OkHttp3Downloader;
+import com.squareup.picasso.Picasso;
 
 import java.util.List;
 
@@ -51,6 +53,14 @@ public class FireApp extends Application {
             //Permite la persistencia offline
             FirebaseDatabase.getInstance().setPersistenceEnabled(true);
         }
+
+        //PICASSO OFFLINE
+        Picasso.Builder builder = new Picasso.Builder(this);
+        builder.downloader(new OkHttp3Downloader(this,Integer.MAX_VALUE));
+        Picasso built = builder.build();
+        built.setIndicatorsEnabled(true); // red: image comes from network, blue: disk, green: memory
+        built.setLoggingEnabled(true);
+        Picasso.setSingletonInstance(built);
     }
 
 

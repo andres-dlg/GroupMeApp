@@ -11,6 +11,10 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.support.annotation.NonNull;
+import android.support.v4.app.DialogFragment;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.RecyclerView;
@@ -36,12 +40,16 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.afollestad.materialdialogs.MaterialDialog;
+import com.andresdlg.groupmeapp.DialogFragments.HeaderDialogFragment;
+import com.andresdlg.groupmeapp.DialogFragments.SubGroupChatDialogFragment;
 import com.andresdlg.groupmeapp.Entities.SubGroup;
 import com.andresdlg.groupmeapp.Entities.Task;
 import com.andresdlg.groupmeapp.R;
 import com.andresdlg.groupmeapp.Utils.BlurBuilder;
 import com.andresdlg.groupmeapp.Utils.BlurImage;
+import com.andresdlg.groupmeapp.Utils.GroupType;
 import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
+import com.andresdlg.groupmeapp.uiPackage.GroupActivity;
 import com.borax12.materialdaterangepicker.date.DatePickerDialog;
 import com.borax12.materialdaterangepicker.time.RadialPickerLayout;
 import com.borax12.materialdaterangepicker.time.TimePickerDialog;
@@ -158,6 +166,7 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
             addTaskiv.setOnClickListener(this);
 
             chat = itemView.findViewById(R.id.chat);
+            chat.setOnClickListener(this);
 
             membersiv = itemView.findViewById(R.id.members);
 
@@ -483,7 +492,6 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
                     if(subGroups.get(position).getTasks().size() == 0){
                         Toast.makeText(context, "Aún no hay tareas programadas ;)", Toast.LENGTH_SHORT).show();
                     }else{
-
                         if (linearLayout_childItems.getVisibility() == View.VISIBLE) {
                             Animation rotation = AnimationUtils.loadAnimation(contexto,R.anim.rotation_down);
                             view.setBackground(null);
@@ -498,9 +506,9 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
                     }
 
                     break;
-               /* case R.id.checkbox:
-                    finishResumeTask((CheckBox)view,context);
-                    break;*/
+               case R.id.chat:
+                    showDialog();
+                    break;
                 case R.id.btn_menu:
                     final PopupMenu popupMenu = new PopupMenu(context, view);
                     final Menu menu = popupMenu.getMenu();
@@ -708,6 +716,28 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
         @Override
         public void onDateSet(DatePickerDialog view, int year, int monthOfYear, int dayOfMonth, int yearEnd, int monthOfYearEnd, int dayOfMonthEnd) {
 
+        }
+
+        void showDialog() {
+
+            FragmentManager fragmentManager = ((GroupActivity)contexto).getSupportFragmentManager();
+            SubGroupChatDialogFragment newFragment = new SubGroupChatDialogFragment();
+            newFragment.setCancelable(false);
+            newFragment.setStyle(DialogFragment.STYLE_NORMAL,R.style.AppTheme_DialogFragment);
+            FragmentTransaction transaction = fragmentManager.beginTransaction();
+            transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
+            transaction.add(android.R.id.content, newFragment).addToBackStack(null).commit();
+
+            /*FragmentTransaction ft = context.getFragmentManager().beginTransaction();
+            Fragment prev = getFragmentManager().findFragmentByTag("dialog");
+            if (prev != null) {
+                ft.remove(prev);
+            }
+            ft.addToBackStack(null);
+
+            // Create and show the dialog.
+            DialogFragment newFragment = MyDialogFragment.newInstance(mStackLevel);
+            newFragment.show(ft, "dialog");*/
         }
     }
 

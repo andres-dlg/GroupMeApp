@@ -94,7 +94,8 @@
         <activity
             android:name=".uiPackage.GroupActivity"
             android:label="@string/title_activity_group"
-            android:theme="@style/AppTheme.NoActionBar" />
+            android:theme="@style/AppTheme.NoActionBar"
+            android:windowSoftInputMode="adjustPan"/>
         <activity
             android:name=".uiPackage.GroupDetailActivity"
             android:theme="@style/AppTheme.NoActionBar" />
