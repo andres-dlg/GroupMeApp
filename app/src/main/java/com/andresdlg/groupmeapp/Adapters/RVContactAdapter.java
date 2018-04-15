@@ -44,6 +44,8 @@ import de.hdodenhof.circleimageview.CircleImageView;
 
 public class RVContactAdapter extends RecyclerView.Adapter<RVContactAdapter.ContactsViewHolder>{
 
+
+
     private List<Users> users;
     private Context context;
 
@@ -80,6 +82,10 @@ public class RVContactAdapter extends RecyclerView.Adapter<RVContactAdapter.Cont
     }
 
     public static class ContactsViewHolder extends RecyclerView.ViewHolder {
+
+        DatabaseReference conversationRef;
+        ValueEventListener conversationEventListener;
+
         View mView;
         String conversationKey;
 
@@ -171,8 +177,8 @@ public class RVContactAdapter extends RecyclerView.Adapter<RVContactAdapter.Cont
 
             conversationKey = currentUserId+iduser;
 
-            final DatabaseReference conversationRef = FirebaseDatabase.getInstance().getReference("Conversations");
-            conversationRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            conversationRef = FirebaseDatabase.getInstance().getReference("Conversations");
+            conversationEventListener = new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     for(DataSnapshot data : dataSnapshot.getChildren()){
@@ -207,14 +213,22 @@ public class RVContactAdapter extends RecyclerView.Adapter<RVContactAdapter.Cont
                     intent.putExtra("contactIds",contactIds);
                     intent.putExtra("conversationKey",conversationKey);
                     context.startActivity(intent);
+
+                    removeListener();
                 }
 
                 @Override
                 public void onCancelled(DatabaseError databaseError) {
 
                 }
-            });
+            };
+            conversationRef.addListenerForSingleValueEvent(conversationEventListener);
         }
+
+        private void removeListener() {
+            conversationRef.removeEventListener(conversationEventListener);
+        }
+
         private void deleteContact(String iduser, final Context context) {
             DatabaseReference userToRef = FirebaseDatabase.getInstance().getReference("Users").child(iduser).child("friends");
             Map<String,Object> newFriend = new HashMap<>();

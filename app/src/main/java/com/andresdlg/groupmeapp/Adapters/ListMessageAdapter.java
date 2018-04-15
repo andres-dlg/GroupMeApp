@@ -30,11 +30,15 @@ import de.hdodenhof.circleimageview.CircleImageView;
 
 public class ListMessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
+    private DatabaseReference userRef;
+    private ValueEventListener userValueEventListener;
+
     private Context context;
     private Conversation conversation;
     private String userToUrl;
     private String currentUserUrl;
     private String chatType;
+
 
     public ListMessageAdapter(Context context, Conversation conversation, String userToUrl, String currentUserUrl, String chatType) {
         this.context = context;
@@ -68,8 +72,8 @@ public class ListMessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
                 ((ItemMessageUserHolder) holder).setAvatar(context,currentUserUrl);
             }
         }else{
-            final DatabaseReference userRef = FirebaseDatabase.getInstance().getReference("Users").child(conversation.getListMessageData().get(position).getIdSender());
-            userRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            userRef = FirebaseDatabase.getInstance().getReference("Users").child(conversation.getListMessageData().get(position).getIdSender());
+            userValueEventListener = new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     Users u = dataSnapshot.getValue(Users.class);
@@ -80,18 +84,23 @@ public class ListMessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
                         ((ItemMessageUserHolder) holder).txtContent.setText(conversation.getListMessageData().get(position).getText());
                         ((ItemMessageUserHolder) holder).setAvatar(context,u.getImageURL());
                     }
-                    userRef.removeEventListener(this);
+                    removeListener();
                 }
 
                 @Override
                 public void onCancelled(DatabaseError databaseError) {
 
                 }
-            });
+            };
+            userRef.addListenerForSingleValueEvent(userValueEventListener);
             ///TODO: IR A BUSCAR EL USUARIO Y LUEGO REPETIR EL CODIGO DEL IF UNA VEZ ENCONTRADO
         }
 
 
+    }
+
+    private void removeListener() {
+        userRef.removeEventListener(userValueEventListener);
     }
 
     @Override

@@ -48,6 +48,9 @@ public class SubGroupsFragment extends Fragment {
     RecyclerView rvSubGroups;
     RVSubGroupAdapter rvSubGroupsAdapter;
     List<SubGroup> subGroups;
+    LinearLayoutManager llm;
+
+    boolean onFocus;
 
     @Nullable
     @Override
@@ -106,32 +109,6 @@ public class SubGroupsFragment extends Fragment {
             @Override
             public void onClick(View view) {
                 showHeaderDialogFragment();
-                /*DatabaseReference groupRef = FirebaseDatabase
-                        .getInstance()
-                        .getReference("Groups")
-                        .child(groupKey);
-                groupRef.addValueEventListener(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        Group g = dataSnapshot.getValue(Group.class);
-                        boolean isNotAdmin = true;
-                        for(Map.Entry<String, String> entry: g.getMembers().entrySet()) {
-                            if(entry.getKey().equals(StaticFirebaseSettings.currentUserId) && entry.getValue().equals("ADMIN")){
-                                showHeaderDialogFragment();
-                                isNotAdmin = false;
-                                break;
-                            }
-                        }
-                        if(isNotAdmin){
-                            Toast.makeText(getContext(),"Debe ser administrador para crear subgrupos",Toast.LENGTH_SHORT).show();
-                        }
-                    }
-
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
-
-                    }
-                });*/
             }
         });
 
@@ -140,10 +117,31 @@ public class SubGroupsFragment extends Fragment {
 
         rvSubGroups = view.findViewById(R.id.rvSubGroups);
         rvSubGroups.setHasFixedSize(false); //El tamaño queda fijo, mejora el desempeño
-        LinearLayoutManager llm = new LinearLayoutManager(getContext(),LinearLayoutManager.VERTICAL,false);
+        llm = new LinearLayoutManager(getContext(),LinearLayoutManager.VERTICAL,false);
         rvSubGroups.setLayoutManager(llm);
         rvSubGroupsAdapter = new RVSubGroupAdapter(subGroups,groupKey,getContext());
         rvSubGroups.setAdapter(rvSubGroupsAdapter);
+        rvSubGroups.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+                if(newState == RecyclerView.SCROLL_STATE_IDLE){
+                    if(llm.findLastCompletelyVisibleItemPosition() != subGroups.size()-1){
+                        fab.show();
+                    }
+                }
+                super.onScrollStateChanged(recyclerView, newState);
+            }
+
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                if(dy > 0 || dx < 0 && fab.isShown()){
+                    fab.hide();
+                }
+            }
+        });
+
+
+
 
         fillSubGroups(view);
 
@@ -169,6 +167,18 @@ public class SubGroupsFragment extends Fragment {
         swipeContainer.setRefreshing(true);
 
 
+    }
+
+    @Override
+    public void setUserVisibleHint(boolean isVisibleToUser) {
+        super.setUserVisibleHint(isVisibleToUser);
+        if(isAdded()){
+            if(isVisibleToUser){
+                fab.show();
+            }else{
+                fab.hide();
+            }
+        }
     }
 
     @Override

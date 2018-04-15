@@ -1,17 +1,18 @@
 package com.andresdlg.groupmeapp.Adapters;
 
 import android.app.Activity;
-import android.app.Fragment;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.res.TypedArray;
-import android.graphics.Color;
-import android.provider.ContactsContract;
+import android.graphics.Bitmap;
+import android.graphics.BlurMaskFilter;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
+import android.net.Uri;
+import android.os.AsyncTask;
 import android.support.annotation.NonNull;
-import android.support.v4.app.FragmentManager;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.text.InputType;
 import android.text.TextUtils;
@@ -21,13 +22,16 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewParent;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.CheckBox;
-import android.widget.DatePicker;
 import android.widget.FrameLayout;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.PopupMenu;
+import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -35,20 +39,21 @@ import com.afollestad.materialdialogs.MaterialDialog;
 import com.andresdlg.groupmeapp.Entities.SubGroup;
 import com.andresdlg.groupmeapp.Entities.Task;
 import com.andresdlg.groupmeapp.R;
+import com.andresdlg.groupmeapp.Utils.BlurBuilder;
+import com.andresdlg.groupmeapp.Utils.BlurImage;
 import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
-import com.andresdlg.groupmeapp.uiPackage.GroupActivity;
-import com.andresdlg.groupmeapp.uiPackage.MainActivity;
-import com.andresdlg.groupmeapp.uiPackage.fragments.SubGroupsFragment;
 import com.borax12.materialdaterangepicker.date.DatePickerDialog;
 import com.borax12.materialdaterangepicker.time.RadialPickerLayout;
 import com.borax12.materialdaterangepicker.time.TimePickerDialog;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.squareup.picasso.Callback;
+import com.squareup.picasso.NetworkPolicy;
+import com.squareup.picasso.Picasso;
+import com.squareup.picasso.Target;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.time.Month;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -75,7 +80,7 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
 
     @Override
     public SubGroupViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_parent_child_listing, parent, false);
+        View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_parent_child_listing_test, parent, false);
         return new SubGroupViewHolder(v,viewType,parent);
     }
 
@@ -132,10 +137,17 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
         TextView textView;
         TextView startDate;
         TextView endDate;
-        ImageView addTaskiv;
+        //ImageView addTaskiv;
+        //ImageView chat;
+        ImageButton addTaskiv;
+        ImageButton chat;
+        ImageButton membersiv;
         ViewGroup parent;
+        LinearLayout cardLl;
+        CircleImageView subGroupPhoto;
+        ImageView subGroupBg;
 
-        SubGroupViewHolder(View itemView, final int position, ViewGroup parent) {
+        SubGroupViewHolder(final View itemView, final int position, ViewGroup parent) {
             super(itemView);
             this.position = position;
             this.parent = parent;
@@ -145,8 +157,21 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
             addTaskiv = itemView.findViewById(R.id.add_task);
             addTaskiv.setOnClickListener(this);
 
+            chat = itemView.findViewById(R.id.chat);
+
+            membersiv = itemView.findViewById(R.id.members);
+
+            cardLl = itemView.findViewById(R.id.cardLl);
+
+            ImageView arrow = itemView.findViewById(R.id.list_item_sub_group_arrow);
+            arrow.setOnClickListener(this);
+
+            subGroupPhoto = itemView.findViewById(R.id.list_item_sub_group_icon);
+
             linearLayout_childItems = itemView.findViewById(R.id.ll_child_items);
             linearLayout_childItems.setVisibility(View.GONE);
+
+            subGroupBg = itemView.findViewById(R.id.subGroupBg);
 
             boolean isSubGroupMember = false;
             Map<String,String> members = subGroups.get(position).getMembers();
@@ -157,6 +182,116 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
                     break;
                 }
             }
+
+            if(!isSubGroupMember){
+                chat.setEnabled(false);
+                addTaskiv.setEnabled(false);
+                membersiv.setEnabled(false);
+                cardLl.setBackgroundColor(context.getResources().getColor(R.color.gray_200));
+            }
+
+            //SETEO LAS FOTOS DE PERFIL Y EL BACKGROUND
+            final String imageUrl = subGroups.get(position).getImageUrl();
+            Picasso.with(context).load(subGroups.get(position).getImageUrl()).into(subGroupPhoto, new Callback() {
+                @Override
+                public void onSuccess() {
+                    itemView.findViewById(R.id.homeprogress).setVisibility(View.GONE);
+                }
+                @Override
+                public void onError() {
+                    Picasso.with(context)
+                            .load(subGroups.get(position).getImageUrl())
+                            .networkPolicy(NetworkPolicy.OFFLINE)
+                            .into(subGroupPhoto, new Callback() {
+                                @Override
+                                public void onSuccess() {
+                                    itemView.findViewById(R.id.homeprogress).setVisibility(View.GONE);
+                                }
+
+                                @Override
+                                public void onError() {
+                                    Log.v("Picasso","No se ha podido cargar la foto");
+                                }
+                            });
+                }
+            });
+
+
+
+            /*DoTheBlurTask dtbt = new DoTheBlurTask();
+            dtbt.execute(new MyPhoto(subGroupBg,imageUrl));*/
+
+            Target target = new Target() {
+                @Override
+                public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
+                    Bitmap blurredBitmap = BlurBuilder.blur(context, bitmap);
+                    subGroupBg.setImageBitmap(blurredBitmap);
+
+                    //subGroupBg.setBackgroundDrawable( new BitmapDrawable( contexto.getResources(), blurredBitmap ) );
+                    //subGroupBg.setImageBitmap(BlurImage.fastblur(bitmap, 1f, 50));
+                }
+
+                @Override
+                public void onBitmapFailed(Drawable errorDrawable) {
+
+                }
+
+                @Override
+                public void onPrepareLoad(Drawable placeHolderDrawable) {
+
+                }
+            };
+
+            subGroupBg.setTag(target);
+            if(imageUrl.equals("https://firebasestorage.googleapis.com/v0/b/groupmeapp-5aaf6.appspot.com/o/new_user.png?alt=media&token=b62f0a54-fe51-41ae-ae04-da4a35d93180")){
+                Picasso.with(contexto)
+                        .load(R.drawable.background_placeholder)
+                        .into(subGroupBg);
+            }else{
+                Picasso.with(contexto)
+                        .load(imageUrl)
+                        .into(target);
+            }
+
+
+            //try {
+
+                /*GetBlurBitmap dtbt = new GetBlurBitmap();
+                dtbt.execute(new MyPhoto(subGroupBg,subGroups.get(position).getImageUrl()));/*
+
+                Bitmap bitmap =Picasso.with(context)
+                        .load(subGroups.get(position).getImageUrl())
+                        .get();
+                Bitmap blurredBitmap = BlurBuilder.blur(context, bitmap);
+                subGroupBg.setImageBitmap(blurredBitmap);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }*/
+
+                   /* .into(target, new Callback() {
+                @Override
+                public void onSuccess() {
+                    itemView.findViewById(R.id.homeprogress).setVisibility(View.GONE);
+                }
+                @Override
+                public void onError() {
+                    Picasso.with(context)
+                            .load(imageUrl)
+                            .networkPolicy(NetworkPolicy.OFFLINE)
+                            .into(subGroupPhoto, new Callback() {
+                                @Override
+                                public void onSuccess() {
+                                    itemView.findViewById(R.id.homeprogress).setVisibility(View.GONE);
+                                }
+
+                                @Override
+                                public void onError() {
+                                    Log.v("Picasso","No se ha podido cargar la foto");
+                                }
+                            });
+                }
+            });*/
+
 
             if(subGroups.get(position).getTasks() != null){
                 int intMaxNoOfChild = subGroups.get(position).getTasks().size();
@@ -204,7 +339,6 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
                         checkBox.setEnabled(true);
                     }
 
-
                     //TimeRangePicker listener
                     final TimePickerDialog.OnTimeSetListener timeListener =  new TimePickerDialog.OnTimeSetListener() {
                         @Override
@@ -225,8 +359,8 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
                             String endTime = hourStringEnd+":"+minuteStringEnd;
 
                             FrameLayout fl = (FrameLayout)linearLayout_childItems.getChildAt(finalIndexView);
-                            TextView tvStartDate = (TextView)fl.findViewById(R.id.taskStartDateTv);
-                            TextView tvEndDate = (TextView)fl.findViewById(R.id.taskEndDateTv);
+                            TextView tvStartDate = fl.findViewById(R.id.taskStartDateTv);
+                            TextView tvEndDate = fl.findViewById(R.id.taskEndDateTv);
 
                             String startDate = tvStartDate.getText().toString();
                             String endDate = tvEndDate.getText().toString();
@@ -340,16 +474,29 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
             }
         }
 
+
         @Override
         public void onClick(final View view) {
             int id = view.getId();
             switch (id){
-                case R.id.tv_parentName:
-                    if (linearLayout_childItems.getVisibility() == View.VISIBLE) {
-                        linearLayout_childItems.setVisibility(View.GONE);
-                    } else {
-                        linearLayout_childItems.setVisibility(View.VISIBLE);
+                case R.id.list_item_sub_group_arrow:
+                    if(subGroups.get(position).getTasks().size() == 0){
+                        Toast.makeText(context, "Aún no hay tareas programadas ;)", Toast.LENGTH_SHORT).show();
+                    }else{
+
+                        if (linearLayout_childItems.getVisibility() == View.VISIBLE) {
+                            Animation rotation = AnimationUtils.loadAnimation(contexto,R.anim.rotation_down);
+                            view.setBackground(null);
+                            view.startAnimation(rotation);
+                            linearLayout_childItems.setVisibility(View.GONE);
+                        } else {
+                            Animation rotation = AnimationUtils.loadAnimation(contexto,R.anim.rotation_up);
+                            view.setBackground(null);
+                            view.startAnimation(rotation);
+                            linearLayout_childItems.setVisibility(View.VISIBLE);
+                        }
                     }
+
                     break;
                /* case R.id.checkbox:
                     finishResumeTask((CheckBox)view,context);
@@ -468,8 +615,8 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
 
 
                                                 FrameLayout fl = (FrameLayout)linearLayout_childItems.getChildAt(linearLayout_childItems.getChildCount()-1);
-                                                TextView tvStartDate = (TextView)fl.findViewById(R.id.taskStartDateTv);
-                                                TextView tvEndDate = (TextView)fl.findViewById(R.id.taskEndDateTv);
+                                                TextView tvStartDate = fl.findViewById(R.id.taskStartDateTv);
+                                                TextView tvEndDate = fl.findViewById(R.id.taskEndDateTv);
 
                                                 String startDate = tvStartDate.getText().toString();
                                                 String endDate = tvEndDate.getText().toString();
@@ -639,6 +786,84 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
            }
        });
     }
+
+    /*public Bitmap getBitmap(String url) throws IOException{
+        Bitmap bitmap;
+        Picasso.Builder builder = new Picasso.Builder(contexto);
+        builder.listener(new Picasso.Listener() {
+            @Override
+            public void onImageLoadFailed(Picasso picasso, Uri uri, Exception exception) {
+                exception.printStackTrace();
+            }
+        });
+        return bitmap = builder.build().with(contexto).load(url).get();
+    }*/
+    /*public class MyPhoto{
+
+        private ImageView iv;
+        private String url;
+
+        public MyPhoto(ImageView iv, String url){
+            this.iv = iv;
+            this.url = url;
+        }
+
+        public ImageView getIv() {
+            return iv;
+        }
+
+        public void setIv(ImageView iv) {
+            this.iv = iv;
+        }
+
+        public String getUrl() {
+            return url;
+        }
+
+        public void setUrl(String url) {
+            this.url = url;
+        }
+    }
+
+
+    private class GetBlurBitmap extends AsyncTask<MyPhoto,Void,Void>{
+
+        Bitmap blurredBitmap;
+
+        @Override
+        protected Void doInBackground(final MyPhoto... myPhotos) {
+
+
+            Bitmap bitmap = null;
+            try {
+                bitmap = Picasso.with(contexto)
+                        .load(myPhotos[0].getUrl())
+                        .get();
+                blurredBitmap = BlurBuilder.blur(contexto, bitmap);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            subGroupBg.setImageBitmap(blurredBitmap);
+
+            myPhotos[0].getIv().setTag(target);
+            Picasso.with(contexto)
+                    .load(myPhotos[0].getUrl())
+                    .into(target);
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+            fillImageView(blurredBitmap);
+            //subGroupBg.setImageBitmap(blurredBitmap);
+        }
+    }
+
+    private void fillImageView(Bitmap blurredBitmap) {
+
+    }*/
 }
 
 

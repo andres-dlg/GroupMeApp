@@ -43,6 +43,12 @@ public class RVNotificationAdapter extends RecyclerView.Adapter<RVNotificationAd
 
     private DatabaseReference usersRef;
     private DatabaseReference groupsRef;
+
+    DatabaseReference userRef;
+    DatabaseReference groupRef;
+    ValueEventListener usersEventListener;
+    ValueEventListener groupsEventListener;
+
     private static List<Notification> notifications;
     private Context context;
 
@@ -64,8 +70,8 @@ public class RVNotificationAdapter extends RecyclerView.Adapter<RVNotificationAd
         ///TODO: Recuperar información del usuario que envio la notificacion con FirebaseDatabase
 
         if(!notifications.get(position).getType().equals(GROUP_INVITATION.toString())){
-            DatabaseReference userRef = usersRef.child(notifications.get(position).getFrom());
-            userRef.addValueEventListener(new ValueEventListener() {
+            userRef = usersRef.child(notifications.get(position).getFrom());
+            usersEventListener = new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     Users u = dataSnapshot.getValue(Users.class);
@@ -76,6 +82,8 @@ public class RVNotificationAdapter extends RecyclerView.Adapter<RVNotificationAd
                     String date = dateDifference(notifications.get(position).getDate());
                     notificationViewHolder.notificationDate.setText(date);
                     notificationViewHolder.setNotificationKey(notifications.get(position).getNotificationKey());
+
+                    removeUserListener();
                 }
 
                 @Override
@@ -83,28 +91,40 @@ public class RVNotificationAdapter extends RecyclerView.Adapter<RVNotificationAd
 
 
                 }
-            });
+            };
+            userRef.addValueEventListener(usersEventListener);
         }else{
-            DatabaseReference groupRef = groupsRef.child(notifications.get(position).getFrom());
-            groupRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            groupRef = groupsRef.child(notifications.get(position).getFrom());
+            groupsEventListener = new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     Group g = dataSnapshot.getValue(Group.class);
-                        notificationViewHolder.hideBtn(context,notifications.get(position).getType());
-                        notificationViewHolder.setImage(context,g.getImageUrl());
-                        notificationViewHolder.notificationMessage.setText(notifications.get(position).getMessage());
-                        String date = dateDifference(notifications.get(position).getDate());
-                        notificationViewHolder.notificationDate.setText(date);
-                        notificationViewHolder.setGroupKey(g.getGroupKey(),usersRef);
-                        notificationViewHolder.setNotificationKey(notifications.get(position).getNotificationKey());
-                    }
+                    notificationViewHolder.hideBtn(context,notifications.get(position).getType());
+                    notificationViewHolder.setImage(context,g.getImageUrl());
+                    notificationViewHolder.notificationMessage.setText(notifications.get(position).getMessage());
+                    String date = dateDifference(notifications.get(position).getDate());
+                    notificationViewHolder.notificationDate.setText(date);
+                    notificationViewHolder.setGroupKey(g.getGroupKey(),usersRef);
+                    notificationViewHolder.setNotificationKey(notifications.get(position).getNotificationKey());
+
+                    removeGroupsListener();
+                }
 
                 @Override
                 public void onCancelled(DatabaseError databaseError) {
 
                 }
-            });
+            };
+            groupRef.addListenerForSingleValueEvent(groupsEventListener);
         }
+    }
+
+    private void removeGroupsListener() {
+        groupRef.removeEventListener(groupsEventListener);
+    }
+
+    private void removeUserListener() {
+        userRef.removeEventListener(usersEventListener);
     }
 
     private String dateDifference(Date d) {

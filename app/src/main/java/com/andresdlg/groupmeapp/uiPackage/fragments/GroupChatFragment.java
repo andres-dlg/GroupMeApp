@@ -70,8 +70,6 @@ public class GroupChatFragment extends Fragment {
     private Users userTo;
     private Users currentUser;
 
-    OnGroupFragmentVisibilityListener mOnGroupFragmentVisibilityListener;
-
     static List<Users> groupUsers;
     private boolean isVisibleToUser;
 
@@ -100,8 +98,6 @@ public class GroupChatFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        onAttachToParentFragment(getActivity());
-        mOnGroupFragmentVisibilityListener.onGroupFragmentSet(isVisibleToUser);
     }
 
     @Override
@@ -275,17 +271,4 @@ public class GroupChatFragment extends Fragment {
         }*/
     }
 
-
-    public interface OnGroupFragmentVisibilityListener{
-        public void onGroupFragmentSet(boolean isVisibleToUser);
-    }
-
-    public void onAttachToParentFragment(Context context){
-        try {
-            mOnGroupFragmentVisibilityListener = (OnGroupFragmentVisibilityListener) context;
-        }
-        catch (ClassCastException e){
-            throw new ClassCastException(context.toString() + " must implement OnUserSelectionSetListener");
-        }
-    }
 }

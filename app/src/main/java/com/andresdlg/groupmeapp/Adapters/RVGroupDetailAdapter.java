@@ -108,6 +108,11 @@ public class RVGroupDetailAdapter extends RecyclerView.Adapter<RVGroupDetailAdap
 
     public class GroupDetailViewHolder extends RecyclerView.ViewHolder{
 
+        ValueEventListener groupEventListener;
+        ValueEventListener valueEventListener;
+
+        DatabaseReference ref;
+
         View mView;
 
         public GroupDetailViewHolder(View itemView) {
@@ -162,8 +167,8 @@ public class RVGroupDetailAdapter extends RecyclerView.Adapter<RVGroupDetailAdap
                         }
                     });
 
-            final DatabaseReference ref = groupsRef.child(groupKey).child("members").child(iduser);
-            ref.addListenerForSingleValueEvent(new ValueEventListener() {
+            ref = groupsRef.child(groupKey).child("members").child(iduser);
+            valueEventListener = new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     if(dataSnapshot.getValue() != null){
@@ -261,6 +266,7 @@ public class RVGroupDetailAdapter extends RecyclerView.Adapter<RVGroupDetailAdap
                             }
                         });
                     }
+                    removeListener2();
                 }
 
 
@@ -269,7 +275,8 @@ public class RVGroupDetailAdapter extends RecyclerView.Adapter<RVGroupDetailAdap
                 public void onCancelled(DatabaseError databaseError) {
 
                 }
-            });
+            };
+            ref.addListenerForSingleValueEvent(valueEventListener);
         }
 
         private void deleteUserFromGroup(final String userId, final int position) {
@@ -289,7 +296,7 @@ public class RVGroupDetailAdapter extends RecyclerView.Adapter<RVGroupDetailAdap
             });
 
             //ELIMINAR DE LOS SUBGRUPOS
-            groupRef.child("subgroups").addListenerForSingleValueEvent(new ValueEventListener() {
+            groupEventListener = new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     for(DataSnapshot d : dataSnapshot.getChildren()){
@@ -301,13 +308,15 @@ public class RVGroupDetailAdapter extends RecyclerView.Adapter<RVGroupDetailAdap
                             }
                         });
                     }
+                    removeListener1();
                 }
 
                 @Override
                 public void onCancelled(DatabaseError databaseError) {
 
                 }
-            });
+            };
+            groupRef.child("subgroups").addListenerForSingleValueEvent(groupEventListener);
 
             //ELIMINAR DE LOS USUARIOS
             DatabaseReference usersRef = FirebaseDatabase.getInstance().getReference("Users").child(userId).child("groups").child(groupKey);
@@ -326,6 +335,14 @@ public class RVGroupDetailAdapter extends RecyclerView.Adapter<RVGroupDetailAdap
             //NOTIFICO EL CAMBIO
             //notifyDataSetChanged();
 
+        }
+
+        private void removeListener1() {
+            groupsRef.removeEventListener(groupEventListener);
+        }
+
+        private void removeListener2() {
+            groupsRef.removeEventListener(valueEventListener);
         }
     }
 }

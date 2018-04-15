@@ -1,9 +1,11 @@
 package com.andresdlg.groupmeapp.uiPackage;
 
+import android.animation.ValueAnimator;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
+import android.support.design.widget.CoordinatorLayout;
 import android.support.transition.Transition;
 import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.util.Pair;
@@ -19,6 +21,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.Animation;
 import android.view.animation.Transformation;
 import android.widget.LinearLayout;
@@ -55,7 +58,14 @@ import java.util.List;
 import de.hdodenhof.circleimageview.CircleImageView;
 import devlight.io.library.ntb.NavigationTabBar;
 
-public class GroupActivity extends AppCompatActivity implements GroupChatFragment.OnGroupFragmentVisibilityListener {
+public class GroupActivity extends AppCompatActivity{
+
+    DatabaseReference groupRef;
+    DatabaseReference userRef;
+    DatabaseReference subGroupsRef;
+    ValueEventListener groupsEventListener;
+    ValueEventListener userEventListener;
+    ValueEventListener subGroupsValueEventListener;
 
     ViewPager viewPager;
     String groupKey;
@@ -130,7 +140,7 @@ public class GroupActivity extends AppCompatActivity implements GroupChatFragmen
         viewPager.setAdapter(adapter);
         viewPager.setOffscreenPageLimit(3);
 
-        navigationTabBar = (NavigationTabBar) findViewById(R.id.ntb);
+        navigationTabBar = findViewById(R.id.ntb);
         final ArrayList<NavigationTabBar.Model> models = new ArrayList<>();
         models.add(
                 new NavigationTabBar.Model.Builder(
@@ -176,39 +186,54 @@ public class GroupActivity extends AppCompatActivity implements GroupChatFragmen
 
             @Override
             public void onPageSelected(int position) {
-                //Toast.makeText(GroupActivity.this, String.valueOf(position), Toast.LENGTH_SHORT).show();
                 if(position == 2){
                     ((View)navigationTabBar).animate().translationY(140);
                     dummyView.animate().translationY(140);
-                    /*int viewPagerHeight = ((View)viewPager).getLayoutParams().height;
-                    int viewPagerWidth = ((View)viewPager).getLayoutParams().width;*/
 
                     int newMarginDp = 4;
-                    final int px = (int) (TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, newMarginDp, metrics));
+                    //final int px = (int) (TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, newMarginDp, metrics));
 
-                    Animation a = new Animation() {
+                    final CoordinatorLayout.LayoutParams params = (CoordinatorLayout.LayoutParams)viewPager.getLayoutParams();
+                    ValueAnimator valueAnimator = ValueAnimator.ofInt(params.bottomMargin,newMarginDp);
+                    valueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                        @Override
+                        public void onAnimationUpdate(ValueAnimator valueAnimator) {
+                            params.bottomMargin = (Integer)valueAnimator.getAnimatedValue();
+                            viewPager.requestLayout();
+                        }
+                    });
+                    valueAnimator.setDuration(300);
+                    valueAnimator.start();
+
+                    /*Animation a = new Animation() {
                         @Override
                         protected void applyTransformation(float interpolatedTime, Transformation t) {
-                            ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams)viewPager.getLayoutParams();
+                            CoordinatorLayout.LayoutParams params = (CoordinatorLayout.LayoutParams)viewPager.getLayoutParams();
                             params.bottomMargin = (int)(px * interpolatedTime);
                             viewPager.setLayoutParams(params);
                         }
                     };
                     a.setDuration(500);
-                    viewPager.startAnimation(a);
+                    viewPager.startAnimation(a);*/
 
-
-                    /*ViewGroup.LayoutParams layoutParams = viewPager.getLayoutParams();
-                    layoutParams.
-
-                    ((View)viewPager).setLayoutParams(params);*/
-                    //((View)viewPager).animate().scaleY((float)1.1);
                 }else{
                     ((View)navigationTabBar).animate().translationY(0);
                     dummyView.animate().translationY(0);
 
                     int newMarginDp = 50;
                     final int px = (int) (TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, newMarginDp, metrics));
+
+                    /*final CoordinatorLayout.LayoutParams params = (CoordinatorLayout.LayoutParams)viewPager.getLayoutParams();
+                    ValueAnimator valueAnimator = ValueAnimator.ofInt(params.bottomMargin,newMarginDp);
+                    valueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                        @Override
+                        public void onAnimationUpdate(ValueAnimator valueAnimator) {
+                            params.bottomMargin = (Integer)valueAnimator.getAnimatedValue();
+                            viewPager.requestLayout();
+                        }
+                    });
+                    valueAnimator.setDuration(300);
+                    valueAnimator.start();*/
 
                     Animation a = new Animation() {
                         @Override
@@ -239,8 +264,8 @@ public class GroupActivity extends AppCompatActivity implements GroupChatFragmen
     }
 
     private void fetchContacts(){
-        DatabaseReference groupRef = FirebaseDatabase.getInstance().getReference("Groups").child(groupKey).child("members");
-        groupRef.addValueEventListener(new ValueEventListener() {
+        groupRef = FirebaseDatabase.getInstance().getReference("Groups").child(groupKey).child("members");
+        groupsEventListener = new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 for(DataSnapshot data : dataSnapshot.getChildren()){
@@ -254,12 +279,14 @@ public class GroupActivity extends AppCompatActivity implements GroupChatFragmen
             public void onCancelled(DatabaseError databaseError) {
 
             }
-        });
+        };
+
+        groupRef.addValueEventListener(groupsEventListener);
     }
 
     private void getUser(String userId) {
-        DatabaseReference userRef = FirebaseDatabase.getInstance().getReference("Users").child(userId);
-        userRef.addListenerForSingleValueEvent(new ValueEventListener() {
+        userRef = FirebaseDatabase.getInstance().getReference("Users").child(userId);
+        userEventListener  = new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 //groupUsers.clear();
@@ -280,7 +307,8 @@ public class GroupActivity extends AppCompatActivity implements GroupChatFragmen
             public void onCancelled(DatabaseError databaseError) {
 
             }
-        });
+        };
+        userRef.addListenerForSingleValueEvent(userEventListener);
     }
 
     private boolean validateExistingMembers(Users u) {
@@ -299,6 +327,16 @@ public class GroupActivity extends AppCompatActivity implements GroupChatFragmen
     }*/
 
     @Override
+    protected void onStop() {
+        super.onStop();
+        groupRef.removeEventListener(groupsEventListener);
+        userRef.removeEventListener(userEventListener);
+        if(subGroupsValueEventListener != null){
+            subGroupsRef.removeEventListener(subGroupsValueEventListener);
+        }
+    }
+
+    @Override
     public void onResume() {
         super.onResume();
         if(groupUsers == null){
@@ -315,6 +353,7 @@ public class GroupActivity extends AppCompatActivity implements GroupChatFragmen
         ((FireApp) this.getApplication()).setGroupKey(null);
         ((FireApp) this.getApplication()).setGroupUsers(null);
         ((FireApp) this.getApplication()).setEvents(null);
+
     }
 
     @Override
@@ -335,11 +374,11 @@ public class GroupActivity extends AppCompatActivity implements GroupChatFragmen
                 final ProgressBar progressBar = new ProgressBar(this);
                 progressBar.setVisibility(View.VISIBLE);
 
-                DatabaseReference subGroupsRef = FirebaseDatabase.getInstance().getReference("Groups")
+                subGroupsRef = FirebaseDatabase.getInstance().getReference("Groups")
                         .child(groupKey)
                         .child("subgroups");
 
-                subGroupsRef.addValueEventListener(new ValueEventListener() {
+                subGroupsValueEventListener = new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         ((FireApp) getApplicationContext()).setEvents(null);
@@ -385,7 +424,6 @@ public class GroupActivity extends AppCompatActivity implements GroupChatFragmen
                                 }
                             }
                         }
-                        i = 0;
                         progressBar.setVisibility(View.GONE);
                         ((FireApp) getApplicationContext()).setEvents(events);
                         if (clicked){
@@ -399,7 +437,9 @@ public class GroupActivity extends AppCompatActivity implements GroupChatFragmen
                     public void onCancelled(DatabaseError databaseError) {
 
                     }
-                });
+                };
+
+                subGroupsRef.addValueEventListener(subGroupsValueEventListener);
 
                 //startActivity(intent);
                 return true;
@@ -415,14 +455,4 @@ public class GroupActivity extends AppCompatActivity implements GroupChatFragmen
         return true;
     }
 
-    @Override
-    public void onGroupFragmentSet(boolean isVisibleToUser) {
-        if(isVisibleToUser){
-            ((View)navigationTabBar).animate().translationY(20);
-            Log.v("VISIBILIDAD: ","Visible al usuario");
-        }else{
-            ((View)navigationTabBar).animate().translationY(0);
-            Log.v("VISIBILIDAD: ","Invisible al usuario");
-        }
-    }
 }

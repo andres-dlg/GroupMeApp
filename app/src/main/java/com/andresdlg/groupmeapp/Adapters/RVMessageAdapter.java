@@ -41,6 +41,12 @@ import java.util.List;
 public class RVMessageAdapter extends RecyclerView.Adapter<RVMessageAdapter.MessageViewHolder>{
 
 
+    DatabaseReference conversationRef;
+    DatabaseReference userRef;
+
+    ValueEventListener conversationEventListener;
+    ValueEventListener userValueEventListener;
+
     private List<ConversationFirebase> conversations;
     private Context context;
 
@@ -86,8 +92,8 @@ public class RVMessageAdapter extends RecyclerView.Adapter<RVMessageAdapter.Mess
             }
         });
 
-        DatabaseReference conversationRef = FirebaseDatabase.getInstance().getReference("Conversations").child(conversations.get(position).getId());
-        conversationRef.addListenerForSingleValueEvent(new ValueEventListener() {
+        conversationRef = FirebaseDatabase.getInstance().getReference("Conversations").child(conversations.get(position).getId());
+        conversationEventListener = new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 String idUser = null;
@@ -97,8 +103,8 @@ public class RVMessageAdapter extends RecyclerView.Adapter<RVMessageAdapter.Mess
                     idUser = dataSnapshot.child("user1").getValue().toString();
                 }
 
-                DatabaseReference userRef = FirebaseDatabase.getInstance().getReference("Users").child(idUser);
-                userRef.addValueEventListener(new ValueEventListener() {
+                userRef = FirebaseDatabase.getInstance().getReference("Users").child(idUser);
+                userValueEventListener = new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         Users u = dataSnapshot.getValue(Users.class);
@@ -106,22 +112,35 @@ public class RVMessageAdapter extends RecyclerView.Adapter<RVMessageAdapter.Mess
                         messageViewHolder.setPhoto(context,u.getImageURL());//Picasso.with(context).load(u.getImageURL()).into(messageViewHolder.userPhoto);
                         messageViewHolder.messageText.setText(conversations.get(position).getMessage().getText());
                         messageViewHolder.messageDate.setText(dateDifference(conversations.get(position).getMessage().getTimestamp()));
+
+                        //removeUsersListener();
+                        //removeConversationListener();
                     }
 
                     @Override
                     public void onCancelled(DatabaseError databaseError) {
 
                     }
-                });
+                };
+                userRef.addValueEventListener(userValueEventListener);
+
             }
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
 
             }
-        });
+        };
+        conversationRef.addListenerForSingleValueEvent(conversationEventListener);
     }
 
+    private void removeConversationListener() {
+        conversationRef.removeEventListener(conversationEventListener);
+    }
+
+    private void removeUsersListener(){
+        userRef.removeEventListener(userValueEventListener);
+    }
 
     @Override
     public int getItemViewType(int position) {
