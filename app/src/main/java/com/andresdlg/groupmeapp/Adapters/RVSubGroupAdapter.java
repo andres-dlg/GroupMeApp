@@ -5,14 +5,9 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.res.TypedArray;
 import android.graphics.Bitmap;
-import android.graphics.BlurMaskFilter;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import android.net.Uri;
-import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.support.v4.app.DialogFragment;
-import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
@@ -34,20 +29,16 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.PopupMenu;
-import android.widget.ProgressBar;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.afollestad.materialdialogs.MaterialDialog;
-import com.andresdlg.groupmeapp.DialogFragments.HeaderDialogFragment;
 import com.andresdlg.groupmeapp.DialogFragments.SubGroupChatDialogFragment;
+import com.andresdlg.groupmeapp.DialogFragments.SubGroupMembersDialogFragment;
 import com.andresdlg.groupmeapp.Entities.SubGroup;
 import com.andresdlg.groupmeapp.Entities.Task;
 import com.andresdlg.groupmeapp.R;
 import com.andresdlg.groupmeapp.Utils.BlurBuilder;
-import com.andresdlg.groupmeapp.Utils.BlurImage;
-import com.andresdlg.groupmeapp.Utils.GroupType;
 import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
 import com.andresdlg.groupmeapp.uiPackage.GroupActivity;
 import com.borax12.materialdaterangepicker.date.DatePickerDialog;
@@ -61,7 +52,6 @@ import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -80,6 +70,10 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
     private List<SubGroup> subGroups;
     private Context contexto;
 
+    private final int DIALOG_CHAT = 0;
+    private final int DIALOG_MEMBERS = 1;
+    private final int DIALOG_FILES = 2;
+
     public RVSubGroupAdapter(List<SubGroup> subGroups, String groupKey, Context context) {
         this.groupKey = groupKey;
         this.subGroups = subGroups;
@@ -88,7 +82,7 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
 
     @Override
     public SubGroupViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_parent_child_listing_test, parent, false);
+        View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_parent_child_listing, parent, false);
         return new SubGroupViewHolder(v,viewType,parent);
     }
 
@@ -154,6 +148,7 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
         LinearLayout cardLl;
         CircleImageView subGroupPhoto;
         ImageView subGroupBg;
+        String imageUrl;
 
         SubGroupViewHolder(final View itemView, final int position, ViewGroup parent) {
             super(itemView);
@@ -169,6 +164,7 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
             chat.setOnClickListener(this);
 
             membersiv = itemView.findViewById(R.id.members);
+            membersiv.setOnClickListener(this);
 
             cardLl = itemView.findViewById(R.id.cardLl);
 
@@ -200,7 +196,7 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
             }
 
             //SETEO LAS FOTOS DE PERFIL Y EL BACKGROUND
-            final String imageUrl = subGroups.get(position).getImageUrl();
+            imageUrl = subGroups.get(position).getImageUrl();
             Picasso.with(context).load(subGroups.get(position).getImageUrl()).into(subGroupPhoto, new Callback() {
                 @Override
                 public void onSuccess() {
@@ -225,19 +221,11 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
                 }
             });
 
-
-
-            /*DoTheBlurTask dtbt = new DoTheBlurTask();
-            dtbt.execute(new MyPhoto(subGroupBg,imageUrl));*/
-
             Target target = new Target() {
                 @Override
                 public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
                     Bitmap blurredBitmap = BlurBuilder.blur(context, bitmap);
                     subGroupBg.setImageBitmap(blurredBitmap);
-
-                    //subGroupBg.setBackgroundDrawable( new BitmapDrawable( contexto.getResources(), blurredBitmap ) );
-                    //subGroupBg.setImageBitmap(BlurImage.fastblur(bitmap, 1f, 50));
                 }
 
                 @Override
@@ -261,46 +249,6 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
                         .load(imageUrl)
                         .into(target);
             }
-
-
-            //try {
-
-                /*GetBlurBitmap dtbt = new GetBlurBitmap();
-                dtbt.execute(new MyPhoto(subGroupBg,subGroups.get(position).getImageUrl()));/*
-
-                Bitmap bitmap =Picasso.with(context)
-                        .load(subGroups.get(position).getImageUrl())
-                        .get();
-                Bitmap blurredBitmap = BlurBuilder.blur(context, bitmap);
-                subGroupBg.setImageBitmap(blurredBitmap);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }*/
-
-                   /* .into(target, new Callback() {
-                @Override
-                public void onSuccess() {
-                    itemView.findViewById(R.id.homeprogress).setVisibility(View.GONE);
-                }
-                @Override
-                public void onError() {
-                    Picasso.with(context)
-                            .load(imageUrl)
-                            .networkPolicy(NetworkPolicy.OFFLINE)
-                            .into(subGroupPhoto, new Callback() {
-                                @Override
-                                public void onSuccess() {
-                                    itemView.findViewById(R.id.homeprogress).setVisibility(View.GONE);
-                                }
-
-                                @Override
-                                public void onError() {
-                                    Log.v("Picasso","No se ha podido cargar la foto");
-                                }
-                            });
-                }
-            });*/
-
 
             if(subGroups.get(position).getTasks() != null){
                 int intMaxNoOfChild = subGroups.get(position).getTasks().size();
@@ -504,10 +452,12 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
                             linearLayout_childItems.setVisibility(View.VISIBLE);
                         }
                     }
-
                     break;
-               case R.id.chat:
-                    showDialog();
+                case R.id.chat:
+                    showDialog(DIALOG_CHAT);
+                    break;
+                case R.id.members:
+                    showDialog(DIALOG_MEMBERS);
                     break;
                 case R.id.btn_menu:
                     final PopupMenu popupMenu = new PopupMenu(context, view);
@@ -718,26 +668,31 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
 
         }
 
-        void showDialog() {
+        void showDialog(int dialogType) {
 
             FragmentManager fragmentManager = ((GroupActivity)contexto).getSupportFragmentManager();
-            SubGroupChatDialogFragment newFragment = new SubGroupChatDialogFragment();
-            newFragment.setCancelable(false);
-            newFragment.setStyle(DialogFragment.STYLE_NORMAL,R.style.AppTheme_DialogFragment);
-            FragmentTransaction transaction = fragmentManager.beginTransaction();
-            transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
-            transaction.add(android.R.id.content, newFragment).addToBackStack(null).commit();
 
-            /*FragmentTransaction ft = context.getFragmentManager().beginTransaction();
-            Fragment prev = getFragmentManager().findFragmentByTag("dialog");
-            if (prev != null) {
-                ft.remove(prev);
+            switch (dialogType){
+                case DIALOG_CHAT:
+                    SubGroupChatDialogFragment newFragment = new SubGroupChatDialogFragment(textView_parentName.getText().toString(),imageUrl,subGroups.get(position).getSubGroupKey());
+                    newFragment.setCancelable(false);
+                    newFragment.setStyle(DialogFragment.STYLE_NORMAL,R.style.AppTheme_DialogFragment);
+                    FragmentTransaction transaction = fragmentManager.beginTransaction();
+                    transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
+                    transaction.add(android.R.id.content, newFragment).addToBackStack(null).commit();
+                    break;
+
+                case DIALOG_MEMBERS:
+                    SubGroupMembersDialogFragment newFragment2 = new SubGroupMembersDialogFragment(textView_parentName.getText().toString(),imageUrl,subGroups.get(position).getSubGroupKey(),groupKey);
+                    newFragment2.setCancelable(false);
+                    newFragment2.setStyle(DialogFragment.STYLE_NORMAL,R.style.AppTheme_DialogFragment);
+                    FragmentTransaction transaction2 = fragmentManager.beginTransaction();
+                    transaction2.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
+                    transaction2.add(android.R.id.content, newFragment2).addToBackStack(null).commit();
+                    break;
             }
-            ft.addToBackStack(null);
 
-            // Create and show the dialog.
-            DialogFragment newFragment = MyDialogFragment.newInstance(mStackLevel);
-            newFragment.show(ft, "dialog");*/
+
         }
     }
 
@@ -817,83 +772,6 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
        });
     }
 
-    /*public Bitmap getBitmap(String url) throws IOException{
-        Bitmap bitmap;
-        Picasso.Builder builder = new Picasso.Builder(contexto);
-        builder.listener(new Picasso.Listener() {
-            @Override
-            public void onImageLoadFailed(Picasso picasso, Uri uri, Exception exception) {
-                exception.printStackTrace();
-            }
-        });
-        return bitmap = builder.build().with(contexto).load(url).get();
-    }*/
-    /*public class MyPhoto{
-
-        private ImageView iv;
-        private String url;
-
-        public MyPhoto(ImageView iv, String url){
-            this.iv = iv;
-            this.url = url;
-        }
-
-        public ImageView getIv() {
-            return iv;
-        }
-
-        public void setIv(ImageView iv) {
-            this.iv = iv;
-        }
-
-        public String getUrl() {
-            return url;
-        }
-
-        public void setUrl(String url) {
-            this.url = url;
-        }
-    }
-
-
-    private class GetBlurBitmap extends AsyncTask<MyPhoto,Void,Void>{
-
-        Bitmap blurredBitmap;
-
-        @Override
-        protected Void doInBackground(final MyPhoto... myPhotos) {
-
-
-            Bitmap bitmap = null;
-            try {
-                bitmap = Picasso.with(contexto)
-                        .load(myPhotos[0].getUrl())
-                        .get();
-                blurredBitmap = BlurBuilder.blur(contexto, bitmap);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-            subGroupBg.setImageBitmap(blurredBitmap);
-
-            myPhotos[0].getIv().setTag(target);
-            Picasso.with(contexto)
-                    .load(myPhotos[0].getUrl())
-                    .into(target);
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Void aVoid) {
-            super.onPostExecute(aVoid);
-            fillImageView(blurredBitmap);
-            //subGroupBg.setImageBitmap(blurredBitmap);
-        }
-    }
-
-    private void fillImageView(Bitmap blurredBitmap) {
-
-    }*/
 }
 
 

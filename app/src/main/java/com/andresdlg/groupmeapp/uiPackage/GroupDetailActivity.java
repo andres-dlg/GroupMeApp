@@ -59,6 +59,7 @@ public class GroupDetailActivity extends AppCompatActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_group_details);
+
         Toolbar toolbar = findViewById(R.id.toolbar);
         toolbar.bringToFront();
         toolbar.setTitle(" ");

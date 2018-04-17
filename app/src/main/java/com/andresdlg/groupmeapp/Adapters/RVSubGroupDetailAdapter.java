@@ -13,8 +13,10 @@ import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.andresdlg.groupmeapp.Entities.Group;
 import com.andresdlg.groupmeapp.Entities.Users;
 import com.andresdlg.groupmeapp.R;
+import com.andresdlg.groupmeapp.Utils.GroupStatus;
 import com.andresdlg.groupmeapp.Utils.Roles;
 import com.andresdlg.groupmeapp.firebasePackage.FireApp;
 import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
@@ -37,24 +39,25 @@ import de.hdodenhof.circleimageview.CircleImageView;
  * Created by andresdlg on 17/03/18.
  */
 
-public class RVGroupDetailAdapter extends RecyclerView.Adapter<RVGroupDetailAdapter.GroupDetailViewHolder>{
+public class RVSubGroupDetailAdapter extends RecyclerView.Adapter<RVSubGroupDetailAdapter.GroupDetailViewHolder>{
 
-    private DatabaseReference usersRef;
-    private DatabaseReference groupsRef;
+    private DatabaseReference subGroupsRef;
     private List<Users> usersList;
     private Map<String, String> usersRoles;
     private String groupKey;
+    private String subGroupKey;
     private Context context;
     private String myRol;
     private int cantAdmins;
 
-    public RVGroupDetailAdapter(List<Users> usersList, Map<String, String> usersRoles,String groupKey, Context context){
+    public RVSubGroupDetailAdapter(List<Users> usersList, Map<String, String> usersRoles, String groupKey,String subGroupKey, Context context){
         this.usersList = usersList;
         this.usersRoles = usersRoles;
         this.groupKey = groupKey;
+        this.subGroupKey = subGroupKey;
         this.context = context;
-        usersRef = FirebaseDatabase.getInstance().getReference("Users");
-        groupsRef = FirebaseDatabase.getInstance().getReference("Groups");
+        //usersRef = FirebaseDatabase.getInstance().getReference("Users");
+        subGroupsRef = FirebaseDatabase.getInstance().getReference("Groups").child(groupKey).child("subgroups").child(subGroupKey);
     }
 
     @Override
@@ -72,7 +75,9 @@ public class RVGroupDetailAdapter extends RecyclerView.Adapter<RVGroupDetailAdap
                 rol = entry.getValue();
             }
         }
-        groupDetailViewHolder.setDetails(context,u.getName(),u.getAlias(),rol,u.getImageURL(),u.getUserid());
+        if(rol!=null){
+            groupDetailViewHolder.setDetails(context,u.getName(),u.getAlias(),rol,u.getImageURL(),u.getUserid());
+        }
     }
 
     @Override
@@ -87,11 +92,9 @@ public class RVGroupDetailAdapter extends RecyclerView.Adapter<RVGroupDetailAdap
 
     private void setMyRol() {
         myRol = null;
-        if(usersRoles.size() > 0){
-            for(Map.Entry<String, String> entry : usersRoles.entrySet()) {
-                if(StaticFirebaseSettings.currentUserId.equals(entry.getKey())){
-                    myRol = entry.getValue();
-                }
+        for(Map.Entry<String, String> entry : usersRoles.entrySet()) {
+            if(StaticFirebaseSettings.currentUserId.equals(entry.getKey())){
+                myRol = entry.getValue();
             }
         }
     }
@@ -99,7 +102,7 @@ public class RVGroupDetailAdapter extends RecyclerView.Adapter<RVGroupDetailAdap
     private void setAdminCount(){
         cantAdmins = 0;
         for(Map.Entry<String, String> entry : usersRoles.entrySet()) {
-            if(entry.getValue().equals(Roles.ADMIN.toString())){
+            if(entry.getValue().equals(Roles.SUBGROUP_ADMIN.toString())){
                 cantAdmins += 1;
             }
         }
@@ -108,10 +111,9 @@ public class RVGroupDetailAdapter extends RecyclerView.Adapter<RVGroupDetailAdap
 
     public class GroupDetailViewHolder extends RecyclerView.ViewHolder{
 
-        ValueEventListener groupEventListener;
-        ValueEventListener valueEventListener;
+        ValueEventListener subGroupEventListener;
 
-        DatabaseReference ref;
+        DatabaseReference userRef;
 
         View mView;
 
@@ -136,11 +138,11 @@ public class RVGroupDetailAdapter extends RecyclerView.Adapter<RVGroupDetailAdap
             mContactName.setSelected(true);
 
             setMyRol();
-            if(myRol != null){
-                if(myRol.equals(Roles.ADMIN.toString())){
-                    btnMenu.setVisibility(View.VISIBLE);
-                }
+            if(myRol.equals(Roles.SUBGROUP_ADMIN.toString())){
+                btnMenu.setVisibility(View.VISIBLE);
             }
+
+            userRef = subGroupsRef.child("members").child(iduser);
 
             Picasso.with(context)
                     .load(contactPhoto)
@@ -169,108 +171,111 @@ public class RVGroupDetailAdapter extends RecyclerView.Adapter<RVGroupDetailAdap
                         }
                     });
 
-            ref = groupsRef.child(groupKey).child("members").child(iduser);
 
-            if(rol.equals(Roles.ADMIN.toString())){
-                mContactRol.setText("ADMINISTRADOR");
-            }else{
-                mContactRol.setText("MIEMBRO");
-            }
-            mContactRol.setSelected(true);
-
-            btnMenu.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    final PopupMenu popupMenu = new PopupMenu(context, view);
-                    final Menu menu = popupMenu.getMenu();
-                    if(rol.equals(Roles.ADMIN.toString()) && myRol.equals(Roles.ADMIN.toString())){
-                        //btnMenu.setVisibility(View.VISIBLE);
-
-                        popupMenu.getMenuInflater().inflate(R.menu.activity_group_detail_item_admin_to_admin_menu, menu);
-                        popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-                            @Override
-                            public boolean onMenuItemClick(MenuItem menuItem) {
-                                int id = menuItem.getItemId();
-                                switch (id){
-                                    case R.id.rolAdmin:
-
-                                        setAdminCount();
-
-                                        if(cantAdmins >1){
-                                            ref.setValue(Roles.MEMBER).addOnSuccessListener(new OnSuccessListener<Void>() {
-                                                @Override
-                                                public void onSuccess(Void aVoid) {
-                                                    //setAdminCount();
-                                                    usersRoles.put(iduser, Roles.MEMBER.toString());
-                                                    notifyDataSetChanged();
-                                                }
-                                            });
-                                            Toast.makeText(context,"Revoke admin", Toast.LENGTH_SHORT).show();
-                                            break;
-                                        }else{
-                                            Toast.makeText(context,"Debe haber por lo menos un administrador", Toast.LENGTH_SHORT).show();
-                                            break;
-                                        }
-
-
-                                    case R.id.delete:
-
-                                        if(cantAdmins >1){
-                                            deleteUserFromGroup(iduser,getAdapterPosition());
-                                            Toast.makeText(context,"Eliminado", Toast.LENGTH_SHORT).show();
-                                            break;
-                                        }else{
-                                            Toast.makeText(context,"Debe haber por lo menos un administrador", Toast.LENGTH_SHORT).show();
-                                            break;
-                                        }
-
-                                }
-                                return true;
-                            }
-                        });
-                        popupMenu.show();
-                    }else if(rol.equals(Roles.MEMBER.toString()) && myRol.equals(Roles.ADMIN.toString())) {
-                        //btnMenu.setVisibility(View.VISIBLE);
-                        popupMenu.getMenuInflater().inflate(R.menu.activity_group_detail_item_admin_to_member_menu, menu);
-                        popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-                            @Override
-                            public boolean onMenuItemClick(MenuItem menuItem) {
-                                int id = menuItem.getItemId();
-                                switch (id) {
-                                    case R.id.rolAdmin:
-
-                                        ref.setValue(Roles.ADMIN).addOnSuccessListener(new OnSuccessListener<Void>() {
-                                            @Override
-                                            public void onSuccess(Void aVoid) {
-
-                                                usersRoles.put(iduser, Roles.ADMIN.toString());
-                                                notifyDataSetChanged();
-                                            }
-                                        });
-
-                                        Toast.makeText(context, "Hacer admin", Toast.LENGTH_SHORT).show();
-                                        break;
-                                    case R.id.delete:
-                                        //rejectRequest(iduser);
-                                        deleteUserFromGroup(iduser,getAdapterPosition());
-                                        Toast.makeText(context, "Eliminar", Toast.LENGTH_SHORT).show();
-                                        break;
-                                }
-                                return true;
-                            }
-                        });
-                        popupMenu.show();
+                    if(rol.equals(Roles.SUBGROUP_ADMIN.toString())){
+                        mContactRol.setText("ADMINISTRADOR");
+                    }else{
+                        mContactRol.setText("MIEMBRO");
                     }
-                }
-            });
+                    mContactRol.setSelected(true);
+
+                    btnMenu.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            final PopupMenu popupMenu = new PopupMenu(context, view);
+                            final Menu menu = popupMenu.getMenu();
+                            if(rol.equals(Roles.SUBGROUP_ADMIN.toString()) && myRol.equals(Roles.SUBGROUP_ADMIN.toString())){
+                                //btnMenu.setVisibility(View.VISIBLE);
+                                //userRef =
+                                popupMenu.getMenuInflater().inflate(R.menu.activity_group_detail_item_admin_to_admin_menu, menu);
+                                popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+                                    @Override
+                                    public boolean onMenuItemClick(MenuItem menuItem) {
+                                        int id = menuItem.getItemId();
+                                        switch (id){
+                                            case R.id.rolAdmin:
+
+                                                setAdminCount();
+
+                                                if(cantAdmins >1){
+                                                    userRef.setValue(Roles.SUBGROUP_MEMBER).addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                        @Override
+                                                        public void onSuccess(Void aVoid) {
+                                                            //setAdminCount();
+                                                            usersRoles.put(iduser, Roles.SUBGROUP_MEMBER.toString());
+                                                            mContactRol.setText("MIEMBRO");
+                                                            notifyDataSetChanged();
+                                                        }
+                                                    });
+                                                    Toast.makeText(context,"Revoke admin", Toast.LENGTH_SHORT).show();
+                                                    break;
+                                                }else{
+                                                    Toast.makeText(context,"Debe haber por lo menos un administrador", Toast.LENGTH_SHORT).show();
+                                                    break;
+                                                }
 
 
-            /*valueEventListener = new ValueEventListener() {
+                                            case R.id.delete:
+
+                                                if(cantAdmins >1){
+                                                    deleteUserFromGroup(iduser,getAdapterPosition());
+                                                    Toast.makeText(context,"Eliminado", Toast.LENGTH_SHORT).show();
+                                                    break;
+                                                }else{
+                                                    Toast.makeText(context,"Debe haber por lo menos un administrador", Toast.LENGTH_SHORT).show();
+                                                    break;
+                                                }
+
+                                        }
+                                        return true;
+                                    }
+                                });
+                                popupMenu.show();
+                            }else if(rol.equals(Roles.SUBGROUP_MEMBER.toString()) && myRol.equals(Roles.SUBGROUP_ADMIN.toString())) {
+                                //btnMenu.setVisibility(View.VISIBLE);
+                                popupMenu.getMenuInflater().inflate(R.menu.activity_group_detail_item_admin_to_member_menu, menu);
+                                popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+                                    @Override
+                                    public boolean onMenuItemClick(MenuItem menuItem) {
+                                        int id = menuItem.getItemId();
+                                        switch (id) {
+                                            case R.id.rolAdmin:
+                                                //userRef = FirebaseDatabase.getInstance().getReference("Groups").child(groupKey).child("subgroups").child(subGroupKey).child("members").child(iduser);
+                                                userRef.setValue(Roles.SUBGROUP_ADMIN).addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                    @Override
+                                                    public void onSuccess(Void aVoid) {
+
+                                                        usersRoles.put(iduser, Roles.SUBGROUP_ADMIN.toString());
+                                                        mContactRol.setText("ADMINISTRADOR");
+                                                        notifyDataSetChanged();
+                                                    }
+                                                });
+
+                                                Toast.makeText(context, "Hacer admin", Toast.LENGTH_SHORT).show();
+                                                break;
+                                            case R.id.delete:
+                                                //rejectRequest(iduser);
+                                                deleteUserFromGroup(iduser,getAdapterPosition());
+                                                Toast.makeText(context, "Eliminar", Toast.LENGTH_SHORT).show();
+                                                break;
+                                        }
+                                        return true;
+                                    }
+                                });
+                                popupMenu.show();
+                            }
+                        }
+                    });
+
+
+            /*ref = subGroupsRef.child(subGroupKey).child("members").child(iduser);
+            userEventListener = new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     if(dataSnapshot.getValue() != null){
                         final String rol = dataSnapshot.getValue().toString();
-                        if(rol.equals("ADMIN")){
+
+                        if(rol.equals("SUBGROUP_ADMIN")){
                             mContactRol.setText("ADMINISTRADOR");
                         }else{
                             mContactRol.setText("MIEMBRO");
@@ -282,7 +287,7 @@ public class RVGroupDetailAdapter extends RecyclerView.Adapter<RVGroupDetailAdap
                             public void onClick(View view) {
                                 final PopupMenu popupMenu = new PopupMenu(context, view);
                                 final Menu menu = popupMenu.getMenu();
-                                if(rol.equals(Roles.ADMIN.toString()) && myRol.equals(Roles.ADMIN.toString())){
+                                if(rol.equals(Roles.SUBGROUP_ADMIN.toString()) && myRol.equals(Roles.SUBGROUP_ADMIN.toString())){
                                     //btnMenu.setVisibility(View.VISIBLE);
 
                                     popupMenu.getMenuInflater().inflate(R.menu.activity_group_detail_item_admin_to_admin_menu, menu);
@@ -296,11 +301,11 @@ public class RVGroupDetailAdapter extends RecyclerView.Adapter<RVGroupDetailAdap
                                                     setAdminCount();
 
                                                     if(cantAdmins >1){
-                                                        ref.setValue(Roles.MEMBER).addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                        ref.setValue(Roles.SUBGROUP_MEMBER).addOnSuccessListener(new OnSuccessListener<Void>() {
                                                             @Override
                                                             public void onSuccess(Void aVoid) {
                                                                 //setAdminCount();
-                                                                usersRoles.put(iduser, Roles.MEMBER.toString());
+                                                                usersRoles.put(iduser, Roles.SUBGROUP_MEMBER.toString());
                                                                 notifyDataSetChanged();
                                                             }
                                                         });
@@ -328,7 +333,7 @@ public class RVGroupDetailAdapter extends RecyclerView.Adapter<RVGroupDetailAdap
                                         }
                                     });
                                     popupMenu.show();
-                                }else if(rol.equals(Roles.MEMBER.toString()) && myRol.equals(Roles.ADMIN.toString())) {
+                                }else if(rol.equals(Roles.SUBGROUP_MEMBER.toString()) && myRol.equals(Roles.SUBGROUP_ADMIN.toString())) {
                                     //btnMenu.setVisibility(View.VISIBLE);
                                     popupMenu.getMenuInflater().inflate(R.menu.activity_group_detail_item_admin_to_member_menu, menu);
                                     popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
@@ -338,11 +343,11 @@ public class RVGroupDetailAdapter extends RecyclerView.Adapter<RVGroupDetailAdap
                                             switch (id) {
                                                 case R.id.rolAdmin:
 
-                                                    ref.setValue(Roles.ADMIN).addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                    ref.setValue(Roles.SUBGROUP_ADMIN).addOnSuccessListener(new OnSuccessListener<Void>() {
                                                         @Override
                                                         public void onSuccess(Void aVoid) {
 
-                                                            usersRoles.put(iduser, Roles.ADMIN.toString());
+                                                            usersRoles.put(iduser, Roles.SUBGROUP_ADMIN.toString());
                                                             notifyDataSetChanged();
                                                         }
                                                     });
@@ -373,27 +378,24 @@ public class RVGroupDetailAdapter extends RecyclerView.Adapter<RVGroupDetailAdap
 
                 }
             };
-            ref.addListenerForSingleValueEvent(valueEventListener);*/
+            ref.addListenerForSingleValueEvent(userEventListener);*/
         }
 
         private void deleteUserFromGroup(final String userId, final int position) {
 
-            ((FireApp) context.getApplicationContext()).setGroupUsers(null);
-
             //ELIMINAR DE LOS GRUPOS
-            DatabaseReference groupRef = FirebaseDatabase.getInstance().getReference("Groups").child(groupKey);
-            groupRef.child("members").child(userId).setValue(null).addOnSuccessListener(new OnSuccessListener<Void>() {
+            subGroupsRef.child("members").child(userId).removeValue().addOnSuccessListener(new OnSuccessListener<Void>() {
                 @Override
                 public void onSuccess(Void aVoid) {
-                    Toast.makeText(context, "Borrado del grupo", Toast.LENGTH_SHORT).show();
-                    usersList.remove(position);
+                    Toast.makeText(context, "Borrado del subgrupo", Toast.LENGTH_SHORT).show();
+                    /*usersList.remove(position);
                     notifyItemRemoved(position);
-                    notifyItemRangeChanged(position, usersList.size());
+                    notifyItemRangeChanged(position, usersList.size());*/
                 }
             });
 
             //ELIMINAR DE LOS SUBGRUPOS
-            groupEventListener = new ValueEventListener() {
+            subGroupEventListener = new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     for(DataSnapshot d : dataSnapshot.getChildren()){
@@ -413,10 +415,10 @@ public class RVGroupDetailAdapter extends RecyclerView.Adapter<RVGroupDetailAdap
 
                 }
             };
-            groupRef.child("subgroups").addListenerForSingleValueEvent(groupEventListener);
+            subGroupsRef.addListenerForSingleValueEvent(subGroupEventListener);
 
             //ELIMINAR DE LOS USUARIOS
-            DatabaseReference usersRef = FirebaseDatabase.getInstance().getReference("Users").child(userId).child("groups").child(groupKey);
+            DatabaseReference usersRef = FirebaseDatabase.getInstance().getReference("Users").child(userId).child("groups").child(groupKey).child("subgroups").child(subGroupKey);
             usersRef.removeValue().addOnSuccessListener(new OnSuccessListener<Void>() {
                 @Override
                 public void onSuccess(Void aVoid) {
@@ -424,22 +426,18 @@ public class RVGroupDetailAdapter extends RecyclerView.Adapter<RVGroupDetailAdap
                 }
             });
 
-
             //ELIMINAR DEL MAPA DE ROLES
             usersRoles.remove(userId);
 
-
-            //NOTIFICO EL CAMBIO
-            //notifyDataSetChanged();
+            usersList.remove(position);
+            notifyItemRemoved(position);
+            notifyItemRangeChanged(position, usersList.size());
 
         }
 
         private void removeListener1() {
-            groupsRef.removeEventListener(groupEventListener);
+            subGroupsRef.removeEventListener(subGroupEventListener);
         }
 
-        /*private void removeListener2() {
-            groupsRef.removeEventListener(valueEventListener);
-        }*/
     }
 }
