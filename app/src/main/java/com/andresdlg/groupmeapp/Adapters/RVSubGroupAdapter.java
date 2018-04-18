@@ -34,6 +34,7 @@ import android.widget.Toast;
 
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.andresdlg.groupmeapp.DialogFragments.SubGroupChatDialogFragment;
+import com.andresdlg.groupmeapp.DialogFragments.SubGroupFilesDialogFragment;
 import com.andresdlg.groupmeapp.DialogFragments.SubGroupMembersDialogFragment;
 import com.andresdlg.groupmeapp.Entities.SubGroup;
 import com.andresdlg.groupmeapp.Entities.Task;
@@ -144,6 +145,7 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
         ImageButton addTaskiv;
         ImageButton chat;
         ImageButton membersiv;
+        ImageButton files;
         ViewGroup parent;
         LinearLayout cardLl;
         CircleImageView subGroupPhoto;
@@ -165,6 +167,9 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
 
             membersiv = itemView.findViewById(R.id.members);
             membersiv.setOnClickListener(this);
+
+            files = itemView.findViewById(R.id.files);
+            files.setOnClickListener(this);
 
             cardLl = itemView.findViewById(R.id.cardLl);
 
@@ -459,6 +464,9 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
                 case R.id.members:
                     showDialog(DIALOG_MEMBERS);
                     break;
+                case R.id.files:
+                    showDialog(DIALOG_FILES);
+                    break;
                 case R.id.btn_menu:
                     final PopupMenu popupMenu = new PopupMenu(context, view);
                     final Menu menu = popupMenu.getMenu();
@@ -690,9 +698,16 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
                     transaction2.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
                     transaction2.add(android.R.id.content, newFragment2).addToBackStack(null).commit();
                     break;
+
+                case DIALOG_FILES:
+                    SubGroupFilesDialogFragment newFragment3 = new SubGroupFilesDialogFragment(textView_parentName.getText().toString(),imageUrl,subGroups.get(position).getSubGroupKey(),groupKey);
+                    newFragment3.setCancelable(false);
+                    newFragment3.setStyle(DialogFragment.STYLE_NORMAL,R.style.AppTheme_DialogFragment);
+                    FragmentTransaction transaction3 = fragmentManager.beginTransaction();
+                    transaction3.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
+                    transaction3.add(android.R.id.content, newFragment3).addToBackStack(null).commit();
+                    break;
             }
-
-
         }
     }
 
