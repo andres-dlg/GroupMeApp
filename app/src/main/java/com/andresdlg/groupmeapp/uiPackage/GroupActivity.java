@@ -4,7 +4,10 @@ import android.animation.ValueAnimator;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
+import android.support.annotation.NonNull;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.transition.Transition;
 import android.support.v4.app.ActivityOptionsCompat;
@@ -39,16 +42,24 @@ import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
 import com.andresdlg.groupmeapp.uiPackage.fragments.GroupChatFragment;
 import com.andresdlg.groupmeapp.uiPackage.fragments.NewsFragment;
 import com.andresdlg.groupmeapp.uiPackage.fragments.SubGroupsFragment;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FileDownloadTask;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.OnProgressListener;
+import com.google.firebase.storage.StorageReference;
 import com.ogaclejapan.smarttablayout.utils.v4.FragmentPagerItemAdapter;
 import com.ogaclejapan.smarttablayout.utils.v4.FragmentPagerItems;
 import com.squareup.picasso.Picasso;
 
+import java.io.File;
+import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -74,6 +85,8 @@ public class GroupActivity extends AppCompatActivity{
     NavigationTabBar navigationTabBar;
     View dummyView;
 
+    String groupName;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -90,7 +103,7 @@ public class GroupActivity extends AppCompatActivity{
         final DisplayMetrics metrics = getResources().getDisplayMetrics();
 
         groupKey = getIntent().getStringExtra("groupKey");
-        final String groupName = getIntent().getStringExtra("groupName");
+        groupName = getIntent().getStringExtra("groupName");
         final String groupPhotoUrl = getIntent().getStringExtra("groupImage");
         //getSupportActionBar().setTitle(groupName);
 
@@ -257,6 +270,7 @@ public class GroupActivity extends AppCompatActivity{
 
         groupUsers = new ArrayList<>();
 
+        ((FireApp) this.getApplication()).setGroupName(groupName);
         //((FireApp) getApplicationContext()).setGroupKey(groupKey);
 
         fetchContacts();
@@ -353,8 +367,9 @@ public class GroupActivity extends AppCompatActivity{
         ((FireApp) this.getApplication()).setGroupKey(null);
         ((FireApp) this.getApplication()).setGroupUsers(null);
         ((FireApp) this.getApplication()).setEvents(null);
-
+        ((FireApp) this.getApplication()).setGroupName(null);
     }
+
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {

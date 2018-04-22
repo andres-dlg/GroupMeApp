@@ -36,32 +36,37 @@
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintBottom_toTopOf="@+id/tvGroupName"
             app:layout_constraintVertical_chainStyle="spread_inside"
             android:transitionName="groupPhoto"
             />
 
-        <ImageView
+        <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="60dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            android:tint="#fff"
-            android:background="@drawable/gradient_black"
-            />
+            app:layout_constraintBottom_toBottomOf="@id/ivGroupPhoto">
 
-        <TextView
-            android:id="@+id/tvGroupName"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="16dp"
-            android:layout_marginBottom="12dp"
-            android:text="Group name"
-            android:textColor="#fff"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintBottom_toBottomOf="@+id/ivGroupPhoto"
-            tools:layout_editor_absoluteX="16dp"
-            android:textSize="20sp"
-            android:transitionName="groupName"/>
+            <ImageView
+                android:id="@+id/imv"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:tint="#fff"
+                android:background="@drawable/gradient_black"
+                />
+
+            <TextView
+                android:id="@+id/tvGroupName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="16dp"
+                android:layout_marginBottom="12dp"
+                android:text="Group name"
+                android:textColor="#fff"
+                app:layout_constraintBottom_toTopOf="@+id/imv"
+                android:textSize="20sp"
+                android:transitionName="groupName"/>
+
+        </RelativeLayout>
+
 
         <ImageButton
             android:layout_width="wrap_content"
@@ -73,7 +78,6 @@
             android:layout_margin="16dp"
             android:background="#00000000"
             />
-
 
 
         <FrameLayout

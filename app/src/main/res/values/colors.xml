@@ -14,4 +14,7 @@
 
     <color name="theme_primary_text_inverted">#ffffff</color>
     <color name="theme_secondary_text_inverted">#8affffff</color>
+
+    <color name="blue_file_download">#3f51b5</color>
+    <color name="green_file_download">#4caf50</color>
 </resources>

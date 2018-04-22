@@ -6,7 +6,8 @@ package com.andresdlg.groupmeapp.Entities;
 
 public class File {
 
-    private String filename;
+    private String fileKey;
+    private String fileName;
     private String fileUrl;
     private String fileType;
     private float fileSize;
@@ -15,9 +16,9 @@ public class File {
 
     private File() {}
 
-    public File(String filename, String fileUrl, String fileType, float fileSize ,long uploadTime, String user){
-
-        this.filename = filename;
+    public File(String fileKey, String fileName, String fileUrl, String fileType, float fileSize ,long uploadTime, String user){
+        this.fileKey = fileKey;
+        this.fileName = fileName;
         this.fileUrl = fileUrl;
         this.fileType = fileType;
         this.fileSize = fileSize;
@@ -26,11 +27,11 @@ public class File {
     }
 
     public String getFilename() {
-        return filename;
+        return fileName;
     }
 
-    public void setFilename(String filename) {
-        this.filename = filename;
+    public void setFilename(String fileName) {
+        this.fileName = fileName;
     }
 
     public String getFileUrl() {
@@ -71,5 +72,13 @@ public class File {
 
     public void setFileSize(float fileSize) {
         this.fileSize = fileSize;
+    }
+
+    public String getFileKey() {
+        return fileKey;
+    }
+
+    public void setFileKey(String fileKey) {
+        this.fileKey = fileKey;
     }
 }

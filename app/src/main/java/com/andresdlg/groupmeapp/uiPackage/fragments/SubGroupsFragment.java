@@ -101,7 +101,6 @@ public class SubGroupsFragment extends Fragment {
 
         setRetainInstance(true);
 
-
         groupKey = ((FireApp) getActivity().getApplication()).getGroupKey();
 
         fab = view.findViewById(R.id.fabSubGroups);
@@ -111,7 +110,6 @@ public class SubGroupsFragment extends Fragment {
                 showHeaderDialogFragment();
             }
         });
-
 
         subGroups = new ArrayList<>();
 
@@ -139,8 +137,6 @@ public class SubGroupsFragment extends Fragment {
                 }
             }
         });
-
-
 
 
         fillSubGroups(view);

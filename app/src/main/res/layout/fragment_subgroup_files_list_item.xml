@@ -31,9 +31,15 @@
                 android:scaleType="center"
                 />
 
+            <ImageView
+                android:id="@+id/file_status"
+                android:layout_width="15dp"
+                android:layout_height="15dp"
+                android:scaleType="centerInside"
+                android:layout_gravity="bottom|right"
+                android:layout_marginBottom="8dp"/>
+
         </FrameLayout>
-
-
 
         <TextView
             android:id="@+id/file_name"
@@ -87,7 +93,7 @@
                 android:layout_marginRight="20dp"
                 android:text="Time"
                 android:textSize="12sp"
-                android:layout_weight="0.5"
+                android:layout_weight="0.2"
 
                 android:focusable="true"
                 android:focusableInTouchMode="true"
@@ -102,7 +108,7 @@
                 android:layout_height="wrap_content"
                 android:text="Tipo"
                 android:textSize="12sp"
-                android:layout_weight="0.5"
+                android:layout_weight="0.8"
                 android:textAlignment="textEnd"
 
                 android:focusable="true"

@@ -40,6 +40,7 @@ import com.andresdlg.groupmeapp.Entities.SubGroup;
 import com.andresdlg.groupmeapp.Entities.Task;
 import com.andresdlg.groupmeapp.R;
 import com.andresdlg.groupmeapp.Utils.BlurBuilder;
+import com.andresdlg.groupmeapp.firebasePackage.FireApp;
 import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
 import com.andresdlg.groupmeapp.uiPackage.GroupActivity;
 import com.borax12.materialdaterangepicker.date.DatePickerDialog;
@@ -700,7 +701,7 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
                     break;
 
                 case DIALOG_FILES:
-                    SubGroupFilesDialogFragment newFragment3 = new SubGroupFilesDialogFragment(textView_parentName.getText().toString(),imageUrl,subGroups.get(position).getSubGroupKey(),groupKey);
+                    SubGroupFilesDialogFragment newFragment3 = new SubGroupFilesDialogFragment(textView_parentName.getText().toString(),imageUrl,subGroups.get(position).getSubGroupKey(),groupKey,((FireApp) context.getApplicationContext()).getGroupName());
                     newFragment3.setCancelable(false);
                     newFragment3.setStyle(DialogFragment.STYLE_NORMAL,R.style.AppTheme_DialogFragment);
                     FragmentTransaction transaction3 = fragmentManager.beginTransaction();
