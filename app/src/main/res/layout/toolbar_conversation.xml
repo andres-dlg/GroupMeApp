@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+    <LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/toolbar_container"
+        android:layout_width="fill_parent"
+        android:layout_height="?actionBarSize"
+        android:gravity="center_vertical"
+        android:clickable="true"
+        android:background="?attr/selectableItemBackground"
+        android:focusable="true"
+        android:paddingLeft="10dp">
+        <LinearLayout
+            android:id="@+id/conversation_image"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:contentDescription="@string/abc_action_bar_up_description"
+            android:orientation="horizontal">
+            <de.hdodenhof.circleimageview.CircleImageView
+                android:id="@+id/conversation_contact_photo"
+                android:transitionName="photo"
+                android:layout_width="35.0dip"
+                android:layout_height="35.0dip"
+                android:src="@drawable/new_user" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingBottom="2.0dip"
+            android:paddingLeft="4.0dip"
+            android:paddingRight="0.0dip"
+            android:paddingTop="0.0dip" >
+            <TextView
+                android:id="@+id/action_bar_title_1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_marginLeft="6dp"
+                android:ellipsize="end"
+                android:gravity="center_vertical"
+                android:maxLines="1"
+                android:textSize="20sp"
+                android:text="shanraisshan"
+                android:textColor="#fff"
+                android:transitionName="text"/>
+        </LinearLayout>
+    </LinearLayout>

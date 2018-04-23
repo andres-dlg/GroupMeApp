@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:weightSum="1">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:clickable="true"
+        android:focusable="true"
+        android:foreground="?android:attr/selectableItemBackground"
+        android:layout_weight="0.15">
+
+        <FrameLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/flo"
+            android:layout_marginTop="10dp"
+            android:layout_marginRight="10dp"
+            android:layout_marginBottom="10dp"
+            android:layout_marginLeft="15dp">
+
+            <ImageView
+                android:id="@+id/file_icon"
+                android:layout_width="40dp"
+                android:layout_height="70dp"
+                android:src="@drawable/file_multiple"
+                android:scaleType="center"
+                />
+
+            <ImageView
+                android:id="@+id/file_status"
+                android:layout_width="15dp"
+                android:layout_height="15dp"
+                android:scaleType="centerInside"
+                android:layout_gravity="bottom|right"
+                android:layout_marginBottom="8dp"/>
+
+        </FrameLayout>
+
+        <TextView
+            android:id="@+id/file_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignTop="@+id/flo"
+            android:layout_marginTop="5dp"
+            android:layout_marginRight="5dp"
+            android:layout_toEndOf="@+id/flo"
+            android:text="Nombre del archivo"
+            android:textSize="15sp"
+
+            android:focusable="true"
+            android:focusableInTouchMode="true"
+            android:singleLine="true"
+            android:scrollHorizontally="true"
+            android:ellipsize="marquee"
+            android:marqueeRepeatLimit ="marquee_forever"/>
+
+        <TextView
+            android:id="@+id/file_size"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/file_name"
+            android:layout_marginRight="5dp"
+            android:layout_marginTop="5dp"
+            android:layout_toEndOf="@+id/flo"
+            android:text="Tamaño"
+            android:textSize="12sp"
+
+            android:focusable="true"
+            android:focusableInTouchMode="true"
+            android:singleLine="true"
+            android:scrollHorizontally="true"
+            android:ellipsize="marquee"
+            android:marqueeRepeatLimit ="marquee_forever"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/file_size"
+            android:layout_marginRight="5dp"
+            android:layout_marginTop="5dp"
+            android:layout_toEndOf="@+id/flo"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/upload_time"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="20dp"
+                android:text="Time"
+                android:textSize="12sp"
+                android:layout_weight="0.2"
+
+                android:focusable="true"
+                android:focusableInTouchMode="true"
+                android:singleLine="true"
+                android:scrollHorizontally="true"
+                android:ellipsize="marquee"
+                android:marqueeRepeatLimit ="marquee_forever"/>
+
+            <TextView
+                android:id="@+id/file_type"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Tipo"
+                android:textSize="12sp"
+                android:layout_weight="0.8"
+                android:textAlignment="textEnd"
+
+                android:focusable="true"
+                android:focusableInTouchMode="true"
+                android:singleLine="true"
+                android:scrollHorizontally="true"
+                android:ellipsize="marquee"
+                android:marqueeRepeatLimit ="marquee_forever"/>
+
+
+        </LinearLayout>
+
+        <View
+            android:id="@+id/divider"
+            android:layout_below="@id/flo"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginLeft="15dp"
+            android:layout_marginRight="15dp"
+            android:background="@color/bg_add_photo" />
+
+    </RelativeLayout>
+
+
+    <ImageButton
+        android:layout_weight="0.85"
+        android:clickable="true"
+        android:focusable="true"
+        android:foreground="?android:attr/selectableItemBackgroundBorderless"
+        android:background="#fff"
+        android:id="@+id/btn_menu"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:src="@drawable/dots_vertical"
+        android:layout_gravity="center_vertical|center_horizontal"/>
+</LinearLayout>

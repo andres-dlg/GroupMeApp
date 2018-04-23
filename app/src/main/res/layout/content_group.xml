@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.design.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/parent"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FFFFFF"
+    android:fitsSystemWindows="true"
+    android:orientation="vertical"
+    android:theme="@style/AppTheme"
+    android:layout_gravity="bottom">
+
+    <android.support.v4.view.ViewPager
+        android:id="@+id/viewpager"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        android:layout_marginTop="30dp"
+        android:layout_marginBottom="50dp"
+        android:animateLayoutChanges="true"
+        />
+
+    <devlight.io.library.ntb.NavigationTabBar
+        android:id="@+id/ntb"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:layout_gravity="bottom"
+        app:ntb_badge_size="12sp"
+        app:ntb_badge_bg_color="#ffff0000"
+        app:ntb_badge_gravity="top"
+        app:ntb_badge_position="left"
+        app:ntb_badge_title_color="#ffffffff"
+        app:ntb_badge_use_typeface="true"
+        app:ntb_badged="true"
+        app:ntb_bg_color="@color/colorAccent"
+        app:ntb_typeface="@font/simplifica_font"
+        android:elevation="50dp"/>
+
+    <View
+        android:id="@+id/dummyView"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_gravity="bottom"
+        android:background="@color/colorAccent"
+        android:elevation="10dp"
+        android:translationZ="10dp"
+        />
+
+</android.support.design.widget.CoordinatorLayout>
