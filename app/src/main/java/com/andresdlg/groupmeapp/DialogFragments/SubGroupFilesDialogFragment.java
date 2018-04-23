@@ -150,7 +150,7 @@ public class SubGroupFilesDialogFragment extends DialogFragment {
         LinearLayoutManager llm = new LinearLayoutManager(getContext());
         rv.setLayoutManager(llm);
 
-        rvFilesAdapter = new RVFilesAdapter(files,getContext(), subGroupName);
+        rvFilesAdapter = new RVFilesAdapter(files,getContext(), subGroupName,groupKey,subGroupKey);
         rv.setAdapter(rvFilesAdapter);
 
         DatabaseReference subGroupReg = FirebaseDatabase.getInstance().getReference("Groups").child(groupKey).child("subgroups").child(subGroupKey);
@@ -293,69 +293,61 @@ public class SubGroupFilesDialogFragment extends DialogFragment {
                         map.put("uploadTime",file.getUploadTime());
                         map.put("user",file.getUser());
 
+
+                        //GUARDO UNA COPIA DEL ARCHIVO EN LA CARPETA DE MI SUBGRUPO
+
+                        String folderLocation = Environment.getExternalStorageDirectory()+"/GroupMeApp/Grupos/"+groupName+"/Sub Grupos/"+subGroupName;
+                        java.io.File localFile = null;
+                        try {
+                            java.io.File output = new java.io.File(folderLocation);
+                            if (!output.exists()) {
+                                output.mkdirs();
+                            }
+                            localFile = new java.io.File(output, fileData[0]);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+
+                        InputStream in = null;
+                        try {
+                            in = getContext().getContentResolver().openInputStream(fileUri);
+                        } catch (FileNotFoundException e) {
+                            e.printStackTrace();
+                        }
+                        OutputStream out = null;
+                        try {
+                            out = new FileOutputStream(localFile);
+                        } catch (FileNotFoundException e) {
+                            e.printStackTrace();
+                        }
+                        byte[] buf = new byte[1024];
+                        int len;
+                        try {
+                            while((len=in.read(buf))>0){
+                                out.write(buf,0,len);
+                            }
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        try {
+                            out.close();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        try {
+                            in.close();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+
+
                         final DatabaseReference fileDbRef = mSubgroupFilesDatabaseRef.child(file.getFileKey());
                         fileDbRef.setValue(map).addOnSuccessListener(new OnSuccessListener<Void>() {
                             @Override
                             public void onSuccess(Void aVoid) {
-
-                                //GUARDO EL ARCHIVO EN LA CARPETA DE MI SUBGRUPO
-
-                                String folderLocation = Environment.getExternalStorageDirectory()+"/GroupMeApp/Grupos/"+groupName+"/Sub Grupos/"+subGroupName;
-                                java.io.File localFile = null;
-                                try {
-                                    java.io.File output = new java.io.File(folderLocation);
-                                    if (!output.exists()) {
-                                        output.mkdirs();
-                                    }
-                                    localFile = new java.io.File(output, fileData[0]);
-                                } catch (Exception e) {
-                                    e.printStackTrace();
-                                }
-
-                                InputStream in = null;
-                                try {
-                                    in = getContext().getContentResolver().openInputStream(fileUri);
-                                } catch (FileNotFoundException e) {
-                                    e.printStackTrace();
-                                }
-                                OutputStream out = null;
-                                try {
-                                    out = new FileOutputStream(localFile);
-                                } catch (FileNotFoundException e) {
-                                    e.printStackTrace();
-                                }
-                                byte[] buf = new byte[1024];
-                                int len;
-                                try {
-                                    while((len=in.read(buf))>0){
-                                        out.write(buf,0,len);
-                                    }
-                                } catch (IOException e) {
-                                    e.printStackTrace();
-                                }
-                                try {
-                                    out.close();
-                                } catch (IOException e) {
-                                    e.printStackTrace();
-                                }
-                                try {
-                                    in.close();
-                                } catch (IOException e) {
-                                    e.printStackTrace();
-                                }
-
                                 Toast.makeText(getContext(), "Archivo DB: " + fileData[0] + " agregado.", Toast.LENGTH_SHORT).show();
                                 Toast.makeText(getContext(), "Archivo ST: " + fileData[0] + " agregado.", Toast.LENGTH_SHORT).show();
                                 files.add(file);
-
-                                /*int position = files.indexOf(file);
-
-                                rvFilesAdapter.notifyItemInserted(position);
-                                rvFilesAdapter.notifyItemRangeInserted(position,files.size());*/
-
-
-
-                                //rvFilesAdapter.notifyItemChanged(position);
                             }
                         });
                     }
