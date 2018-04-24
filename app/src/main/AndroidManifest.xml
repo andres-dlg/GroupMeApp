@@ -98,7 +98,7 @@
             android:windowSoftInputMode="adjustPan"/>
         <activity
             android:name=".uiPackage.GroupDetailActivity"
-            android:theme="@style/AppTheme.NoActionBar" />
+            android:theme="@style/MyDialogTheme2" />
         <activity android:name=".uiPackage.TaskWeekViewBaseActivty" />
         <activity android:name=".uiPackage.TaskWeekViewActivity" />
         <activity android:name=".uiPackage.SearchContactActivity"></activity>

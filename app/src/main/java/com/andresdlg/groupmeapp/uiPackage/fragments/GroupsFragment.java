@@ -43,6 +43,8 @@ public class GroupsFragment extends Fragment implements View.OnClickListener{
     List<Group> groups;
     RecyclerView rv;
 
+    View view;
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -54,6 +56,8 @@ public class GroupsFragment extends Fragment implements View.OnClickListener{
     @Override
     public void onViewCreated(final View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+        this.view = view;
 
         groups = new ArrayList<>();
 
@@ -68,9 +72,13 @@ public class GroupsFragment extends Fragment implements View.OnClickListener{
         mFloatingActionButton.setOnClickListener(this);
 
         groupsRef = FirebaseDatabase.getInstance().getReference("Groups");
-
         mUserGroupsRef = FirebaseDatabase.getInstance().getReference("Users").child(StaticFirebaseSettings.currentUserId).child("groups");
-        mUserGroupsRef.addValueEventListener(new ValueEventListener() {
+
+        //implementRecyclerViewClickListeners();
+    }
+
+    private void getAllGroups(){
+        mUserGroupsRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 for(DataSnapshot data : dataSnapshot.getChildren()){
@@ -92,8 +100,6 @@ public class GroupsFragment extends Fragment implements View.OnClickListener{
 
         tvNoGroups = view.findViewById(R.id.tvNoGroups);
         checkGroupsQuantity();
-
-        //implementRecyclerViewClickListeners();
     }
 
     private void getGroup(String key) {
@@ -103,13 +109,24 @@ public class GroupsFragment extends Fragment implements View.OnClickListener{
             public void onDataChange(DataSnapshot dataSnapshot) {
                 boolean contains = false;
                 Group u = dataSnapshot.getValue(Group.class);
-                for(Group g : groups){
+                int j = 0;
+                for(int i = 0 ; i<groups.size(); i++){
+                    if(groups.get(i).getGroupKey().equals(u.getGroupKey())){
+                        contains = true;
+                        j = i;
+                    }
+                }
+                /*for(Group g : groups){
                     if(g.getGroupKey().equals(u.getGroupKey())){
                         contains = true;
                     }
-                }
+                }*/
                 if(!contains){
                     groups.add(u);
+                    adapter.notifyDataSetChanged();
+                }else{
+                    groups.remove(j);
+                    groups.add(j,u);
                     adapter.notifyDataSetChanged();
                 }
             }
@@ -139,6 +156,12 @@ public class GroupsFragment extends Fragment implements View.OnClickListener{
                 showHeaderDialogFragment();
                 break;
         }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        getAllGroups();
     }
 
     private void showHeaderDialogFragment() {

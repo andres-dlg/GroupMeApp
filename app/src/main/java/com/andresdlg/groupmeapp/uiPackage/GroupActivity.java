@@ -4,12 +4,8 @@ import android.animation.ValueAnimator;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Typeface;
-import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
-import android.support.annotation.NonNull;
 import android.support.design.widget.CoordinatorLayout;
-import android.support.transition.Transition;
 import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.util.Pair;
 import android.support.v4.view.ViewPager;
@@ -17,20 +13,16 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.Animation;
 import android.view.animation.Transformation;
-import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.alamkanak.weekview.WeekViewEvent;
 import com.andresdlg.groupmeapp.Entities.Task;
@@ -42,24 +34,16 @@ import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
 import com.andresdlg.groupmeapp.uiPackage.fragments.GroupChatFragment;
 import com.andresdlg.groupmeapp.uiPackage.fragments.NewsFragment;
 import com.andresdlg.groupmeapp.uiPackage.fragments.SubGroupsFragment;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.google.firebase.storage.FileDownloadTask;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.OnProgressListener;
-import com.google.firebase.storage.StorageReference;
 import com.ogaclejapan.smarttablayout.utils.v4.FragmentPagerItemAdapter;
 import com.ogaclejapan.smarttablayout.utils.v4.FragmentPagerItems;
 import com.squareup.picasso.Picasso;
 
-import java.io.File;
-import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -84,6 +68,7 @@ public class GroupActivity extends AppCompatActivity{
     boolean clicked;
     NavigationTabBar navigationTabBar;
     View dummyView;
+    TextView tv;
 
     String groupName;
 
@@ -107,7 +92,7 @@ public class GroupActivity extends AppCompatActivity{
         final String groupPhotoUrl = getIntent().getStringExtra("groupImage");
         //getSupportActionBar().setTitle(groupName);
 
-        final TextView tv = toolbar.findViewById(R.id.action_bar_title_1);
+        tv = toolbar.findViewById(R.id.action_bar_title_1);
         final CircleImageView civ = toolbar.findViewById(R.id.conversation_contact_photo);
 
         tv.setText(groupName);
@@ -353,6 +338,9 @@ public class GroupActivity extends AppCompatActivity{
     @Override
     public void onResume() {
         super.onResume();
+
+        tv.setText(((FireApp) this.getApplication()).getGroupName());
+
         if(groupUsers == null){
             groupUsers = new ArrayList<>();
         }else{
