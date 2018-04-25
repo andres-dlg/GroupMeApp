@@ -1,5 +1,7 @@
 package com.andresdlg.groupmeapp.uiPackage;
 
+import android.Manifest;
+import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -8,10 +10,16 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
+import android.support.annotation.RequiresApi;
+import android.support.design.widget.AppBarLayout;
+import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.view.ViewCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -19,6 +27,8 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.text.InputType;
 import android.text.TextUtils;
+import android.util.Log;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
@@ -48,9 +58,14 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
+import com.theartofdev.edmodo.cropper.CropImage;
+import com.theartofdev.edmodo.cropper.CropImageView;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -64,6 +79,8 @@ import java.util.Map;
 
 public class GroupDetailActivity extends AppCompatActivity {
 
+    final int REQUEST_CODE = 200;
+
     String groupKey;
     DatabaseReference groupRef;
     DatabaseReference usersRef;
@@ -73,24 +90,28 @@ public class GroupDetailActivity extends AppCompatActivity {
     Map<String, String> members;
 
     EditText objetive;
-    TextView tv;
+    ImageView iv;
+    Uri mCropImageUri;
+    Uri imageHoldUri;
+
     private boolean editMode;
+
+    MenuItem item;
+
+    CollapsingToolbarLayout collapsingToolbar;
+    AppBarLayout appBarLayout;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
-        setContentView(R.layout.activity_group_details);
+        setContentView(R.layout.activity_group_details_test);
 
         final Animation myFadeInAnimation = AnimationUtils.loadAnimation(this,R.anim.fadein);
 
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        toolbar.bringToFront();
-        toolbar.setTitle(" ");
-        toolbar.setBackground(getResources().getDrawable(R.drawable.gradient_black_rotated));
-        setSupportActionBar(toolbar);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        toolbar.startAnimation(myFadeInAnimation);
+        appBarLayout = findViewById(R.id.appBarLayout);
+
+        ViewCompat.setTransitionName(appBarLayout,"transition");
 
         usersList = new ArrayList<>();
         usersRoles = new HashMap<>();
@@ -99,21 +120,19 @@ public class GroupDetailActivity extends AppCompatActivity {
         final String groupName = getIntent().getStringExtra("groupName");
         final String groupPhotoUrl = getIntent().getStringExtra("groupPhotoUrl");
 
-        tv = findViewById(R.id.group_name);
-        tv.setSelected(true);
+        setToolbar(groupName,myFadeInAnimation);
 
         final ImageButton editObjetiveBtn = findViewById(R.id.editObjetiveBtn);
         editObjetiveBtn.startAnimation(myFadeInAnimation);
 
-        final ImageButton editGroupNameBtn = findViewById(R.id.editGroupNameBtn);
-
         objetive = findViewById(R.id.objetive);
-        final ImageView iv = findViewById(R.id.add_group_photo);
+        iv = findViewById(R.id.add_group_photo);
 
         final ImageButton addContact = findViewById(R.id.addContact);
         addContact.startAnimation(myFadeInAnimation);
 
         final FloatingActionButton fab = findViewById(R.id.fab);
+
 
         final RecyclerView rv = findViewById(R.id.rvMembers);
         rv.setHasFixedSize(true);
@@ -123,7 +142,7 @@ public class GroupDetailActivity extends AppCompatActivity {
         //adapter = new RVGroupDetailAdapter(usersList,usersRoles,groupKey,this);
         //rv.setAdapter(adapter);
 
-        tv.setText(groupName);
+        //tv.setText(groupName);
 
         Target target = new Target() {
             @Override public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
@@ -149,8 +168,6 @@ public class GroupDetailActivity extends AppCompatActivity {
                 adapter = new RVGroupDetailAdapter(usersList,usersRoles,groupKey,GroupDetailActivity.this);
                 rv.setAdapter(adapter);
 
-
-
                 if(TextUtils.isEmpty(g.getObjetive())){
                     objetive.setText("Sin objetivo");
                 }else{
@@ -163,58 +180,9 @@ public class GroupDetailActivity extends AppCompatActivity {
                     fab.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View view) {
-                            Toast.makeText(GroupDetailActivity.this, "IMPLEMENTAR", Toast.LENGTH_SHORT).show();
+                            onSelectImageClick(view);
                         }
                     });
-
-                    editGroupNameBtn.setVisibility(View.VISIBLE);
-                    editGroupNameBtn.startAnimation(myFadeInAnimation);
-                    editGroupNameBtn.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-                            new MaterialDialog.Builder(GroupDetailActivity.this)
-                                    .title("Nombre del grupo")
-                                    .content("Nombre")
-                                    .inputType(InputType.TYPE_CLASS_TEXT)
-                                    .input("Ingrese el nombre", null, new MaterialDialog.InputCallback() {
-                                        @Override
-                                        public void onInput(@NonNull MaterialDialog dialog, CharSequence input) {
-                                            if(!TextUtils.isEmpty(input)){
-                                                saveGroupName(input.toString());
-                                            }else{
-                                                dialog.getInputEditText().setError("Este campo es necesario");
-                                            }
-                                        }
-                                    })
-                                    .show();
-                        }
-                    });
-
-                    tv.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-                            if(amIadmin()){
-                                new AlertDialog.Builder(GroupDetailActivity.this,R.style.MyDialogTheme)
-                                        .setTitle("¿Desea cambiar el nombre del grupo?")
-                                        //.setMessage("Ya no estará disponib")
-                                        .setPositiveButton("Si", new DialogInterface.OnClickListener() {
-                                            @Override
-                                            public void onClick(DialogInterface dialog, int which) {
-                                                tv.setEnabled(true);
-                                            }
-                                        })
-                                        .setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
-                                            @Override
-                                            public void onClick(DialogInterface dialog, int which) {
-                                                dialog.dismiss();
-                                            }
-                                        })
-                                        .setCancelable(false)
-                                        .show();
-                            }
-                        }
-                    });
-
 
                     editObjetiveBtn.setVisibility(View.VISIBLE);
                     editObjetiveBtn.setOnClickListener(new View.OnClickListener() {
@@ -268,11 +236,213 @@ public class GroupDetailActivity extends AppCompatActivity {
         });
     }
 
+    private void setToolbar(String groupName, Animation myFadeInAnimation) {
+
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        //toolbar.setBackground(getResources().getDrawable(R.drawable.gradient_black_rotated));
+        toolbar.startAnimation(myFadeInAnimation);
+
+        collapsingToolbar = findViewById(R.id.collapsingToolbarLayout);
+        collapsingToolbar.setTitle(groupName);
+        //collapsingToolbar.setExpandedTitleColor(getResources().getColor(android.R.color.transparent));
+
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.activity_group_detail_menu,menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        switch (id){
+            case android.R.id.home:
+                onBackPressed();
+                return true;
+            case R.id.editGroupNameBtn:
+                if(amIadmin()){
+                    new MaterialDialog.Builder(GroupDetailActivity.this)
+                            .title("Nombre del grupo")
+                            .content("Nombre")
+                            .inputType(InputType.TYPE_CLASS_TEXT)
+                            .input("Ingrese el nombre", null, new MaterialDialog.InputCallback() {
+                                @Override
+                                public void onInput(@NonNull MaterialDialog dialog, CharSequence input) {
+                                    if(!TextUtils.isEmpty(input)){
+                                        saveGroupName(input.toString());
+                                    }else{
+                                        dialog.getInputEditText().setError("Este campo es necesario");
+                                    }
+                                }
+                            })
+                            .show();
+                }else{
+                    Toast.makeText(this, "Debes ser administrador para actualizar el nombre del grupo", Toast.LENGTH_SHORT).show();
+                }
+
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+    //NEW IMAGE SELECTION
+    private void onSelectImageClick(View view) {
+        Intent i = CropImage.getPickImageChooserIntent(this);
+        startActivityForResult(i,REQUEST_CODE);
+    }
+
+    private void startCropImageActivity(Uri imageUri) {
+        CropImage.activity(imageUri)
+                .setGuidelines(CropImageView.Guidelines.ON)
+                .setCropShape(CropImageView.CropShape.RECTANGLE)
+                .setAspectRatio(15,9)
+                .setFixAspectRatio(true)
+                //.setMaxCropResultSize(480,270)
+                .setRequestedSize(1080,607, CropImageView.RequestSizeOptions.RESIZE_FIT)
+                .start(this);
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.M)
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        // handle result of pick image chooser
+        if (requestCode == CropImage.PICK_IMAGE_CHOOSER_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
+            Uri imageUri = CropImage.getPickImageResultUri(this, data);
+
+            // For API >= 23 we need to check specifically that we have permissions to read external storage.
+            if (CropImage.isReadExternalStoragePermissionsRequired(this, imageUri)) {
+                // request permissions and handle the result in onRequestPermissionsResult()
+                mCropImageUri = imageUri;
+                requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},   CropImage.PICK_IMAGE_PERMISSIONS_REQUEST_CODE);
+            } else {
+                // no permissions required or already grunted, can start crop image activity
+                startCropImageActivity(imageUri);
+            }
+        }
+
+        //image crop library code
+        if (requestCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE) {
+            CropImage.ActivityResult result = CropImage.getActivityResult(data);
+            if (resultCode == Activity.RESULT_OK) {
+                imageHoldUri = result.getUri();
+                saveGroupPhoto(imageHoldUri,iv);
+
+            } else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
+                Exception error = result.getError();
+            }
+        }
+    }
+
+    private void saveGroupPhoto(final Uri imageHoldUri, final ImageView iv) {
+
+        //Recupero las referencias
+        final StorageReference groupStorageRef = FirebaseStorage.getInstance().getReference("Groups").child(groupKey);
+        final DatabaseReference groupImageRef = groupRef.child("imageUrl");
+
+        //Obtengo la url dela imagen que esta en firebase storage
+        groupImageRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                //Obtengo la url dela imagen que esta en firebase storage
+                String imageUrlFirebase = dataSnapshot.getValue().toString();
+                StorageReference groupImageStorageRef = FirebaseStorage.getInstance().getReferenceFromUrl(imageUrlFirebase);
+                //borro la imagen existente
+                groupImageStorageRef.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Log.i("FIREBASE STORAGE","¡Imagen borrada en el Storage!");
+                    }
+                });
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
+
+        StorageReference newFileRef = groupStorageRef.child(imageHoldUri.getLastPathSegment());
+        newFileRef.putFile(imageHoldUri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+            @Override
+            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                String downloadUrl = taskSnapshot.getDownloadUrl().toString();
+                groupImageRef.setValue(downloadUrl);
+                Picasso.with(GroupDetailActivity.this).load(imageHoldUri).into(iv);
+                Toast.makeText(GroupDetailActivity.this, "¡Imagen actualizada en el Storage!", Toast.LENGTH_SHORT).show();
+                ((FireApp) getApplication()).setGroupPhoto(downloadUrl);
+            }
+        });
+
+
+
+
+
+
+        //Busco el valor existente y lo actualizo
+        /*groupImageRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+
+                //Obtengo la url dela imagen que esta en firebase storage
+                String imageUrlFirebase = dataSnapshot.getValue().toString();
+
+                StorageReference groupImageStorageRef = FirebaseStorage.getInstance().getReferenceFromUrl(imageUrlFirebase);
+                //borro la imagen existente
+                groupImageStorageRef.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Toast.makeText(GroupDetailActivity.this, "¡Imagen borrada en el Storage!", Toast.LENGTH_SHORT).show();
+
+                            groupStorageRef.child(imageHoldUri.getLastPathSegment()).putFile(imageHoldUri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                            @Override
+                            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                                Toast.makeText(GroupDetailActivity.this, "¡Imagen actualizada en el Storage!", Toast.LENGTH_SHORT).show();
+                                Picasso.with(GroupDetailActivity.this).load(imageHoldUri).into(iv);
+                                groupImageRef.setValue(taskSnapshot.getDownloadUrl()).addOnSuccessListener(new OnSuccessListener<Void>() {
+                                    @Override
+                                    public void onSuccess(Void aVoid) {
+                                        Toast.makeText(GroupDetailActivity.this, "¡Imagen actualizada en la DB!", Toast.LENGTH_SHORT).show();
+                                    }
+                                });
+                            }
+                        }).addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                                Toast.makeText(GroupDetailActivity.this, "Error al guardar en Storage!", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    }
+                }).addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Toast.makeText(GroupDetailActivity.this, "Error al borrar del Storage!", Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });*/
+
+
+    }
+
     private void saveGroupName(final String newName) {
         groupRef.child("name").setValue(newName).addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void aVoid) {
-                tv.setText(newName);
+                collapsingToolbar.setTitle(newName);
+                //tv.setText(newName);
                 ((FireApp) getApplication()).setGroupName(newName);
                 Toast.makeText(GroupDetailActivity.this, "¡Nombre del grupo actualizado!", Toast.LENGTH_SHORT).show();
             }
@@ -353,16 +523,5 @@ public class GroupDetailActivity extends AppCompatActivity {
 
             }
         });
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case android.R.id.home:
-                this.finish();
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
-        }
     }
 }

@@ -21,6 +21,7 @@ public class FireApp extends Application {
     private List<WeekViewEvent> events;
     private String[] fileData;
     private String groupName;
+    private String downloadUrl;
 
     public String getGroupKey() {
         return groupKey;
@@ -96,5 +97,13 @@ public class FireApp extends Application {
 
     public void setGroupName(String groupName) {
         this.groupName = groupName;
+    }
+
+    public void setGroupPhoto(String downloadUrl) {
+        this.downloadUrl = downloadUrl;
+    }
+
+    public String getDownloadUrl() {
+        return downloadUrl;
     }
 }

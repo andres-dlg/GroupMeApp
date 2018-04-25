@@ -69,6 +69,7 @@ public class GroupActivity extends AppCompatActivity{
     NavigationTabBar navigationTabBar;
     View dummyView;
     TextView tv;
+    CircleImageView civ;
 
     String groupName;
 
@@ -93,7 +94,7 @@ public class GroupActivity extends AppCompatActivity{
         //getSupportActionBar().setTitle(groupName);
 
         tv = toolbar.findViewById(R.id.action_bar_title_1);
-        final CircleImageView civ = toolbar.findViewById(R.id.conversation_contact_photo);
+        civ = toolbar.findViewById(R.id.conversation_contact_photo);
 
         tv.setText(groupName);
         Picasso.with(this).load(groupPhotoUrl).into(civ);
@@ -341,6 +342,11 @@ public class GroupActivity extends AppCompatActivity{
 
         tv.setText(((FireApp) this.getApplication()).getGroupName());
 
+        String url = ((FireApp) this.getApplication()).getDownloadUrl();
+        if(!TextUtils.isEmpty(url)){
+            Picasso.with(this).load(url).into(civ);
+        }
+
         if(groupUsers == null){
             groupUsers = new ArrayList<>();
         }else{
@@ -356,6 +362,7 @@ public class GroupActivity extends AppCompatActivity{
         ((FireApp) this.getApplication()).setGroupUsers(null);
         ((FireApp) this.getApplication()).setEvents(null);
         ((FireApp) this.getApplication()).setGroupName(null);
+        ((FireApp) this.getApplication()).setGroupPhoto(null);
     }
 
 

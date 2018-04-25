@@ -256,7 +256,42 @@ public class HeaderDialogFragment extends DialogFragment implements GroupAddMemb
                     });
                 }else{
                     final String finalGroupKey1 = groupKey;
-                    mStorageReference.child("new_user.png").getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                    imageUrl = Uri.parse("android.resource://com.andresdlg.groupmeapp/"+R.drawable.login_background_cardview);
+                    StorageReference mGroupsStorage = mStorageReference.child("Groups").child(groupKey).child(imageUrl.getLastPathSegment());
+                    mGroupsStorage.putFile(imageUrl).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                        @Override
+                        public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                            imageUrl = taskSnapshot.getDownloadUrl();
+                            userIds.add(StaticFirebaseSettings.currentUserId);
+                            Map<Object,Object> map = new HashMap<>();
+                            for(String id: userIds){
+                                if(id.equals(StaticFirebaseSettings.currentUserId)){
+                                    map.put(id,Roles.ADMIN);
+                                }else{
+                                    map.put(id,Roles.MEMBER);
+                                }
+                            }
+                            createGroupData(finalGroupKey1,nameText.getText().toString(),objetiveText.getText().toString(),map);
+                            mProgressBar.setVisibility(View.INVISIBLE);
+                            dismiss();
+                        }
+                    });
+
+
+
+                    /*userIds.add(StaticFirebaseSettings.currentUserId);
+                    Map<Object,Object> map = new HashMap<>();
+                    for(String id: userIds){
+                        if(id.equals(StaticFirebaseSettings.currentUserId)){
+                            map.put(id,Roles.ADMIN);
+                        }else{
+                            map.put(id,Roles.MEMBER);
+                        }
+                    }
+                    createGroupData(finalGroupKey1,nameText.getText().toString(),objetiveText.getText().toString(),map);
+                    mProgressBar.setVisibility(View.INVISIBLE);
+                    dismiss();*/
+                    /*mStorageReference.child("new_user.png").getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
                         @Override
                         public void onSuccess(Uri uri) {
                             imageUrl = uri;
@@ -273,7 +308,7 @@ public class HeaderDialogFragment extends DialogFragment implements GroupAddMemb
                             mProgressBar.setVisibility(View.INVISIBLE);
                             dismiss();
                         }
-                    });
+                    });*/
                 }
             }
 
