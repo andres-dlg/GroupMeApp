@@ -1,5 +1,6 @@
 package com.andresdlg.groupmeapp.uiPackage.fragments;
 
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
@@ -34,7 +35,7 @@ import java.util.List;
  * Created by andresdlg on 02/05/17.
  */
 
-public class GroupsFragment extends Fragment implements View.OnClickListener{
+public class GroupsFragment extends Fragment implements View.OnClickListener,HeaderDialogFragment.OnSaveGroupListener{
 
     TextView tvNoGroups;
     RVGroupAdapter adapter;
@@ -104,7 +105,7 @@ public class GroupsFragment extends Fragment implements View.OnClickListener{
 
     private void getGroup(String key) {
         DatabaseReference groupRef = groupsRef.child(key);
-        groupRef.addListenerForSingleValueEvent(new ValueEventListener() {
+        groupRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 boolean contains = false;
@@ -173,4 +174,10 @@ public class GroupsFragment extends Fragment implements View.OnClickListener{
         transaction.add(android.R.id.content, newFragment).addToBackStack(null).commit();
     }
 
+    @Override
+    public void onSavedGroup(boolean saved) {
+        if(saved){
+            getAllGroups();
+        }
+    }
 }

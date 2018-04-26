@@ -2,6 +2,10 @@ package com.andresdlg.groupmeapp.Adapters;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.support.annotation.NonNull;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -18,12 +22,16 @@ import com.andresdlg.groupmeapp.R;
 import com.andresdlg.groupmeapp.Utils.Roles;
 import com.andresdlg.groupmeapp.firebasePackage.FireApp;
 import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
+import com.andresdlg.groupmeapp.uiPackage.MainActivity;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
@@ -187,6 +195,11 @@ public class RVGroupDetailAdapter extends RecyclerView.Adapter<RVGroupDetailAdap
                         //btnMenu.setVisibility(View.VISIBLE);
 
                         popupMenu.getMenuInflater().inflate(R.menu.activity_group_detail_item_admin_to_admin_menu, menu);
+
+                        if(iduser.equals(StaticFirebaseSettings.currentUserId)){
+                            popupMenu.getMenu().getItem(1).setTitle("Abandonar grupo");
+                        }
+
                         popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
                             @Override
                             public boolean onMenuItemClick(MenuItem menuItem) {
@@ -218,14 +231,32 @@ public class RVGroupDetailAdapter extends RecyclerView.Adapter<RVGroupDetailAdap
                                         setAdminCount();
 
                                         if(cantAdmins >1){
-                                            deleteUserFromGroup(iduser,getAdapterPosition());
+                                            deleteUserFromGroup(iduser,getAdapterPosition(),false);
                                             Toast.makeText(context,"Eliminado", Toast.LENGTH_SHORT).show();
                                             break;
                                         }else{
-                                            Toast.makeText(context,"Debe haber por lo menos un administrador", Toast.LENGTH_SHORT).show();
-                                            break;
+                                            if(usersList.size()>1){
+                                                Toast.makeText(context,"Debe haber por lo menos un administrador", Toast.LENGTH_SHORT).show();
+                                            }else {
+                                                new AlertDialog.Builder(context,R.style.MyDialogTheme)
+                                                        .setTitle("¿Esta seguro que desea abandonar el grupo?")
+                                                        .setMessage("Como usted es el unico miembro del grupo, al abandonarlo el mismo será eliminado asi como todo su contenido")
+                                                        .setPositiveButton("Si", new DialogInterface.OnClickListener() {
+                                                            @Override
+                                                            public void onClick(DialogInterface dialog, int which) {
+                                                                deleteUserFromGroup(iduser,getAdapterPosition(),true);
+                                                            }
+                                                        })
+                                                        .setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
+                                                            @Override
+                                                            public void onClick(DialogInterface dialog, int which) {
+                                                                dialog.dismiss();
+                                                            }
+                                                        })
+                                                        .setCancelable(false)
+                                                        .show();
+                                            }
                                         }
-
                                 }
                                 return true;
                             }
@@ -240,11 +271,9 @@ public class RVGroupDetailAdapter extends RecyclerView.Adapter<RVGroupDetailAdap
                                 int id = menuItem.getItemId();
                                 switch (id) {
                                     case R.id.rolAdmin:
-
                                         ref.setValue(Roles.ADMIN).addOnSuccessListener(new OnSuccessListener<Void>() {
                                             @Override
                                             public void onSuccess(Void aVoid) {
-
                                                 usersRoles.put(iduser, Roles.ADMIN.toString());
                                                 notifyDataSetChanged();
                                             }
@@ -254,7 +283,7 @@ public class RVGroupDetailAdapter extends RecyclerView.Adapter<RVGroupDetailAdap
                                         break;
                                     case R.id.delete:
                                         //rejectRequest(iduser);
-                                        deleteUserFromGroup(iduser,getAdapterPosition());
+                                        deleteUserFromGroup(iduser,getAdapterPosition(),false);
                                         Toast.makeText(context, "Eliminar", Toast.LENGTH_SHORT).show();
                                         break;
                                 }
@@ -378,7 +407,7 @@ public class RVGroupDetailAdapter extends RecyclerView.Adapter<RVGroupDetailAdap
             ref.addListenerForSingleValueEvent(valueEventListener);*/
         }
 
-        private void deleteUserFromGroup(final String userId, final int position) {
+        private void deleteUserFromGroup(final String userId, final int position, boolean deleteAllContent) {
 
             ((FireApp) context.getApplicationContext()).setGroupUsers(null);
 
@@ -433,9 +462,40 @@ public class RVGroupDetailAdapter extends RecyclerView.Adapter<RVGroupDetailAdap
             usersRoles.remove(userId);
 
 
+            //BORRO ALL EL CONTENIDO DEL GRUPO QUE ESTA EN EL STORAGE SI CORRESPONDE
+            //IMPLEMENTAR UNA VEZ QUE PUEDA HACERSE. TODAVIA NO ESTA DESARROLLADO POR LOS MUCHACHOS DE FIREBASE
+            //VER SI SE PUEDE IMPLEMENTAR CON GOOGLE CLOUD
+
+            /*if(deleteAllContent){
+                StorageReference groupStorageRef = FirebaseStorage.getInstance().getReference("Groups").child(groupKey);
+                groupStorageRef.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Toast.makeText(context, "Grupo eliminado del storage", Toast.LENGTH_SHORT).show();
+                    }
+                }).addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Toast.makeText(context, "Error al eliminar grupo del storage", Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }*/
+
+
+            //ME MUEVO AL MAIN ACTIVITY SI FUI YO EL QUE SALI
+            if(userId.equals(StaticFirebaseSettings.currentUserId)){
+                Intent i = new Intent(context, MainActivity.class);
+                i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                context.startActivity(i);
+                ((FireApp) context.getApplicationContext()).setGroupKey(null);
+                ((FireApp) context.getApplicationContext()).setGroupUsers(null);
+                ((FireApp) context.getApplicationContext()).setEvents(null);
+                ((FireApp) context.getApplicationContext()).setGroupName(null);
+                ((FireApp) context.getApplicationContext()).setGroupPhoto(null);
+            }
+
             //NOTIFICO EL CAMBIO
             //notifyDataSetChanged();
-
         }
 
         private void removeListener1() {

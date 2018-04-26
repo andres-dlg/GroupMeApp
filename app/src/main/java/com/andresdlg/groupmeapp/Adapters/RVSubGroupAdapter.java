@@ -246,7 +246,7 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
             };
 
             subGroupBg.setTag(target);
-            if(imageUrl.equals("https://firebasestorage.googleapis.com/v0/b/groupmeapp-5aaf6.appspot.com/o/new_user.png?alt=media&token=b62f0a54-fe51-41ae-ae04-da4a35d93180")){
+            if(imageUrl.equals("https://firebasestorage.googleapis.com/v0/b/groupmeapp-5aaf6.appspot.com/o/group_work_grey_192x192.png?alt=media&token=4aadc31e-91e6-416e-a866-3138a08425d3")){
                 Picasso.with(contexto)
                         .load(R.drawable.background_placeholder)
                         .into(subGroupBg);

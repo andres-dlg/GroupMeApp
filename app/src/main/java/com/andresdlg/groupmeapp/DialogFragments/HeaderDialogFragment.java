@@ -1,11 +1,13 @@
 package com.andresdlg.groupmeapp.DialogFragments;
 
+import android.app.Activity;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
@@ -33,6 +35,7 @@ import com.andresdlg.groupmeapp.Utils.Roles;
 import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
 import com.andresdlg.groupmeapp.uiPackage.fragments.GroupAddMembersFragment;
 import com.andresdlg.groupmeapp.uiPackage.fragments.GroupSetupFragment;
+import com.andresdlg.groupmeapp.uiPackage.fragments.GroupsFragment;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
@@ -72,6 +75,8 @@ public class HeaderDialogFragment extends DialogFragment implements GroupAddMemb
 
     GroupType type;
     String parentGroupKey;
+    private boolean saved;
+    private OnSaveGroupListener mOnSaveGroupListener;
 
     public HeaderDialogFragment(GroupType type){
         setRetainInstance(true);
@@ -198,6 +203,15 @@ public class HeaderDialogFragment extends DialogFragment implements GroupAddMemb
     }
 
     @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        if(type == GroupType.GROUP){
+            Fragment fragment = getFragmentManager().getFragments().get(1);
+            onAttachToParentFragment(fragment);
+        }
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
@@ -230,10 +244,11 @@ public class HeaderDialogFragment extends DialogFragment implements GroupAddMemb
                 subGroupKey = mGroupsDatabase.child(parentGroupKey).child("subgroups").push().getKey();
             }
 
-            mProgressBar.setVisibility(View.VISIBLE);
+
 
             if(type == GroupType.GROUP){
                 if(imageUrl != null){
+                    mProgressBar.setVisibility(View.VISIBLE);
                     StorageReference mGroupsStorage = mStorageReference.child("Groups").child(groupKey).child(imageUrl.getLastPathSegment());
                     final String finalGroupKey = groupKey;
                     mGroupsStorage.putFile(imageUrl).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
@@ -251,6 +266,7 @@ public class HeaderDialogFragment extends DialogFragment implements GroupAddMemb
                             }
                             createGroupData(finalGroupKey,nameText.getText().toString(),objetiveText.getText().toString(),map);
                             mProgressBar.setVisibility(View.INVISIBLE);
+                            mOnSaveGroupListener.onSavedGroup(true);
                             dismiss();
                         }
                     });
@@ -273,6 +289,7 @@ public class HeaderDialogFragment extends DialogFragment implements GroupAddMemb
                             }
                             createGroupData(finalGroupKey1,nameText.getText().toString(),objetiveText.getText().toString(),map);
                             mProgressBar.setVisibility(View.INVISIBLE);
+                            mOnSaveGroupListener.onSavedGroup(true);
                             dismiss();
                         }
                     });
@@ -313,47 +330,66 @@ public class HeaderDialogFragment extends DialogFragment implements GroupAddMemb
             }
 
             if(type == GroupType.SUBGROUP){
-                if(imageUrl != null){
-                    StorageReference mSubGroupsStorage = mStorageReference.child("Groups").child(parentGroupKey).child(subGroupKey).child(imageUrl.getLastPathSegment());
-                    final String finalSubGroupKey = subGroupKey;
-                    mSubGroupsStorage.putFile(imageUrl).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                        @Override
-                        public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                            imageUrl = taskSnapshot.getDownloadUrl();
-                            userIds.add(StaticFirebaseSettings.currentUserId);
-                            Map<Object,Object> map = new HashMap<>();
-                            for(String id: userIds){
-                                if(id.equals(StaticFirebaseSettings.currentUserId)){
-                                    map.put(id,Roles.SUBGROUP_ADMIN);
-                                }else{
-                                    map.put(id,Roles.SUBGROUP_MEMBER);
+                if(userIds.size()>0){
+                    mProgressBar.setVisibility(View.VISIBLE);
+                    if(imageUrl != null){
+                        StorageReference mSubGroupsStorage = mStorageReference.child("Groups").child(parentGroupKey).child(subGroupKey).child(imageUrl.getLastPathSegment());
+                        final String finalSubGroupKey = subGroupKey;
+                        mSubGroupsStorage.putFile(imageUrl).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                            @Override
+                            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                                imageUrl = taskSnapshot.getDownloadUrl();
+                                userIds.add(StaticFirebaseSettings.currentUserId);
+                                Map<Object,Object> map = new HashMap<>();
+                                for(String id: userIds){
+                                    if(id.equals(StaticFirebaseSettings.currentUserId)){
+                                        map.put(id,Roles.SUBGROUP_ADMIN);
+                                    }else{
+                                        map.put(id,Roles.SUBGROUP_MEMBER);
+                                    }
                                 }
+                                createSubGroupData(finalSubGroupKey,nameText.getText().toString(),map);
+                                mProgressBar.setVisibility(View.INVISIBLE);
+                                dismiss();
                             }
-                            createSubGroupData(finalSubGroupKey,nameText.getText().toString(),map);
-                            mProgressBar.setVisibility(View.INVISIBLE);
-                            dismiss();
+                        });
+                    }else{
+                        final String finalSubGroupKey1 = subGroupKey;
+                        /*imageUrl = Uri.parse("android.resource://com.andresdlg.groupmeapp/"+R.drawable.new_user);
+
+                        Map<Object,Object> map = new HashMap<>();
+                        for(String id: userIds){
+                            if(id.equals(StaticFirebaseSettings.currentUserId)){
+                                map.put(id,Roles.SUBGROUP_ADMIN);
+                            }else{
+                                map.put(id,Roles.SUBGROUP_MEMBER);
+                            }
                         }
-                    });
+                        createSubGroupData(finalSubGroupKey1,nameText.getText().toString(),map);
+                        mProgressBar.setVisibility(View.INVISIBLE);
+                        dismiss();*/
+
+                        mStorageReference.child("group_work_grey_192x192.png").getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                            @Override
+                            public void onSuccess(Uri uri) {
+                                imageUrl = uri;
+                                //userIds.add(StaticFirebaseSettings.currentUserId);
+                                Map<Object,Object> map = new HashMap<>();
+                                for(String id: userIds){
+                                    if(id.equals(StaticFirebaseSettings.currentUserId)){
+                                        map.put(id,Roles.SUBGROUP_ADMIN);
+                                    }else{
+                                        map.put(id,Roles.SUBGROUP_MEMBER);
+                                    }
+                                }
+                                createSubGroupData(finalSubGroupKey1,nameText.getText().toString(),map);
+                                mProgressBar.setVisibility(View.INVISIBLE);
+                                dismiss();
+                            }
+                        });
+                    }
                 }else{
-                    final String finalSubGroupKey1 = subGroupKey;
-                    mStorageReference.child("new_user.png").getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-                        @Override
-                        public void onSuccess(Uri uri) {
-                            imageUrl = uri;
-                            //userIds.add(StaticFirebaseSettings.currentUserId);
-                            Map<Object,Object> map = new HashMap<>();
-                            for(String id: userIds){
-                                if(id.equals(StaticFirebaseSettings.currentUserId)){
-                                    map.put(id,Roles.SUBGROUP_ADMIN);
-                                }else{
-                                    map.put(id,Roles.SUBGROUP_MEMBER);
-                                }
-                            }
-                            createSubGroupData(finalSubGroupKey1,nameText.getText().toString(),map);
-                            mProgressBar.setVisibility(View.INVISIBLE);
-                            dismiss();
-                        }
-                    });
+                    Toast.makeText(getContext(), "Seleccione al menos un integrante", Toast.LENGTH_SHORT).show();
                 }
             }
         }
@@ -483,11 +519,6 @@ public class HeaderDialogFragment extends DialogFragment implements GroupAddMemb
     }
 
     @Override
-    public void onDismiss(DialogInterface dialog) {
-        super.onDismiss(dialog);
-    }
-
-    @Override
     public void onDestroyView() {
         Dialog dialog = getDialog();
         if(dialog != null && getRetainInstance()){
@@ -507,5 +538,18 @@ public class HeaderDialogFragment extends DialogFragment implements GroupAddMemb
         this.imageUrl = imageUrl;
     }
 
+
+    public interface OnSaveGroupListener{
+        public void onSavedGroup(boolean saved);
+    }
+
+    public void onAttachToParentFragment(Fragment fragment){
+        try {
+            mOnSaveGroupListener = (OnSaveGroupListener) fragment;
+        }
+        catch (ClassCastException e){
+            throw new ClassCastException(fragment.toString() + " must implement OnUserSelectionSetListener");
+        }
+    }
 
 }
