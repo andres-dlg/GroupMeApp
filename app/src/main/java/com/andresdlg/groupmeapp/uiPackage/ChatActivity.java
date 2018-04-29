@@ -1,6 +1,5 @@
 package com.andresdlg.groupmeapp.uiPackage;
 
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -8,38 +7,28 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.andresdlg.groupmeapp.Adapters.ListMessageAdapter;
 import com.andresdlg.groupmeapp.Entities.Conversation;
 import com.andresdlg.groupmeapp.Entities.Users;
 import com.andresdlg.groupmeapp.R;
 import com.andresdlg.groupmeapp.Entities.Message;
-import com.andresdlg.groupmeapp.Utils.NotificationStatus;
-import com.andresdlg.groupmeapp.Utils.NotificationTypes;
 import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
-import com.google.android.gms.tasks.OnSuccessListener;
+import com.bumptech.glide.Glide;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.squareup.picasso.Callback;
-import com.squareup.picasso.NetworkPolicy;
-import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.HashMap;
-import java.util.Map;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -52,7 +41,6 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
     private String conversationKey;
     private ArrayList<String> contactIds;
     private Conversation conversation;
-    private ImageButton btnSend;
     private EditText editWriteMessage;
     private LinearLayoutManager linearLayoutManager;
     private Users userTo;
@@ -64,7 +52,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
 
-        final Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar_chats);
+        final Toolbar toolbar = findViewById(R.id.toolbar_chats);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         toolbar.setOnClickListener(new View.OnClickListener() {
@@ -80,7 +68,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         conversationKey = getIntent().getStringExtra("conversationKey");
 
         conversation = new Conversation();
-        btnSend = (ImageButton) findViewById(R.id.btnSend);
+        ImageButton btnSend = findViewById(R.id.btnSend);
         btnSend.setOnClickListener(this);
 
         DatabaseReference userToRef = FirebaseDatabase.getInstance().getReference("Users").child(contactIds.get(0));
@@ -90,14 +78,17 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
                 userTo = dataSnapshot.getValue(Users.class);
                 DatabaseReference currentUserRef = FirebaseDatabase.getInstance().getReference("Users").child(StaticFirebaseSettings.currentUserId);
                 tv.setText(userTo.getName());
-                Picasso.with(ChatActivity.this).load(userTo.getImageURL()).into(civ);
+                Glide.with(ChatActivity.this)
+                        .load(userTo.getImageURL())
+                        .into(civ);
+                //Picasso.with(ChatActivity.this).load(userTo.getImageURL()).into(civ);
                 currentUserRef.addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         currentUser = dataSnapshot.getValue(Users.class);
                         if (userTo != null && currentUser != null) {
                             linearLayoutManager = new LinearLayoutManager(getBaseContext(), LinearLayoutManager.VERTICAL, false);
-                            recyclerChat = (RecyclerView) findViewById(R.id.recyclerChat);
+                            recyclerChat = findViewById(R.id.recyclerChat);
                             recyclerChat.setLayoutManager(linearLayoutManager);
                             adapter = new ListMessageAdapter(getBaseContext(), conversation, userTo.getImageURL(), currentUser.getImageURL(),"User");
                             FirebaseDatabase.getInstance().getReference().child("Conversations").child(conversationKey).child("messages").addChildEventListener(new ChildEventListener() {
@@ -153,7 +144,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
 
             }
         });
-        editWriteMessage = (EditText) findViewById(R.id.editWriteMessage);
+        editWriteMessage = findViewById(R.id.editWriteMessage);
     }
 
     @Override

@@ -1,8 +1,8 @@
 package com.andresdlg.groupmeapp.Adapters;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,14 +13,12 @@ import com.andresdlg.groupmeapp.Entities.Users;
 import com.andresdlg.groupmeapp.R;
 import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
 import com.andresdlg.groupmeapp.uiPackage.ChatActivity;
+import com.bumptech.glide.Glide;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.squareup.picasso.Callback;
-import com.squareup.picasso.NetworkPolicy;
-import com.squareup.picasso.Picasso;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -48,8 +46,9 @@ public class ListMessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
         this.chatType = chatType;
     }
 
+    @NonNull
     @Override
-    public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         if (viewType == ChatActivity.VIEW_TYPE_FRIEND_MESSAGE) {
             View view = LayoutInflater.from(context).inflate(R.layout.rc_item_message_friend, parent, false);
             return new ItemMessageFriendHolder(view);
@@ -61,7 +60,7 @@ public class ListMessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
     }
 
     @Override
-    public void onBindViewHolder(final RecyclerView.ViewHolder holder, final int position) {
+    public void onBindViewHolder(@NonNull final RecyclerView.ViewHolder holder, final int position) {
 
         if(chatType.equals("User")){
             if (holder instanceof ItemMessageFriendHolder) {
@@ -93,10 +92,7 @@ public class ListMessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
                 }
             };
             userRef.addListenerForSingleValueEvent(userValueEventListener);
-            ///TODO: IR A BUSCAR EL USUARIO Y LUEGO REPETIR EL CODIGO DEL IF UNA VEZ ENCONTRADO
         }
-
-
     }
 
     private void removeListener() {
@@ -116,76 +112,34 @@ public class ListMessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
 
     class ItemMessageUserHolder extends RecyclerView.ViewHolder {
         public TextView txtContent;
-        public CircleImageView avatar;
+        CircleImageView avatar;
 
-        public ItemMessageUserHolder(View itemView) {
+        ItemMessageUserHolder(View itemView) {
             super(itemView);
-            txtContent = (TextView) itemView.findViewById(R.id.textContentUser);
-            avatar = (CircleImageView) itemView.findViewById(R.id.imageView2);
+            txtContent =  itemView.findViewById(R.id.textContentUser);
+            avatar =  itemView.findViewById(R.id.imageView2);
         }
 
         public void setAvatar(final Context context, final String currentUserUrl) {
-            Picasso.with(context).load(currentUserUrl).into(avatar, new Callback() {
-                @Override
-                public void onSuccess() {
-
-                }
-                @Override
-                public void onError() {
-                    Picasso.with(context)
-                            .load(currentUserUrl)
-                            .networkPolicy(NetworkPolicy.OFFLINE)
-                            .into(avatar, new Callback() {
-                                @Override
-                                public void onSuccess() {
-
-                                }
-
-                                @Override
-                                public void onError() {
-                                    Log.v("Picasso","No se ha podido cargar la foto");
-                                }
-                            });
-                }
-            });
+            Glide.with(context).load(currentUserUrl).into(avatar);
         }
     }
 
     class ItemMessageFriendHolder extends RecyclerView.ViewHolder {
         public TextView txtContent;
-        public CircleImageView avata;
-        ;
+        CircleImageView avata;
 
-        public ItemMessageFriendHolder(View itemView) {
+
+        ItemMessageFriendHolder(View itemView) {
             super(itemView);
-            txtContent = (TextView) itemView.findViewById(R.id.textContentFriend);
-            avata = (CircleImageView) itemView.findViewById(R.id.imageView3);
+            txtContent =  itemView.findViewById(R.id.textContentFriend);
+            avata =  itemView.findViewById(R.id.imageView3);
         }
 
         public void setAvatar(final Context context, final String userToUrl) {
-            Picasso.with(context).load(userToUrl).into(avata, new Callback() {
-                @Override
-                public void onSuccess() {
-
-                }
-                @Override
-                public void onError() {
-                    Picasso.with(context)
-                            .load(userToUrl)
-                            .networkPolicy(NetworkPolicy.OFFLINE)
-                            .into(avata, new Callback() {
-                                @Override
-                                public void onSuccess() {
-
-                                }
-
-                                @Override
-                                public void onError() {
-                                    Log.v("Picasso","No se ha podido cargar la foto");
-                                }
-                            });
-                }
-            });
+            Glide.with(context)
+                    .load(userToUrl)
+                    .into(avata);
         }
     }
 }

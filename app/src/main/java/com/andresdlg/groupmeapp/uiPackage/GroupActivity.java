@@ -34,6 +34,7 @@ import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
 import com.andresdlg.groupmeapp.uiPackage.fragments.GroupChatFragment;
 import com.andresdlg.groupmeapp.uiPackage.fragments.NewsFragment;
 import com.andresdlg.groupmeapp.uiPackage.fragments.SubGroupsFragment;
+import com.bumptech.glide.Glide;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -42,7 +43,6 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.ogaclejapan.smarttablayout.utils.v4.FragmentPagerItemAdapter;
 import com.ogaclejapan.smarttablayout.utils.v4.FragmentPagerItems;
-import com.squareup.picasso.Picasso;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -91,13 +91,14 @@ public class GroupActivity extends AppCompatActivity{
         groupKey = getIntent().getStringExtra("groupKey");
         groupName = getIntent().getStringExtra("groupName");
         final String groupPhotoUrl = getIntent().getStringExtra("groupImage");
-        //getSupportActionBar().setTitle(groupName);
 
         tv = toolbar.findViewById(R.id.action_bar_title_1);
         civ = toolbar.findViewById(R.id.conversation_contact_photo);
 
         tv.setText(groupName);
-        Picasso.with(this).load(groupPhotoUrl).into(civ);
+        Glide.with(this)
+                .load(groupPhotoUrl)
+                .into(civ);
 
         View v = toolbar.findViewById(R.id.toolbar_container);
         v.setOnClickListener(new View.OnClickListener() {
@@ -204,35 +205,12 @@ public class GroupActivity extends AppCompatActivity{
                     valueAnimator.setDuration(300);
                     valueAnimator.start();
 
-                    /*Animation a = new Animation() {
-                        @Override
-                        protected void applyTransformation(float interpolatedTime, Transformation t) {
-                            CoordinatorLayout.LayoutParams params = (CoordinatorLayout.LayoutParams)viewPager.getLayoutParams();
-                            params.bottomMargin = (int)(px * interpolatedTime);
-                            viewPager.setLayoutParams(params);
-                        }
-                    };
-                    a.setDuration(500);
-                    viewPager.startAnimation(a);*/
-
                 }else{
                     ((View)navigationTabBar).animate().translationY(0);
                     dummyView.animate().translationY(0);
 
                     int newMarginDp = 50;
                     final int px = (int) (TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, newMarginDp, metrics));
-
-                    /*final CoordinatorLayout.LayoutParams params = (CoordinatorLayout.LayoutParams)viewPager.getLayoutParams();
-                    ValueAnimator valueAnimator = ValueAnimator.ofInt(params.bottomMargin,newMarginDp);
-                    valueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-                        @Override
-                        public void onAnimationUpdate(ValueAnimator valueAnimator) {
-                            params.bottomMargin = (Integer)valueAnimator.getAnimatedValue();
-                            viewPager.requestLayout();
-                        }
-                    });
-                    valueAnimator.setDuration(300);
-                    valueAnimator.start();*/
 
                     Animation a = new Animation() {
                         @Override
@@ -257,7 +235,6 @@ public class GroupActivity extends AppCompatActivity{
         groupUsers = new ArrayList<>();
 
         ((FireApp) this.getApplication()).setGroupName(groupName);
-        //((FireApp) getApplicationContext()).setGroupKey(groupKey);
 
         fetchContacts();
 
@@ -344,7 +321,10 @@ public class GroupActivity extends AppCompatActivity{
 
         String url = ((FireApp) this.getApplication()).getDownloadUrl();
         if(!TextUtils.isEmpty(url)){
-            Picasso.with(this).load(url).into(civ);
+            Glide.with(this)
+                    .load(url)
+                    .into(civ);
+            //Picasso.with(this).load(url).into(civ);
         }
 
         if(groupUsers == null){

@@ -30,10 +30,9 @@ import android.widget.Toast;
 
 import com.andresdlg.groupmeapp.Adapters.RVFilesAdapter;
 import com.andresdlg.groupmeapp.Entities.File;
-import com.andresdlg.groupmeapp.Entities.SubGroup;
 import com.andresdlg.groupmeapp.R;
-import com.andresdlg.groupmeapp.firebasePackage.FireApp;
 import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
+import com.bumptech.glide.Glide;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -44,7 +43,6 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
-import com.squareup.picasso.Picasso;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -124,7 +122,10 @@ public class SubGroupFilesDialogFragment extends DialogFragment {
         tv.setText(subGroupName);
 
         CircleImageView civ = toolbar.findViewById(R.id.conversation_contact_photo);
-        Picasso.with(getContext()).load(subGroupUrlPhoto).into(civ);
+        Glide.with(getContext())
+                .load(subGroupUrlPhoto)
+                .into(civ);
+        //Picasso.with(getContext()).load(subGroupUrlPhoto).into(civ);
 
 
         Button addFileBtn = v.findViewById(R.id.add_file);
@@ -415,31 +416,6 @@ public class SubGroupFilesDialogFragment extends DialogFragment {
             }
         }
         return myRol;
-    }
-
-    public static void copyFile(java.io.File sourceFile, java.io.File destFile) throws IOException {
-        if (!destFile.getParentFile().exists())
-            destFile.getParentFile().mkdirs();
-
-        if (!destFile.exists()) {
-            destFile.createNewFile();
-        }
-
-        FileChannel source = null;
-        FileChannel destination = null;
-
-        try {
-            source = new FileInputStream(sourceFile).getChannel();
-            destination = new FileOutputStream(destFile).getChannel();
-            destination.transferFrom(source, 0, source.size());
-        } finally {
-            if (source != null) {
-                source.close();
-            }
-            if (destination != null) {
-                destination.close();
-            }
-        }
     }
 
 }

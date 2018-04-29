@@ -244,8 +244,6 @@ public class HeaderDialogFragment extends DialogFragment implements GroupAddMemb
                 subGroupKey = mGroupsDatabase.child(parentGroupKey).child("subgroups").push().getKey();
             }
 
-
-
             if(type == GroupType.GROUP){
                 if(imageUrl != null){
                     mProgressBar.setVisibility(View.VISIBLE);

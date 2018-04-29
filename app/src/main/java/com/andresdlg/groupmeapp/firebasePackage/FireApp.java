@@ -6,8 +6,6 @@ import com.alamkanak.weekview.WeekViewEvent;
 import com.andresdlg.groupmeapp.Entities.Users;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.database.FirebaseDatabase;
-import com.jakewharton.picasso.OkHttp3Downloader;
-import com.squareup.picasso.Picasso;
 
 import java.util.List;
 
@@ -19,7 +17,6 @@ public class FireApp extends Application {
 
     private String groupKey;
     private List<WeekViewEvent> events;
-    private String[] fileData;
     private String groupName;
     private String downloadUrl;
 
@@ -57,38 +54,6 @@ public class FireApp extends Application {
             FirebaseDatabase.getInstance().setPersistenceEnabled(true);
         }
 
-        //PICASSO OFFLINE
-        Picasso.Builder builder = new Picasso.Builder(this);
-        builder.downloader(new OkHttp3Downloader(this,Integer.MAX_VALUE));
-        Picasso built = builder.build();
-        built.setIndicatorsEnabled(true); // red: image comes from network, blue: disk, green: memory
-        built.setLoggingEnabled(true);
-        Picasso.setSingletonInstance(built);
-    }
-
-
-    /*public String getFileUri() {
-        return fileUri;
-    }
-
-    public void setFileUri(String fileUri) {
-        this.fileUri = fileUri;
-    }
-
-    public String getFileName() {
-        return fileName;
-    }
-
-    public void setFileName(String fileName) {
-        this.fileName = fileName;
-    }*/
-
-    public String[] getFileData() {
-        return fileData;
-    }
-
-    public void setFileData(String[] fileData) {
-        this.fileData = fileData;
     }
 
     public String getGroupName() {

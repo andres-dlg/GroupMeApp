@@ -4,10 +4,11 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.drawable.Drawable;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -23,18 +24,17 @@ import com.andresdlg.groupmeapp.Utils.Roles;
 import com.andresdlg.groupmeapp.firebasePackage.FireApp;
 import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
 import com.andresdlg.groupmeapp.uiPackage.MainActivity;
-import com.google.android.gms.tasks.OnFailureListener;
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.DataSource;
+import com.bumptech.glide.load.engine.GlideException;
+import com.bumptech.glide.request.RequestListener;
+import com.bumptech.glide.request.target.Target;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
-import com.squareup.picasso.Callback;
-import com.squareup.picasso.NetworkPolicy;
-import com.squareup.picasso.Picasso;
 
 import java.util.List;
 import java.util.Map;
@@ -47,7 +47,6 @@ import de.hdodenhof.circleimageview.CircleImageView;
 
 public class RVGroupDetailAdapter extends RecyclerView.Adapter<RVGroupDetailAdapter.GroupDetailViewHolder>{
 
-    private DatabaseReference usersRef;
     private DatabaseReference groupsRef;
     private List<Users> usersList;
     private Map<String, String> usersRoles;
@@ -61,18 +60,18 @@ public class RVGroupDetailAdapter extends RecyclerView.Adapter<RVGroupDetailAdap
         this.usersRoles = usersRoles;
         this.groupKey = groupKey;
         this.context = context;
-        usersRef = FirebaseDatabase.getInstance().getReference("Users");
         groupsRef = FirebaseDatabase.getInstance().getReference("Groups");
     }
 
+    @NonNull
     @Override
-    public GroupDetailViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public GroupDetailViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.activity_group_details_list_item, parent, false);
         return new GroupDetailViewHolder(v);
     }
 
     @Override
-    public void onBindViewHolder(final GroupDetailViewHolder groupDetailViewHolder, @SuppressLint("RecyclerView") final int position) {
+    public void onBindViewHolder(@NonNull final GroupDetailViewHolder groupDetailViewHolder, @SuppressLint("RecyclerView") final int position) {
         Users u = usersList.get(position);
         String rol = null;
         for(Map.Entry<String, String> entry : usersRoles.entrySet()) {
@@ -89,7 +88,7 @@ public class RVGroupDetailAdapter extends RecyclerView.Adapter<RVGroupDetailAdap
     }
 
     @Override
-    public void onAttachedToRecyclerView(RecyclerView recyclerView) {
+    public void onAttachedToRecyclerView(@NonNull RecyclerView recyclerView) {
         super.onAttachedToRecyclerView(recyclerView);
     }
 
@@ -114,7 +113,7 @@ public class RVGroupDetailAdapter extends RecyclerView.Adapter<RVGroupDetailAdap
     }
 
 
-    public class GroupDetailViewHolder extends RecyclerView.ViewHolder{
+    class GroupDetailViewHolder extends RecyclerView.ViewHolder{
 
         ValueEventListener groupEventListener;
         ValueEventListener valueEventListener;
@@ -123,7 +122,7 @@ public class RVGroupDetailAdapter extends RecyclerView.Adapter<RVGroupDetailAdap
 
         View mView;
 
-        public GroupDetailViewHolder(View itemView) {
+        GroupDetailViewHolder(View itemView) {
             super(itemView);
             mView = itemView;
         }
@@ -150,32 +149,21 @@ public class RVGroupDetailAdapter extends RecyclerView.Adapter<RVGroupDetailAdap
                 }
             }
 
-            Picasso.with(context)
+            Glide.with(context)
                     .load(contactPhoto)
-                    .into(mContactPhoto, new Callback() {
+                    .listener(new RequestListener<Drawable>() {
                         @Override
-                        public void onSuccess() {
+                        public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
+                            return false;
+                        }
+
+                        @Override
+                        public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
                             itemView.findViewById(R.id.homeprogress).setVisibility(View.GONE);
+                            return false;
                         }
-
-                        @Override
-                        public void onError() {
-                            Picasso.with(context)
-                                    .load(contactPhoto)
-                                    .networkPolicy(NetworkPolicy.OFFLINE)
-                                    .into(mContactPhoto, new Callback() {
-                                        @Override
-                                        public void onSuccess() {
-                                            itemView.findViewById(R.id.homeprogress).setVisibility(View.GONE);
-                                        }
-
-                                        @Override
-                                        public void onError() {
-                                            Log.v("Picasso","No se ha podido cargar la foto");
-                                        }
-                                    });
-                        }
-                    });
+                    })
+                    .into(mContactPhoto);
 
             ref = groupsRef.child(groupKey).child("members").child(iduser);
 
@@ -294,117 +282,6 @@ public class RVGroupDetailAdapter extends RecyclerView.Adapter<RVGroupDetailAdap
                     }
                 }
             });
-
-
-            /*valueEventListener = new ValueEventListener() {
-                @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
-                    if(dataSnapshot.getValue() != null){
-                        final String rol = dataSnapshot.getValue().toString();
-                        if(rol.equals("ADMIN")){
-                            mContactRol.setText("ADMINISTRADOR");
-                        }else{
-                            mContactRol.setText("MIEMBRO");
-                        }
-                        mContactRol.setSelected(true);
-
-                        btnMenu.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View view) {
-                                final PopupMenu popupMenu = new PopupMenu(context, view);
-                                final Menu menu = popupMenu.getMenu();
-                                if(rol.equals(Roles.ADMIN.toString()) && myRol.equals(Roles.ADMIN.toString())){
-                                    //btnMenu.setVisibility(View.VISIBLE);
-
-                                    popupMenu.getMenuInflater().inflate(R.menu.activity_group_detail_item_admin_to_admin_menu, menu);
-                                    popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-                                        @Override
-                                        public boolean onMenuItemClick(MenuItem menuItem) {
-                                            int id = menuItem.getItemId();
-                                            switch (id){
-                                                case R.id.rolAdmin:
-
-                                                    setAdminCount();
-
-                                                    if(cantAdmins >1){
-                                                        ref.setValue(Roles.MEMBER).addOnSuccessListener(new OnSuccessListener<Void>() {
-                                                            @Override
-                                                            public void onSuccess(Void aVoid) {
-                                                                //setAdminCount();
-                                                                usersRoles.put(iduser, Roles.MEMBER.toString());
-                                                                notifyDataSetChanged();
-                                                            }
-                                                        });
-                                                        Toast.makeText(context,"Revoke admin", Toast.LENGTH_SHORT).show();
-                                                        break;
-                                                    }else{
-                                                        Toast.makeText(context,"Debe haber por lo menos un administrador", Toast.LENGTH_SHORT).show();
-                                                        break;
-                                                    }
-
-
-                                                case R.id.delete:
-
-                                                    if(cantAdmins >1){
-                                                        deleteUserFromGroup(iduser,getAdapterPosition());
-                                                        Toast.makeText(context,"Eliminado", Toast.LENGTH_SHORT).show();
-                                                        break;
-                                                    }else{
-                                                        Toast.makeText(context,"Debe haber por lo menos un administrador", Toast.LENGTH_SHORT).show();
-                                                        break;
-                                                    }
-
-                                            }
-                                            return true;
-                                        }
-                                    });
-                                    popupMenu.show();
-                                }else if(rol.equals(Roles.MEMBER.toString()) && myRol.equals(Roles.ADMIN.toString())) {
-                                    //btnMenu.setVisibility(View.VISIBLE);
-                                    popupMenu.getMenuInflater().inflate(R.menu.activity_group_detail_item_admin_to_member_menu, menu);
-                                    popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-                                        @Override
-                                        public boolean onMenuItemClick(MenuItem menuItem) {
-                                            int id = menuItem.getItemId();
-                                            switch (id) {
-                                                case R.id.rolAdmin:
-
-                                                    ref.setValue(Roles.ADMIN).addOnSuccessListener(new OnSuccessListener<Void>() {
-                                                        @Override
-                                                        public void onSuccess(Void aVoid) {
-
-                                                            usersRoles.put(iduser, Roles.ADMIN.toString());
-                                                            notifyDataSetChanged();
-                                                        }
-                                                    });
-
-                                                    Toast.makeText(context, "Hacer admin", Toast.LENGTH_SHORT).show();
-                                                    break;
-                                                case R.id.delete:
-                                                    //rejectRequest(iduser);
-                                                    deleteUserFromGroup(iduser,getAdapterPosition());
-                                                    Toast.makeText(context, "Eliminar", Toast.LENGTH_SHORT).show();
-                                                    break;
-                                            }
-                                            return true;
-                                        }
-                                    });
-                                    popupMenu.show();
-                                }
-                            }
-                        });
-                    }
-                    removeListener2();
-                }
-
-
-
-                @Override
-                public void onCancelled(DatabaseError databaseError) {
-
-                }
-            };
-            ref.addListenerForSingleValueEvent(valueEventListener);*/
         }
 
         private void deleteUserFromGroup(final String userId, final int position, boolean deleteAllContent) {
@@ -494,16 +371,11 @@ public class RVGroupDetailAdapter extends RecyclerView.Adapter<RVGroupDetailAdap
                 ((FireApp) context.getApplicationContext()).setGroupPhoto(null);
             }
 
-            //NOTIFICO EL CAMBIO
-            //notifyDataSetChanged();
         }
 
         private void removeListener1() {
             groupsRef.removeEventListener(groupEventListener);
         }
 
-        /*private void removeListener2() {
-            groupsRef.removeEventListener(valueEventListener);
-        }*/
     }
 }

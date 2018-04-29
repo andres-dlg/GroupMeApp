@@ -2,8 +2,12 @@ package com.andresdlg.groupmeapp.Adapters;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.graphics.drawable.Drawable;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -14,20 +18,23 @@ import android.widget.ImageView;
 import android.widget.PopupMenu;
 import android.widget.TextView;
 
+import com.andresdlg.groupmeapp.DialogFragments.HeaderDialogFragment;
 import com.andresdlg.groupmeapp.Entities.Group;
 import com.andresdlg.groupmeapp.Entities.Notification;
 import com.andresdlg.groupmeapp.Entities.Users;
 import com.andresdlg.groupmeapp.R;
 import com.andresdlg.groupmeapp.Utils.GroupStatus;
 import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.DataSource;
+import com.bumptech.glide.load.engine.GlideException;
+import com.bumptech.glide.request.RequestListener;
+import com.bumptech.glide.request.target.Target;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.squareup.picasso.Callback;
-import com.squareup.picasso.NetworkPolicy;
-import com.squareup.picasso.Picasso;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -44,29 +51,34 @@ public class RVNotificationAdapter extends RecyclerView.Adapter<RVNotificationAd
     private DatabaseReference usersRef;
     private DatabaseReference groupsRef;
 
-    DatabaseReference userRef;
-    DatabaseReference groupRef;
-    ValueEventListener usersEventListener;
-    ValueEventListener groupsEventListener;
+    private DatabaseReference userRef;
+    private DatabaseReference groupRef;
+    private ValueEventListener usersEventListener;
+    private ValueEventListener groupsEventListener;
 
-    private static List<Notification> notifications;
+    private List<Notification> notifications;
     private Context context;
+
+    private OnSaveGroupListener mOnSaveGroupListener;
 
     public RVNotificationAdapter(List<Notification> notifications, Context context){
         this.notifications = notifications;
         this.context = context;
         usersRef = FirebaseDatabase.getInstance().getReference("Users");
         groupsRef = FirebaseDatabase.getInstance().getReference("Groups");
+
+        onAttachToParentFragment(((AppCompatActivity)context).getSupportFragmentManager().getFragments().get(1));
     }
 
+    @NonNull
     @Override
-    public NotificationViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public NotificationViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.fragment_notifications_list_item, parent, false);
         return new NotificationViewHolder(v);
     }
 
     @Override
-    public void onBindViewHolder(final NotificationViewHolder notificationViewHolder, @SuppressLint("RecyclerView") final int position) {
+    public void onBindViewHolder(@NonNull final NotificationViewHolder notificationViewHolder, @SuppressLint("RecyclerView") final int position) {
         ///TODO: Recuperar información del usuario que envio la notificacion con FirebaseDatabase
 
         if(!notifications.get(position).getType().equals(GROUP_INVITATION.toString())){
@@ -75,6 +87,7 @@ public class RVNotificationAdapter extends RecyclerView.Adapter<RVNotificationAd
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     Users u = dataSnapshot.getValue(Users.class);
+                    notificationViewHolder.setPosition(position);
                     notificationViewHolder.userAlias.setText(u.getAlias());
                     notificationViewHolder.setImage(context,u.getImageURL());
                     notificationViewHolder.hideBtn(context,notifications.get(position).getType());
@@ -99,6 +112,7 @@ public class RVNotificationAdapter extends RecyclerView.Adapter<RVNotificationAd
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     Group g = dataSnapshot.getValue(Group.class);
+                    notificationViewHolder.setPosition(position);
                     notificationViewHolder.hideBtn(context,notifications.get(position).getType());
                     notificationViewHolder.setImage(context,g.getImageUrl());
                     notificationViewHolder.notificationMessage.setText(notifications.get(position).getMessage());
@@ -153,7 +167,7 @@ public class RVNotificationAdapter extends RecyclerView.Adapter<RVNotificationAd
     }
 
     @Override
-    public void onAttachedToRecyclerView(RecyclerView recyclerView) {
+    public void onAttachedToRecyclerView(@NonNull RecyclerView recyclerView) {
         super.onAttachedToRecyclerView(recyclerView);
     }
 
@@ -162,7 +176,7 @@ public class RVNotificationAdapter extends RecyclerView.Adapter<RVNotificationAd
         notifyDataSetChanged();
     }
 
-    static class NotificationViewHolder extends RecyclerView.ViewHolder {
+    class NotificationViewHolder extends RecyclerView.ViewHolder {
         ImageButton menuBtn;
         TextView userAlias;
         ImageView userPhoto;
@@ -171,6 +185,7 @@ public class RVNotificationAdapter extends RecyclerView.Adapter<RVNotificationAd
         private String groupKey;
         private DatabaseReference usersRef;
         private String notificationKey;
+        private int position;
 
         NotificationViewHolder(View itemView) {
             super(itemView);
@@ -183,31 +198,27 @@ public class RVNotificationAdapter extends RecyclerView.Adapter<RVNotificationAd
             menuBtn = itemView.findViewById(R.id.menu_btn);
         }
 
+        void setPosition(int position){
+            this.position = position;
+        }
+
         void setImage(final Context context, final String imageURL) {
-            Picasso.with(context).load(imageURL).into(userPhoto, new Callback() {
-                @Override
-                public void onSuccess() {
-                    itemView.findViewById(R.id.homeprogress).setVisibility(View.GONE);
-                }
+            Glide.with(context)
+                    .load(imageURL)
+                    .listener(new RequestListener<Drawable>() {
+                        @Override
+                        public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
+                            return false;
+                        }
 
-                @Override
-                public void onError() {
-                    Picasso.with(context)
-                            .load(imageURL)
-                            .networkPolicy(NetworkPolicy.OFFLINE)
-                            .into(userPhoto, new Callback() {
-                                @Override
-                                public void onSuccess() {
-                                    itemView.findViewById(R.id.homeprogress).setVisibility(View.GONE);
-                                }
+                        @Override
+                        public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
+                            itemView.findViewById(R.id.homeprogress).setVisibility(View.GONE);
+                            return false;
+                        }
+                    })
+                    .into(userPhoto);
 
-                                @Override
-                                public void onError() {
-                                    Log.v("Picasso","No se ha podido cargar la foto");
-                                }
-                            });
-                }
-            });
         }
 
         void setGroupKey(String groupKey, DatabaseReference usersRef){
@@ -234,7 +245,7 @@ public class RVNotificationAdapter extends RecyclerView.Adapter<RVNotificationAd
                                 switch (id){
                                     case R.id.accept:
                                         //ENVIAR MENSAJE
-                                        acceptInvitation(context, groupKey);
+                                        acceptInvitation(context, groupKey, position);
                                         //Toast.makeText(context,"aceptar "+contactName, Toast.LENGTH_SHORT).show();
                                         break;
                                     case R.id.reject:
@@ -244,7 +255,7 @@ public class RVNotificationAdapter extends RecyclerView.Adapter<RVNotificationAd
                                         break;
                                     case R.id.delete:
                                         //ELIMINAR CONTACTO
-                                        rejectInvitation(context, groupKey);
+                                        rejectInvitation(context, groupKey, position);
                                         break;
                                 }
                                 return true;
@@ -256,16 +267,28 @@ public class RVNotificationAdapter extends RecyclerView.Adapter<RVNotificationAd
             }
         }
 
-        private void acceptInvitation(Context context, String groupKey) {
+        private void acceptInvitation(Context context, String groupKey, int position) {
             DatabaseReference userGroupRef = usersRef.child(StaticFirebaseSettings.currentUserId).child("groups").child(groupKey);
             userGroupRef.child("status").setValue(GroupStatus.ACCEPTED.toString());
             deleteNotification(context);
+
+            notifications.remove(position);
+            notifyItemRemoved(position);
+            notifyItemRangeChanged(position, notifications.size());
+
+            mOnSaveGroupListener.onSavedGroup(true);
         }
 
-        private void rejectInvitation(Context context, String groupKey) {
+        private void rejectInvitation(Context context, String groupKey, int position) {
             DatabaseReference userGroupRef = usersRef.child(StaticFirebaseSettings.currentUserId).child("groups").child(groupKey);
             userGroupRef.child("status").setValue(GroupStatus.REJECTED.toString());
             deleteNotification(context);
+
+            notifications.remove(position);
+            notifyItemRemoved(position);
+            notifyItemRangeChanged(position, notifications.size());
+
+            mOnSaveGroupListener.onSavedGroup(true);
         }
 
         private void deleteNotification(Context context) {
@@ -277,4 +300,19 @@ public class RVNotificationAdapter extends RecyclerView.Adapter<RVNotificationAd
             this.notificationKey = notificationKey;
         }
     }
+
+
+    public interface OnSaveGroupListener{
+        public void onSavedGroup(boolean saved);
+    }
+
+    private void onAttachToParentFragment(Fragment fragment){
+        try {
+            mOnSaveGroupListener = (OnSaveGroupListener) fragment;
+        }
+        catch (ClassCastException e){
+            throw new ClassCastException(fragment.toString() + " must implement OnUserSelectionSetListener");
+        }
+    }
+
 }

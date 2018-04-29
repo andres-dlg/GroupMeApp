@@ -5,8 +5,10 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.res.TypedArray;
 import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
@@ -46,13 +48,19 @@ import com.andresdlg.groupmeapp.uiPackage.GroupActivity;
 import com.borax12.materialdaterangepicker.date.DatePickerDialog;
 import com.borax12.materialdaterangepicker.time.RadialPickerLayout;
 import com.borax12.materialdaterangepicker.time.TimePickerDialog;
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.DataSource;
+import com.bumptech.glide.load.engine.GlideException;
+import com.bumptech.glide.request.FutureTarget;
+import com.bumptech.glide.request.Request;
+import com.bumptech.glide.request.RequestListener;
+import com.bumptech.glide.request.RequestOptions;
+import com.bumptech.glide.request.target.SimpleTarget;
+import com.bumptech.glide.request.target.SizeReadyCallback;
+import com.bumptech.glide.request.transition.Transition;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.squareup.picasso.Callback;
-import com.squareup.picasso.NetworkPolicy;
-import com.squareup.picasso.Picasso;
-import com.squareup.picasso.Target;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -61,6 +69,7 @@ import java.util.List;
 import java.util.Map;
 
 import de.hdodenhof.circleimageview.CircleImageView;
+import jp.wasabeef.glide.transformations.BlurTransformation;
 
 /**
  * Created by andresdlg on 17/02/18.
@@ -198,63 +207,57 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
                 chat.setEnabled(false);
                 addTaskiv.setEnabled(false);
                 membersiv.setEnabled(false);
+                files.setEnabled(false);
                 cardLl.setBackgroundColor(context.getResources().getColor(R.color.gray_200));
             }
 
             //SETEO LAS FOTOS DE PERFIL Y EL BACKGROUND
             imageUrl = subGroups.get(position).getImageUrl();
-            Picasso.with(context).load(subGroups.get(position).getImageUrl()).into(subGroupPhoto, new Callback() {
-                @Override
-                public void onSuccess() {
-                    itemView.findViewById(R.id.homeprogress).setVisibility(View.GONE);
-                }
-                @Override
-                public void onError() {
-                    Picasso.with(context)
-                            .load(subGroups.get(position).getImageUrl())
-                            .networkPolicy(NetworkPolicy.OFFLINE)
-                            .into(subGroupPhoto, new Callback() {
-                                @Override
-                                public void onSuccess() {
-                                    itemView.findViewById(R.id.homeprogress).setVisibility(View.GONE);
-                                }
 
-                                @Override
-                                public void onError() {
-                                    Log.v("Picasso","No se ha podido cargar la foto");
-                                }
-                            });
-                }
-            });
+            //PERFIL
+            Glide.with(context)
+                    .load(subGroups.get(position).getImageUrl())
+                    .listener(new RequestListener<Drawable>() {
+                        @Override
+                        public boolean onLoadFailed(@Nullable GlideException e, Object model, com.bumptech.glide.request.target.Target<Drawable> target, boolean isFirstResource) {
+                            return false;
+                        }
 
-            Target target = new Target() {
+                        @Override
+                        public boolean onResourceReady(Drawable resource, Object model, com.bumptech.glide.request.target.Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
+                            itemView.findViewById(R.id.homeprogress).setVisibility(View.GONE);
+                            return false;
+                        }
+                    })
+                    .into(subGroupPhoto);
+
+            //BACKGROUND
+            SimpleTarget target = new SimpleTarget() {
                 @Override
-                public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
-                    Bitmap blurredBitmap = BlurBuilder.blur(context, bitmap);
+                public void onResourceReady(@NonNull Object resource, @Nullable Transition transition) {
+                    Bitmap blurredBitmap = BlurBuilder.blur(context, ((BitmapDrawable) resource).getBitmap());
                     subGroupBg.setImageBitmap(blurredBitmap);
-                }
-
-                @Override
-                public void onBitmapFailed(Drawable errorDrawable) {
-
-                }
-
-                @Override
-                public void onPrepareLoad(Drawable placeHolderDrawable) {
-
+                    subGroupBg.setScaleType(ImageView.ScaleType.CENTER_CROP);
+                    //subGroupBg.setImageDrawable((BitmapDrawable)resource);
+                    //subGroupBg.setImageBitmap(((BitmapDrawable) resource).getBitmap());
                 }
             };
 
-            subGroupBg.setTag(target);
+            RequestOptions requestOptions = new RequestOptions().placeholder(R.drawable.background_placeholder);
+
+            //subGroupBg.setTag(target);
             if(imageUrl.equals("https://firebasestorage.googleapis.com/v0/b/groupmeapp-5aaf6.appspot.com/o/group_work_grey_192x192.png?alt=media&token=4aadc31e-91e6-416e-a866-3138a08425d3")){
-                Picasso.with(contexto)
-                        .load(R.drawable.background_placeholder)
+                Glide.with(contexto)
+                        .load("")
+                        .apply(requestOptions)
                         .into(subGroupBg);
             }else{
-                Picasso.with(contexto)
+                Glide.with(context)
                         .load(imageUrl)
+                        //.apply(RequestOptions.bitmapTransform(new BlurTransformation(25,5)))
                         .into(target);
             }
+
 
             if(subGroups.get(position).getTasks() != null){
                 int intMaxNoOfChild = subGroups.get(position).getTasks().size();

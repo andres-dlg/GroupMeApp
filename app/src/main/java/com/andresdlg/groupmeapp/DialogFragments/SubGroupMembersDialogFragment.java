@@ -14,18 +14,16 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.TextView;
 
-import com.andresdlg.groupmeapp.Adapters.RVContactAdapter;
-import com.andresdlg.groupmeapp.Adapters.RVGroupDetailAdapter;
 import com.andresdlg.groupmeapp.Adapters.RVSubGroupDetailAdapter;
 import com.andresdlg.groupmeapp.Entities.SubGroup;
 import com.andresdlg.groupmeapp.Entities.Users;
 import com.andresdlg.groupmeapp.R;
+import com.bumptech.glide.Glide;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -85,7 +83,10 @@ public class SubGroupMembersDialogFragment extends DialogFragment {
         tv.setText(subGroupName);
 
         CircleImageView civ = toolbar.findViewById(R.id.conversation_contact_photo);
-        Picasso.with(getContext()).load(subGroupUrlPhoto).into(civ);
+        Glide.with(getContext())
+                .load(subGroupUrlPhoto)
+                .into(civ);
+        //Picasso.with(getContext()).load(subGroupUrlPhoto).into(civ);
 
         final RecyclerView rv = v.findViewById(R.id.rvMembers);
         rv.setHasFixedSize(true);
@@ -144,7 +145,7 @@ public class SubGroupMembersDialogFragment extends DialogFragment {
 
     private void getMembers(final SubGroup sg) {
         members = sg.getMembers();
-        ValueEventListener listener = null;
+        ValueEventListener listener;
         for(Map.Entry<String, String> entry : members.entrySet()) {
             String memberId = entry.getKey();
             //String memberRol = entry.getValue();

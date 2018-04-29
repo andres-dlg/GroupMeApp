@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="com.andresdlg.groupmeapp">
 
     <!-- To auto-complete the email text field in the login form with usersuser's emails -->
@@ -64,7 +65,8 @@
             android:name=".uiPackage.ChatActivity"
             android:theme="@style/AppTheme.ChatNoActionBar" />
 
-        <service android:name=".firebasePackage.FirebaseMessagingService">
+        <service android:name=".firebasePackage.FirebaseMessagingService"
+            tools:ignore="ExportedService">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
@@ -101,7 +103,8 @@
             android:theme="@style/MyDialogTheme2" />
         <activity android:name=".uiPackage.TaskWeekViewBaseActivty" />
         <activity android:name=".uiPackage.TaskWeekViewActivity" />
-        <activity android:name=".uiPackage.SearchContactActivity"></activity>
+        <activity android:name=".uiPackage.SearchContactActivity"/>
+        <activity android:name=".uiPackage.SubGroupDetailActivity" />
     </application>
 
 </manifest>

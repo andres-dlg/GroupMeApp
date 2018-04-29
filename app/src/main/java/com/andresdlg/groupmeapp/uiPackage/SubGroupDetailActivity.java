@@ -61,11 +61,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+
 /**
  * Created by andresdlg on 16/03/18.
  */
 
-public class GroupDetailActivity extends AppCompatActivity {
+public class SubGroupDetailActivity extends AppCompatActivity {
 
     final int REQUEST_CODE = 200;
 
@@ -83,6 +84,8 @@ public class GroupDetailActivity extends AppCompatActivity {
     Uri imageHoldUri;
 
     private boolean editMode;
+
+    MenuItem item;
 
     CollapsingToolbarLayout collapsingToolbar;
     AppBarLayout appBarLayout;
@@ -125,9 +128,28 @@ public class GroupDetailActivity extends AppCompatActivity {
         LinearLayoutManager llm = new LinearLayoutManager(this);
         rv.setLayoutManager(llm);
 
+        //adapter = new RVGroupDetailAdapter(usersList,usersRoles,groupKey,this);
+        //rv.setAdapter(adapter);
+
+        //tv.setText(groupName);
+
         Glide.with(this)
                 .load(groupPhotoUrl)
+                //.apply(RequestOptions.bitmapTransform(new CropTransformation()))
                 .into(iv);
+
+        /*Target target = new Target() {
+            @Override public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
+                iv.setImageBitmap(bitmap);
+            }
+            @Override public void onBitmapFailed(Drawable errorDrawable) {}
+            @Override public void onPrepareLoad(Drawable placeHolderDrawable) {}
+        };
+
+        Picasso.with(this)
+                .load(groupPhotoUrl)
+                .networkPolicy(NetworkPolicy.OFFLINE)
+                .into(target);*/
 
         groupRef = FirebaseDatabase.getInstance().getReference("Groups").child(groupKey);
         groupRef.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -137,7 +159,7 @@ public class GroupDetailActivity extends AppCompatActivity {
 
                 getMembers(g);
 
-                adapter = new RVGroupDetailAdapter(usersList,usersRoles,groupKey,GroupDetailActivity.this);
+                adapter = new RVGroupDetailAdapter(usersList,usersRoles,groupKey,SubGroupDetailActivity.this);
                 rv.setAdapter(adapter);
 
                 if(TextUtils.isEmpty(g.getObjetive())){
@@ -193,7 +215,7 @@ public class GroupDetailActivity extends AppCompatActivity {
                     addContact.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View view) {
-                            Intent i = new Intent(GroupDetailActivity.this, SearchContactActivity.class);
+                            Intent i = new Intent(SubGroupDetailActivity.this, SearchContactActivity.class);
                             i.putExtra("groupKey",groupKey);
                             startActivity(i);
                         }
@@ -237,7 +259,7 @@ public class GroupDetailActivity extends AppCompatActivity {
                 return true;
             case R.id.editGroupNameBtn:
                 if(amIadmin()){
-                    new MaterialDialog.Builder(GroupDetailActivity.this)
+                    new MaterialDialog.Builder(SubGroupDetailActivity.this)
                             .title("Nombre del grupo")
                             .content("Nombre")
                             .inputType(InputType.TYPE_CLASS_TEXT)
@@ -347,13 +369,69 @@ public class GroupDetailActivity extends AppCompatActivity {
             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                 String downloadUrl = taskSnapshot.getDownloadUrl().toString();
                 groupImageRef.setValue(downloadUrl);
-                Glide.with(GroupDetailActivity.this)
+                Glide.with(SubGroupDetailActivity.this)
                         .load(imageHoldUri)
                         .into(iv);
-                Toast.makeText(GroupDetailActivity.this, "¡Imagen actualizada en el Storage!", Toast.LENGTH_SHORT).show();
+                //Picasso.with(GroupDetailActivity.this).load(imageHoldUri).into(iv);
+                Toast.makeText(SubGroupDetailActivity.this, "¡Imagen actualizada en el Storage!", Toast.LENGTH_SHORT).show();
                 ((FireApp) getApplication()).setGroupPhoto(downloadUrl);
             }
         });
+
+
+
+
+
+
+        //Busco el valor existente y lo actualizo
+        /*groupImageRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+
+                //Obtengo la url dela imagen que esta en firebase storage
+                String imageUrlFirebase = dataSnapshot.getValue().toString();
+
+                StorageReference groupImageStorageRef = FirebaseStorage.getInstance().getReferenceFromUrl(imageUrlFirebase);
+                //borro la imagen existente
+                groupImageStorageRef.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Toast.makeText(GroupDetailActivity.this, "¡Imagen borrada en el Storage!", Toast.LENGTH_SHORT).show();
+
+                            groupStorageRef.child(imageHoldUri.getLastPathSegment()).putFile(imageHoldUri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                            @Override
+                            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                                Toast.makeText(GroupDetailActivity.this, "¡Imagen actualizada en el Storage!", Toast.LENGTH_SHORT).show();
+                                Picasso.with(GroupDetailActivity.this).load(imageHoldUri).into(iv);
+                                groupImageRef.setValue(taskSnapshot.getDownloadUrl()).addOnSuccessListener(new OnSuccessListener<Void>() {
+                                    @Override
+                                    public void onSuccess(Void aVoid) {
+                                        Toast.makeText(GroupDetailActivity.this, "¡Imagen actualizada en la DB!", Toast.LENGTH_SHORT).show();
+                                    }
+                                });
+                            }
+                        }).addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                                Toast.makeText(GroupDetailActivity.this, "Error al guardar en Storage!", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    }
+                }).addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Toast.makeText(GroupDetailActivity.this, "Error al borrar del Storage!", Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });*/
+
+
     }
 
     private void saveGroupName(final String newName) {
@@ -363,12 +441,12 @@ public class GroupDetailActivity extends AppCompatActivity {
                 collapsingToolbar.setTitle(newName);
                 //tv.setText(newName);
                 ((FireApp) getApplication()).setGroupName(newName);
-                Toast.makeText(GroupDetailActivity.this, "¡Nombre del grupo actualizado!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(SubGroupDetailActivity.this, "¡Nombre del grupo actualizado!", Toast.LENGTH_SHORT).show();
             }
         }).addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
-                Toast.makeText(GroupDetailActivity.this, "Error al actualizar nombre del grupo", Toast.LENGTH_SHORT).show();
+                Toast.makeText(SubGroupDetailActivity.this, "Error al actualizar nombre del grupo", Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -388,12 +466,12 @@ public class GroupDetailActivity extends AppCompatActivity {
         groupRef.child("objetive").setValue(objetive.getText().toString()).addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void aVoid) {
-                Toast.makeText(GroupDetailActivity.this, "¡Objetivo actualizado!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(SubGroupDetailActivity.this, "¡Objetivo actualizado!", Toast.LENGTH_SHORT).show();
             }
         }).addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
-                Toast.makeText(GroupDetailActivity.this, "Error al actualizar objetivo", Toast.LENGTH_SHORT).show();
+                Toast.makeText(SubGroupDetailActivity.this, "Error al actualizar objetivo", Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -402,6 +480,7 @@ public class GroupDetailActivity extends AppCompatActivity {
         members = g.getMembers();
         for(Map.Entry<String, String> entry : members.entrySet()) {
             String memberId = entry.getKey();
+            //String memberRol = entry.getValue();
             usersRoles = g.getMembers();
             usersRef = FirebaseDatabase.getInstance().getReference("Users").child(memberId);
             usersRef.addListenerForSingleValueEvent(new ValueEventListener() {

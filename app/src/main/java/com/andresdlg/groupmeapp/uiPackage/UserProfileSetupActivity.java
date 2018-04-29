@@ -242,14 +242,17 @@ public class UserProfileSetupActivity extends AppCompatActivity {
                                 }
                             });
                         }else{
-                            mStorageReference.child("new_user.png").getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                            imageHoldUri = Uri.parse("android.resource://com.andresdlg.groupmeapp/"+R.drawable.new_user);
+                            mProgress.dismiss();
+                            createUserData(alias,userName,job);
+                            /*mStorageReference.child("new_user.png").getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
                                 @Override
                                 public void onSuccess(Uri uri) {
                                     imageHoldUri = uri;
                                     mProgress.dismiss();
                                     createUserData(alias,userName,job);
                                 }
-                            });
+                            });*/
 
                         }
                     }else{
@@ -267,8 +270,6 @@ public class UserProfileSetupActivity extends AppCompatActivity {
 
                 }
             });
-
-
         }
     }
 

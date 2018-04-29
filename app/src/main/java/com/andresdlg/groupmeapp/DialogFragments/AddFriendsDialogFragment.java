@@ -3,22 +3,18 @@ package com.andresdlg.groupmeapp.DialogFragments;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
-import android.content.res.ColorStateList;
-import android.graphics.PorterDuff;
-import android.graphics.PorterDuffColorFilter;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.speech.RecognizerIntent;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -27,8 +23,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.ImageButton;
-import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -39,6 +33,11 @@ import com.andresdlg.groupmeapp.Utils.NotificationStatus;
 import com.andresdlg.groupmeapp.Utils.NotificationTypes;
 import com.andresdlg.groupmeapp.firebasePackage.FilterableFirebaseArray;
 import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.DataSource;
+import com.bumptech.glide.load.engine.GlideException;
+import com.bumptech.glide.request.RequestListener;
+import com.bumptech.glide.request.target.Target;
 import com.firebase.ui.database.ClassSnapshotParser;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.firebase.ui.database.FirebaseRecyclerOptions;
@@ -51,10 +50,6 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.miguelcatalan.materialsearchview.MaterialSearchView;
-import com.squareup.picasso.Callback;
-import com.squareup.picasso.NetworkPolicy;
-import com.squareup.picasso.OkHttpDownloader;
-import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -267,7 +262,7 @@ public class AddFriendsDialogFragment extends DialogFragment {
             TextView mContactName = mView.findViewById(R.id.contact_name);
             TextView mContactAlias = mView.findViewById(R.id.contact_alias);
 
-            CircleImageView mContactAdd = null;
+
             //Reviso si ya se envio la solicitud al usuario. En ese caso cambio el icono y deshabilito envio
             wasSent(id, context);
             //mContactAdd = mView.findViewById(R.id.btn_add_contact);
@@ -278,34 +273,21 @@ public class AddFriendsDialogFragment extends DialogFragment {
             mContactName.setText(contactName);
             mContactName.setSelected(true);
 
-            //new Picasso.Builder(context).downloader(new OkHttpDownloader(context,Integer.MAX_VALUE)).build().load(contactPhoto).placeholder(R.drawable.progress_animation).into(mContactPhoto);
-
-            Picasso.with(context)
+            Glide.with(context)
                     .load(contactPhoto)
-                    .into(mContactPhoto, new Callback() {
+                    .listener(new RequestListener<Drawable>() {
                         @Override
-                        public void onSuccess() {
+                        public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
+                            return false;
+                        }
+
+                        @Override
+                        public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
                             itemView.findViewById(R.id.homeprogress).setVisibility(View.GONE);
+                            return false;
                         }
-
-                        @Override
-                        public void onError() {
-                            Picasso.with(context)
-                                    .load(contactPhoto)
-                                    .networkPolicy(NetworkPolicy.OFFLINE)
-                                    .into(mContactPhoto, new Callback() {
-                                        @Override
-                                        public void onSuccess() {
-                                            itemView.findViewById(R.id.homeprogress).setVisibility(View.GONE);
-                                        }
-
-                                        @Override
-                                        public void onError() {
-                                            Log.v("Picasso","No se ha podido cargar la foto");
-                                        }
-                                    });
-                        }
-                    });
+                    })
+                    .into(mContactPhoto);
         }
 
         private void wasSent(final String id, final Context context) {

@@ -16,6 +16,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.andresdlg.groupmeapp.Adapters.RVGroupAdapter;
+import com.andresdlg.groupmeapp.Adapters.RVNotificationAdapter;
 import com.andresdlg.groupmeapp.DialogFragments.HeaderDialogFragment;
 import com.andresdlg.groupmeapp.Entities.Group;
 import com.andresdlg.groupmeapp.R;
@@ -35,7 +36,7 @@ import java.util.List;
  * Created by andresdlg on 02/05/17.
  */
 
-public class GroupsFragment extends Fragment implements View.OnClickListener,HeaderDialogFragment.OnSaveGroupListener{
+public class GroupsFragment extends Fragment implements View.OnClickListener, HeaderDialogFragment.OnSaveGroupListener, RVNotificationAdapter.OnSaveGroupListener{
 
     TextView tvNoGroups;
     RVGroupAdapter adapter;
@@ -180,4 +181,5 @@ public class GroupsFragment extends Fragment implements View.OnClickListener,Hea
             getAllGroups();
         }
     }
+
 }

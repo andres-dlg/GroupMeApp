@@ -3,13 +3,12 @@ package com.andresdlg.groupmeapp.Adapters;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
-import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,9 +18,11 @@ import android.widget.TextView;
 import com.andresdlg.groupmeapp.Entities.Group;
 import com.andresdlg.groupmeapp.R;
 import com.andresdlg.groupmeapp.uiPackage.GroupActivity;
-import com.squareup.picasso.Callback;
-import com.squareup.picasso.NetworkPolicy;
-import com.squareup.picasso.Picasso;
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.DataSource;
+import com.bumptech.glide.load.engine.GlideException;
+import com.bumptech.glide.request.RequestListener;
+import com.bumptech.glide.request.target.Target;
 
 import java.util.List;
 
@@ -40,14 +41,15 @@ public class RVGroupAdapter extends RecyclerView.Adapter<RVGroupAdapter.GroupVie
         this.groups = groups;
     }
 
+    @NonNull
     @Override
-    public GroupViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public GroupViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.fragment_groups_carview, parent, false);
         return new GroupViewHolder(v);
     }
 
     @Override
-    public void onBindViewHolder(GroupViewHolder groupViewHolder, int position) {
+    public void onBindViewHolder(@NonNull GroupViewHolder groupViewHolder, int position) {
         groupViewHolder.setDetails(context,groups.get(position).getName(),groups.get(position).getImageUrl(),groups.get(position).getGroupKey());
     }
 
@@ -57,7 +59,7 @@ public class RVGroupAdapter extends RecyclerView.Adapter<RVGroupAdapter.GroupVie
     }
 
     @Override
-    public void onAttachedToRecyclerView(RecyclerView recyclerView) {
+    public void onAttachedToRecyclerView(@NonNull RecyclerView recyclerView) {
         super.onAttachedToRecyclerView(recyclerView);
     }
 
@@ -66,7 +68,7 @@ public class RVGroupAdapter extends RecyclerView.Adapter<RVGroupAdapter.GroupVie
         notifyDataSetChanged();
     }
 
-    public static class GroupViewHolder extends RecyclerView.ViewHolder {
+    static class GroupViewHolder extends RecyclerView.ViewHolder {
         CardView cv;
         TextView groupName;
         ImageView groupPhoto;
@@ -78,31 +80,24 @@ public class RVGroupAdapter extends RecyclerView.Adapter<RVGroupAdapter.GroupVie
             groupPhoto = itemView.findViewById(R.id.ivGroupPhoto);
         }
 
-        public void setDetails(final Context context, final String name, final String imageUrl, final String groupKey) {
+        void setDetails(final Context context, final String name, final String imageUrl, final String groupKey) {
             groupName.setText(name);
-            Picasso.with(context).load(imageUrl).into(groupPhoto, new Callback() {
-                @Override
-                public void onSuccess() {
-                    itemView.findViewById(R.id.homeprogress).setVisibility(View.GONE);
-                }
-                @Override
-                public void onError() {
-                    Picasso.with(context)
-                            .load(imageUrl)
-                            .networkPolicy(NetworkPolicy.OFFLINE)
-                            .into(groupPhoto, new Callback() {
-                                @Override
-                                public void onSuccess() {
-                                    itemView.findViewById(R.id.homeprogress).setVisibility(View.GONE);
-                                }
 
-                                @Override
-                                public void onError() {
-                                    Log.v("Picasso","No se ha podido cargar la foto");
-                                }
-                            });
-                }
-            });
+            Glide.with(context)
+                    .load(imageUrl)
+                    .listener(new RequestListener<Drawable>() {
+                        @Override
+                        public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
+                            return false;
+                        }
+
+                        @Override
+                        public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
+                            itemView.findViewById(R.id.homeprogress).setVisibility(View.GONE);
+                            return false;
+                        }
+                    })
+                    .into(groupPhoto);
 
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -114,7 +109,7 @@ public class RVGroupAdapter extends RecyclerView.Adapter<RVGroupAdapter.GroupVie
                     i.putExtra("groupKey",groupKey);
 
                     ActivityOptionsCompat options = ActivityOptionsCompat
-                            .makeSceneTransitionAnimation((Activity) context, (View)groupName,"groupName");
+                            .makeSceneTransitionAnimation((Activity) context, groupName,"groupName");
                     //context.startActivity(i,options.toBundle());
                     context.startActivity(i);
                 }
