@@ -91,7 +91,7 @@ public class GroupDetailActivity extends AppCompatActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
-        setContentView(R.layout.activity_group_details_test);
+        setContentView(R.layout.activity_group_details);
 
         final Animation myFadeInAnimation = AnimationUtils.loadAnimation(this,R.anim.fadein);
 

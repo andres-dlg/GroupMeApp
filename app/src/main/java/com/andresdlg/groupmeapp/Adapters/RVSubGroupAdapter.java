@@ -3,17 +3,21 @@ package com.andresdlg.groupmeapp.Adapters;
 import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.util.Pair;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.text.InputType;
 import android.text.TextUtils;
@@ -31,6 +35,7 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.PopupMenu;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -45,6 +50,7 @@ import com.andresdlg.groupmeapp.Utils.BlurBuilder;
 import com.andresdlg.groupmeapp.firebasePackage.FireApp;
 import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
 import com.andresdlg.groupmeapp.uiPackage.GroupActivity;
+import com.andresdlg.groupmeapp.uiPackage.SubGroupDetailActivity;
 import com.borax12.materialdaterangepicker.date.DatePickerDialog;
 import com.borax12.materialdaterangepicker.time.RadialPickerLayout;
 import com.borax12.materialdaterangepicker.time.TimePickerDialog;
@@ -70,6 +76,7 @@ import java.util.Map;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 import jp.wasabeef.glide.transformations.BlurTransformation;
+import jp.wasabeef.glide.transformations.SupportRSBlurTransformation;
 
 /**
  * Created by andresdlg on 17/02/18.
@@ -150,8 +157,6 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
         TextView textView;
         TextView startDate;
         TextView endDate;
-        //ImageView addTaskiv;
-        //ImageView chat;
         ImageButton addTaskiv;
         ImageButton chat;
         ImageButton membersiv;
@@ -167,7 +172,26 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
             this.position = position;
             this.parent = parent;
             context = itemView.getContext();
+
+            View.OnClickListener onClickListener = new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Intent intent = new Intent(context, SubGroupDetailActivity.class);
+                    // Pass data object in the bundle and populate details activity.
+                    intent.putExtra("subGroupName", subGroups.get(position).getName());
+                    intent.putExtra("subGroupPhotoUrl", subGroups.get(position).getImageUrl());
+                    intent.putExtra("subGroupKey", subGroups.get(position).getSubGroupKey());
+                    intent.putExtra("groupKey", groupKey);
+                    Pair<View, String> p1 = Pair.create((View)subGroupPhoto, "photo");
+                    //Pair<View, String> p2 = Pair.create((View)tv, "text");
+                    ActivityOptionsCompat options = ActivityOptionsCompat.
+                            makeSceneTransitionAnimation((AppCompatActivity)contexto, p1);
+                    context.startActivity(intent, options.toBundle());
+                }
+            };
+
             textView_parentName = itemView.findViewById(R.id.tv_parentName);
+            textView_parentName.setOnClickListener(onClickListener);
 
             addTaskiv = itemView.findViewById(R.id.add_task);
             addTaskiv.setOnClickListener(this);
@@ -187,11 +211,16 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
             arrow.setOnClickListener(this);
 
             subGroupPhoto = itemView.findViewById(R.id.list_item_sub_group_icon);
+            subGroupPhoto.setOnClickListener(onClickListener);
 
             linearLayout_childItems = itemView.findViewById(R.id.ll_child_items);
             linearLayout_childItems.setVisibility(View.GONE);
 
             subGroupBg = itemView.findViewById(R.id.subGroupBg);
+            subGroupBg.setOnClickListener(onClickListener);
+
+            RelativeLayout relativeLayout = itemView.findViewById(R.id.relativeLayout);
+            relativeLayout.setOnClickListener(onClickListener);
 
             boolean isSubGroupMember = false;
             Map<String,String> members = subGroups.get(position).getMembers();
@@ -235,15 +264,17 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
             SimpleTarget target = new SimpleTarget() {
                 @Override
                 public void onResourceReady(@NonNull Object resource, @Nullable Transition transition) {
-                    Bitmap blurredBitmap = BlurBuilder.blur(context, ((BitmapDrawable) resource).getBitmap());
-                    subGroupBg.setImageBitmap(blurredBitmap);
-                    subGroupBg.setScaleType(ImageView.ScaleType.CENTER_CROP);
-                    //subGroupBg.setImageDrawable((BitmapDrawable)resource);
+                    //Bitmap blurredBitmap = BlurBuilder.blur(context, ((BitmapDrawable) resource).getBitmap());
+                    //subGroupBg.setImageBitmap(blurredBitmap);
+                    //subGroupBg.setScaleType(ImageView.ScaleType.CENTER_CROP);
+                    subGroupBg.setImageDrawable((BitmapDrawable)resource);
                     //subGroupBg.setImageBitmap(((BitmapDrawable) resource).getBitmap());
                 }
             };
 
             RequestOptions requestOptions = new RequestOptions().placeholder(R.drawable.background_placeholder);
+
+            //RequestOptions requestOptions2 = new RequestOptions().transform(new BlurTransformation(25,1)).placeholder(R.drawable.background_placeholder);
 
             //subGroupBg.setTag(target);
             if(imageUrl.equals("https://firebasestorage.googleapis.com/v0/b/groupmeapp-5aaf6.appspot.com/o/group_work_grey_192x192.png?alt=media&token=4aadc31e-91e6-416e-a866-3138a08425d3")){
@@ -252,9 +283,10 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
                         .apply(requestOptions)
                         .into(subGroupBg);
             }else{
-                Glide.with(context)
+                Glide.with(contexto)
                         .load(imageUrl)
-                        //.apply(RequestOptions.bitmapTransform(new BlurTransformation(25,5)))
+                        //.apply(RequestOptions.bitmapTransform(new SupportRSBlurTransformation(25,1)))
+                        //.apply(requestOptions2)
                         .into(target);
             }
 
@@ -418,7 +450,7 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
                     fl.setBackgroundResource(backgroundResource);
                     linearLayout_childItems.addView(fl, layoutParams);
                 }
-                textView_parentName.setOnClickListener(this);
+                //textView_parentName.setOnClickListener(this);
             }
         }
 

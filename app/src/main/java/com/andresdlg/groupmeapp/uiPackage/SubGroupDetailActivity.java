@@ -31,11 +31,15 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.andresdlg.groupmeapp.Adapters.RVGroupDetailAdapter;
+import com.andresdlg.groupmeapp.Adapters.RVSubGroupDetailAdapter;
 import com.andresdlg.groupmeapp.Entities.Group;
+import com.andresdlg.groupmeapp.Entities.SubGroup;
+import com.andresdlg.groupmeapp.Entities.Task;
 import com.andresdlg.groupmeapp.Entities.Users;
 import com.andresdlg.groupmeapp.R;
 import com.andresdlg.groupmeapp.Utils.GroupStatus;
@@ -71,11 +75,12 @@ public class SubGroupDetailActivity extends AppCompatActivity {
     final int REQUEST_CODE = 200;
 
     String groupKey;
-    DatabaseReference groupRef;
+    String subGroupKey;
+    DatabaseReference subGroupRef;
     DatabaseReference usersRef;
     List<Users> usersList;
     Map<String, String> usersRoles;
-    RVGroupDetailAdapter adapter;
+    RVSubGroupDetailAdapter adapter;
     Map<String, String> members;
 
     EditText objetive;
@@ -85,8 +90,6 @@ public class SubGroupDetailActivity extends AppCompatActivity {
 
     private boolean editMode;
 
-    MenuItem item;
-
     CollapsingToolbarLayout collapsingToolbar;
     AppBarLayout appBarLayout;
 
@@ -94,7 +97,7 @@ public class SubGroupDetailActivity extends AppCompatActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
-        setContentView(R.layout.activity_group_details_test);
+        setContentView(R.layout.activity_group_subgroup_details);
 
         final Animation myFadeInAnimation = AnimationUtils.loadAnimation(this,R.anim.fadein);
 
@@ -106,10 +109,12 @@ public class SubGroupDetailActivity extends AppCompatActivity {
         usersRoles = new HashMap<>();
 
         groupKey = getIntent().getStringExtra("groupKey");
-        final String groupName = getIntent().getStringExtra("groupName");
-        final String groupPhotoUrl = getIntent().getStringExtra("groupPhotoUrl");
+        subGroupKey = getIntent().getStringExtra("subGroupKey");
+        final String subGroupName = getIntent().getStringExtra("subGroupName");
+        String groupName = ((FireApp) this.getApplication()).getGroupName();
+        String subGroupPhotoUrl = getIntent().getStringExtra("subGroupPhotoUrl");
 
-        setToolbar(groupName,myFadeInAnimation);
+        setToolbar(subGroupName,myFadeInAnimation);
 
         final ImageButton editObjetiveBtn = findViewById(R.id.editObjetiveBtn);
         editObjetiveBtn.startAnimation(myFadeInAnimation);
@@ -122,53 +127,54 @@ public class SubGroupDetailActivity extends AppCompatActivity {
 
         final FloatingActionButton fab = findViewById(R.id.fab);
 
+        TextView groupNameTv = findViewById(R.id.groupNameTv);
+        groupNameTv.setText(groupName);
 
         final RecyclerView rv = findViewById(R.id.rvMembers);
         rv.setHasFixedSize(true);
         LinearLayoutManager llm = new LinearLayoutManager(this);
         rv.setLayoutManager(llm);
 
-        //adapter = new RVGroupDetailAdapter(usersList,usersRoles,groupKey,this);
-        //rv.setAdapter(adapter);
-
-        //tv.setText(groupName);
-
         Glide.with(this)
-                .load(groupPhotoUrl)
-                //.apply(RequestOptions.bitmapTransform(new CropTransformation()))
+                .load(subGroupPhotoUrl)
                 .into(iv);
 
-        /*Target target = new Target() {
-            @Override public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
-                iv.setImageBitmap(bitmap);
-            }
-            @Override public void onBitmapFailed(Drawable errorDrawable) {}
-            @Override public void onPrepareLoad(Drawable placeHolderDrawable) {}
-        };
-
-        Picasso.with(this)
-                .load(groupPhotoUrl)
-                .networkPolicy(NetworkPolicy.OFFLINE)
-                .into(target);*/
-
-        groupRef = FirebaseDatabase.getInstance().getReference("Groups").child(groupKey);
-        groupRef.addListenerForSingleValueEvent(new ValueEventListener() {
+        subGroupRef = FirebaseDatabase.getInstance().getReference("Groups").child(groupKey).child("subgroups").child(subGroupKey);
+        subGroupRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                Group g = dataSnapshot.getValue(Group.class);
+            public void onDataChange(DataSnapshot data) {
 
-                getMembers(g);
+                final SubGroup sgf = new SubGroup();
+                sgf.setName(data.child("name").getValue().toString());
+                sgf.setImageUrl(data.child("imageUrl").getValue().toString());
+                sgf.setMembers((Map<String,String>) data.child("members").getValue());
+                sgf.setSubGroupKey(data.child("subGroupKey").getValue().toString());
+                if(data.child("objetive").getValue() == null){
+                    sgf.setObjetive(null);
+                }else{
+                    sgf.setObjetive(data.child("objetive").getValue().toString());
+                }
+                List<Task> tasks = new ArrayList();
+                for(DataSnapshot d : data.child("tasks").getChildren()){
+                    Task task = d.getValue(Task.class);
+                    tasks.add(task);
+                }
+                sgf.setTasks(tasks);
 
-                adapter = new RVGroupDetailAdapter(usersList,usersRoles,groupKey,SubGroupDetailActivity.this);
+                getMembers(sgf);
+
+                adapter = new RVSubGroupDetailAdapter(usersList,usersRoles,groupKey,subGroupKey,SubGroupDetailActivity.this);
                 rv.setAdapter(adapter);
 
-                if(TextUtils.isEmpty(g.getObjetive())){
+                if(TextUtils.isEmpty(sgf.getObjetive())){
                     objetive.setText("Sin objetivo");
                 }else{
-                    objetive.setText(g.getObjetive());
+                    objetive.setText(sgf.getObjetive());
                 }
 
                 if(amIadmin()){
+
+                    ((FireApp) getApplication()).setMembers(sgf.getMembers());
 
                     fab.setVisibility(View.VISIBLE);
                     fab.setOnClickListener(new View.OnClickListener() {
@@ -217,6 +223,8 @@ public class SubGroupDetailActivity extends AppCompatActivity {
                         public void onClick(View view) {
                             Intent i = new Intent(SubGroupDetailActivity.this, SearchContactActivity.class);
                             i.putExtra("groupKey",groupKey);
+                            i.putExtra("subGroupKey",subGroupKey);
+                            i.putExtra("subGroupName",subGroupName);
                             startActivity(i);
                         }
                     });
@@ -260,14 +268,14 @@ public class SubGroupDetailActivity extends AppCompatActivity {
             case R.id.editGroupNameBtn:
                 if(amIadmin()){
                     new MaterialDialog.Builder(SubGroupDetailActivity.this)
-                            .title("Nombre del grupo")
+                            .title("Nombre del subgrupo")
                             .content("Nombre")
                             .inputType(InputType.TYPE_CLASS_TEXT)
                             .input("Ingrese el nombre", null, new MaterialDialog.InputCallback() {
                                 @Override
                                 public void onInput(@NonNull MaterialDialog dialog, CharSequence input) {
                                     if(!TextUtils.isEmpty(input)){
-                                        saveGroupName(input.toString());
+                                        saveSubGroupName(input.toString());
                                     }else{
                                         dialog.getInputEditText().setError("Este campo es necesario");
                                     }
@@ -294,10 +302,11 @@ public class SubGroupDetailActivity extends AppCompatActivity {
         CropImage.activity(imageUri)
                 .setGuidelines(CropImageView.Guidelines.ON)
                 .setCropShape(CropImageView.CropShape.RECTANGLE)
-                .setAspectRatio(15,9)
+                .setAspectRatio(16,9)
                 .setFixAspectRatio(true)
                 //.setMaxCropResultSize(480,270)
-                .setRequestedSize(1080,607, CropImageView.RequestSizeOptions.RESIZE_FIT)
+                //.setRequestedSize(1080,607, CropImageView.RequestSizeOptions.RESIZE_FIT)
+                .setRequestedSize(1280,720, CropImageView.RequestSizeOptions.RESIZE_FIT)
                 .start(this);
     }
 
@@ -337,8 +346,8 @@ public class SubGroupDetailActivity extends AppCompatActivity {
     private void saveGroupPhoto(final Uri imageHoldUri, final ImageView iv) {
 
         //Recupero las referencias
-        final StorageReference groupStorageRef = FirebaseStorage.getInstance().getReference("Groups").child(groupKey);
-        final DatabaseReference groupImageRef = groupRef.child("imageUrl");
+        final StorageReference groupStorageRef = FirebaseStorage.getInstance().getReference("Groups").child(groupKey).child(subGroupKey);
+        final DatabaseReference groupImageRef = subGroupRef.child("imageUrl");
 
         //Obtengo la url dela imagen que esta en firebase storage
         groupImageRef.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -369,84 +378,30 @@ public class SubGroupDetailActivity extends AppCompatActivity {
             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                 String downloadUrl = taskSnapshot.getDownloadUrl().toString();
                 groupImageRef.setValue(downloadUrl);
+
                 Glide.with(SubGroupDetailActivity.this)
                         .load(imageHoldUri)
                         .into(iv);
-                //Picasso.with(GroupDetailActivity.this).load(imageHoldUri).into(iv);
+
                 Toast.makeText(SubGroupDetailActivity.this, "¡Imagen actualizada en el Storage!", Toast.LENGTH_SHORT).show();
-                ((FireApp) getApplication()).setGroupPhoto(downloadUrl);
             }
         });
 
-
-
-
-
-
-        //Busco el valor existente y lo actualizo
-        /*groupImageRef.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-
-                //Obtengo la url dela imagen que esta en firebase storage
-                String imageUrlFirebase = dataSnapshot.getValue().toString();
-
-                StorageReference groupImageStorageRef = FirebaseStorage.getInstance().getReferenceFromUrl(imageUrlFirebase);
-                //borro la imagen existente
-                groupImageStorageRef.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
-                    @Override
-                    public void onSuccess(Void aVoid) {
-                        Toast.makeText(GroupDetailActivity.this, "¡Imagen borrada en el Storage!", Toast.LENGTH_SHORT).show();
-
-                            groupStorageRef.child(imageHoldUri.getLastPathSegment()).putFile(imageHoldUri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                            @Override
-                            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                                Toast.makeText(GroupDetailActivity.this, "¡Imagen actualizada en el Storage!", Toast.LENGTH_SHORT).show();
-                                Picasso.with(GroupDetailActivity.this).load(imageHoldUri).into(iv);
-                                groupImageRef.setValue(taskSnapshot.getDownloadUrl()).addOnSuccessListener(new OnSuccessListener<Void>() {
-                                    @Override
-                                    public void onSuccess(Void aVoid) {
-                                        Toast.makeText(GroupDetailActivity.this, "¡Imagen actualizada en la DB!", Toast.LENGTH_SHORT).show();
-                                    }
-                                });
-                            }
-                        }).addOnFailureListener(new OnFailureListener() {
-                            @Override
-                            public void onFailure(@NonNull Exception e) {
-                                Toast.makeText(GroupDetailActivity.this, "Error al guardar en Storage!", Toast.LENGTH_SHORT).show();
-                            }
-                        });
-                    }
-                }).addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Toast.makeText(GroupDetailActivity.this, "Error al borrar del Storage!", Toast.LENGTH_SHORT).show();
-                    }
-                });
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });*/
-
-
     }
 
-    private void saveGroupName(final String newName) {
-        groupRef.child("name").setValue(newName).addOnSuccessListener(new OnSuccessListener<Void>() {
+    private void saveSubGroupName(final String newName) {
+        subGroupRef.child("name").setValue(newName).addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void aVoid) {
                 collapsingToolbar.setTitle(newName);
                 //tv.setText(newName);
-                ((FireApp) getApplication()).setGroupName(newName);
-                Toast.makeText(SubGroupDetailActivity.this, "¡Nombre del grupo actualizado!", Toast.LENGTH_SHORT).show();
+                //((FireApp) getApplication()).setGroupName(newName);
+                Toast.makeText(SubGroupDetailActivity.this, "¡Nombre del subgrupo actualizado!", Toast.LENGTH_SHORT).show();
             }
         }).addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
-                Toast.makeText(SubGroupDetailActivity.this, "Error al actualizar nombre del grupo", Toast.LENGTH_SHORT).show();
+                Toast.makeText(SubGroupDetailActivity.this, "Error al actualizar nombre del subgrupo", Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -455,7 +410,7 @@ public class SubGroupDetailActivity extends AppCompatActivity {
         for(Map.Entry<String, String> entry : members.entrySet()) {
             String memberId = entry.getKey();
             String memberRol = entry.getValue();
-            if(memberId.equals(StaticFirebaseSettings.currentUserId) && memberRol.equals(Roles.ADMIN.toString())){
+            if(memberId.equals(StaticFirebaseSettings.currentUserId) && memberRol.equals(Roles.SUBGROUP_ADMIN.toString())){
                 return true;
             }
         }
@@ -463,7 +418,7 @@ public class SubGroupDetailActivity extends AppCompatActivity {
     }
 
     private void saveObjetive() {
-        groupRef.child("objetive").setValue(objetive.getText().toString()).addOnSuccessListener(new OnSuccessListener<Void>() {
+        subGroupRef.child("objetive").setValue(objetive.getText().toString()).addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void aVoid) {
                 Toast.makeText(SubGroupDetailActivity.this, "¡Objetivo actualizado!", Toast.LENGTH_SHORT).show();
@@ -476,7 +431,7 @@ public class SubGroupDetailActivity extends AppCompatActivity {
         });
     }
 
-    private void getMembers(final Group g) {
+    private void getMembers(final SubGroup g) {
         members = g.getMembers();
         for(Map.Entry<String, String> entry : members.entrySet()) {
             String memberId = entry.getKey();

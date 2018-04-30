@@ -3,6 +3,7 @@ package com.andresdlg.groupmeapp.Adapters;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -39,7 +40,7 @@ import de.hdodenhof.circleimageview.CircleImageView;
  * Created by andresdlg on 17/03/18.
  */
 
-public class RVSubGroupDetailAdapter extends RecyclerView.Adapter<RVSubGroupDetailAdapter.GroupDetailViewHolder>{
+public class RVSubGroupDetailAdapter extends RecyclerView.Adapter<RVSubGroupDetailAdapter.SubGroupDetailViewHolder>{
 
     private DatabaseReference subGroupsRef;
     private List<Users> usersList;
@@ -56,18 +57,18 @@ public class RVSubGroupDetailAdapter extends RecyclerView.Adapter<RVSubGroupDeta
         this.groupKey = groupKey;
         this.subGroupKey = subGroupKey;
         this.context = context;
-        //usersRef = FirebaseDatabase.getInstance().getReference("Users");
         subGroupsRef = FirebaseDatabase.getInstance().getReference("Groups").child(groupKey).child("subgroups").child(subGroupKey);
     }
 
+    @NonNull
     @Override
-    public GroupDetailViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public SubGroupDetailViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.activity_group_details_list_item, parent, false);
-        return new GroupDetailViewHolder(v);
+        return new SubGroupDetailViewHolder(v);
     }
 
     @Override
-    public void onBindViewHolder(final GroupDetailViewHolder groupDetailViewHolder, @SuppressLint("RecyclerView") final int position) {
+    public void onBindViewHolder(@NonNull final SubGroupDetailViewHolder groupDetailViewHolder, @SuppressLint("RecyclerView") final int position) {
         Users u = usersList.get(position);
         String rol = null;
         for(Map.Entry<String, String> entry : usersRoles.entrySet()) {
@@ -86,7 +87,7 @@ public class RVSubGroupDetailAdapter extends RecyclerView.Adapter<RVSubGroupDeta
     }
 
     @Override
-    public void onAttachedToRecyclerView(RecyclerView recyclerView) {
+    public void onAttachedToRecyclerView(@NonNull RecyclerView recyclerView) {
         super.onAttachedToRecyclerView(recyclerView);
     }
 
@@ -109,7 +110,7 @@ public class RVSubGroupDetailAdapter extends RecyclerView.Adapter<RVSubGroupDeta
     }
 
 
-    public class GroupDetailViewHolder extends RecyclerView.ViewHolder{
+    class SubGroupDetailViewHolder extends RecyclerView.ViewHolder{
 
         ValueEventListener subGroupEventListener;
 
@@ -117,7 +118,7 @@ public class RVSubGroupDetailAdapter extends RecyclerView.Adapter<RVSubGroupDeta
 
         View mView;
 
-        public GroupDetailViewHolder(View itemView) {
+        SubGroupDetailViewHolder(View itemView) {
             super(itemView);
             mView = itemView;
         }
@@ -159,33 +160,6 @@ public class RVSubGroupDetailAdapter extends RecyclerView.Adapter<RVSubGroupDeta
                         }
                     })
                     .into(mContactPhoto);
-
-            /*Picasso.with(context)
-                    .load(contactPhoto)
-                    .into(mContactPhoto, new Callback() {
-                        @Override
-                        public void onSuccess() {
-                            itemView.findViewById(R.id.homeprogress).setVisibility(View.GONE);
-                        }
-
-                        @Override
-                        public void onError() {
-                            Picasso.with(context)
-                                    .load(contactPhoto)
-                                    .networkPolicy(NetworkPolicy.OFFLINE)
-                                    .into(mContactPhoto, new Callback() {
-                                        @Override
-                                        public void onSuccess() {
-                                            itemView.findViewById(R.id.homeprogress).setVisibility(View.GONE);
-                                        }
-
-                                        @Override
-                                        public void onError() {
-                                            Log.v("Picasso","No se ha podido cargar la foto");
-                                        }
-                                    });
-                        }
-                    });*/
 
 
                     if(rol.equals(Roles.SUBGROUP_ADMIN.toString())){
@@ -282,119 +256,6 @@ public class RVSubGroupDetailAdapter extends RecyclerView.Adapter<RVSubGroupDeta
                             }
                         }
                     });
-
-
-            /*ref = subGroupsRef.child(subGroupKey).child("members").child(iduser);
-            userEventListener = new ValueEventListener() {
-                @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
-                    if(dataSnapshot.getValue() != null){
-                        final String rol = dataSnapshot.getValue().toString();
-
-                        if(rol.equals("SUBGROUP_ADMIN")){
-                            mContactRol.setText("ADMINISTRADOR");
-                        }else{
-                            mContactRol.setText("MIEMBRO");
-                        }
-                        mContactRol.setSelected(true);
-
-                        btnMenu.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View view) {
-                                final PopupMenu popupMenu = new PopupMenu(context, view);
-                                final Menu menu = popupMenu.getMenu();
-                                if(rol.equals(Roles.SUBGROUP_ADMIN.toString()) && myRol.equals(Roles.SUBGROUP_ADMIN.toString())){
-                                    //btnMenu.setVisibility(View.VISIBLE);
-
-                                    popupMenu.getMenuInflater().inflate(R.menu.activity_group_detail_item_admin_to_admin_menu, menu);
-                                    popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-                                        @Override
-                                        public boolean onMenuItemClick(MenuItem menuItem) {
-                                            int id = menuItem.getItemId();
-                                            switch (id){
-                                                case R.id.rolAdmin:
-
-                                                    setAdminCount();
-
-                                                    if(cantAdmins >1){
-                                                        ref.setValue(Roles.SUBGROUP_MEMBER).addOnSuccessListener(new OnSuccessListener<Void>() {
-                                                            @Override
-                                                            public void onSuccess(Void aVoid) {
-                                                                //setAdminCount();
-                                                                usersRoles.put(iduser, Roles.SUBGROUP_MEMBER.toString());
-                                                                notifyDataSetChanged();
-                                                            }
-                                                        });
-                                                        Toast.makeText(context,"Revoke admin", Toast.LENGTH_SHORT).show();
-                                                        break;
-                                                    }else{
-                                                        Toast.makeText(context,"Debe haber por lo menos un administrador", Toast.LENGTH_SHORT).show();
-                                                        break;
-                                                    }
-
-
-                                                case R.id.delete:
-
-                                                    if(cantAdmins >1){
-                                                        deleteUserFromGroup(iduser,getAdapterPosition());
-                                                        Toast.makeText(context,"Eliminado", Toast.LENGTH_SHORT).show();
-                                                        break;
-                                                    }else{
-                                                        Toast.makeText(context,"Debe haber por lo menos un administrador", Toast.LENGTH_SHORT).show();
-                                                        break;
-                                                    }
-
-                                            }
-                                            return true;
-                                        }
-                                    });
-                                    popupMenu.show();
-                                }else if(rol.equals(Roles.SUBGROUP_MEMBER.toString()) && myRol.equals(Roles.SUBGROUP_ADMIN.toString())) {
-                                    //btnMenu.setVisibility(View.VISIBLE);
-                                    popupMenu.getMenuInflater().inflate(R.menu.activity_group_detail_item_admin_to_member_menu, menu);
-                                    popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-                                        @Override
-                                        public boolean onMenuItemClick(MenuItem menuItem) {
-                                            int id = menuItem.getItemId();
-                                            switch (id) {
-                                                case R.id.rolAdmin:
-
-                                                    ref.setValue(Roles.SUBGROUP_ADMIN).addOnSuccessListener(new OnSuccessListener<Void>() {
-                                                        @Override
-                                                        public void onSuccess(Void aVoid) {
-
-                                                            usersRoles.put(iduser, Roles.SUBGROUP_ADMIN.toString());
-                                                            notifyDataSetChanged();
-                                                        }
-                                                    });
-
-                                                    Toast.makeText(context, "Hacer admin", Toast.LENGTH_SHORT).show();
-                                                    break;
-                                                case R.id.delete:
-                                                    //rejectRequest(iduser);
-                                                    deleteUserFromGroup(iduser,getAdapterPosition());
-                                                    Toast.makeText(context, "Eliminar", Toast.LENGTH_SHORT).show();
-                                                    break;
-                                            }
-                                            return true;
-                                        }
-                                    });
-                                    popupMenu.show();
-                                }
-                            }
-                        });
-                    }
-                    removeListener2();
-                }
-
-
-
-                @Override
-                public void onCancelled(DatabaseError databaseError) {
-
-                }
-            };
-            ref.addListenerForSingleValueEvent(userEventListener);*/
         }
 
         private void deleteUserFromGroup(final String userId, final int position) {

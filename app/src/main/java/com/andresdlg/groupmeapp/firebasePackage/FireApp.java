@@ -8,6 +8,7 @@ import com.google.firebase.FirebaseApp;
 import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by andresdlg on 02/05/17.
@@ -19,6 +20,7 @@ public class FireApp extends Application {
     private List<WeekViewEvent> events;
     private String groupName;
     private String downloadUrl;
+    private Map<String, String> members;
 
     public String getGroupKey() {
         return groupKey;
@@ -70,5 +72,14 @@ public class FireApp extends Application {
 
     public String getDownloadUrl() {
         return downloadUrl;
+    }
+
+
+    public Map<String, String> getMembers() {
+        return members;
+    }
+
+    public void setMembers(Map<String, String> members) {
+        this.members = members;
     }
 }

@@ -2,16 +2,13 @@ package com.andresdlg.groupmeapp.uiPackage;
 
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.Snackbar;
-import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.view.ActionMode;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
-import android.support.v7.widget.Toolbar;
-import android.util.DisplayMetrics;
+import android.text.TextUtils;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
@@ -28,7 +25,6 @@ import com.andresdlg.groupmeapp.firebasePackage.FireApp;
 import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
 import com.andresdlg.groupmeapp.uiPackage.ReciclerViewClickListener.RecyclerClick_Listener;
 import com.andresdlg.groupmeapp.uiPackage.ReciclerViewClickListener.RecyclerTouchListener;
-import com.andresdlg.groupmeapp.uiPackage.fragments.GroupAddMembersFragment;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -45,7 +41,6 @@ import java.util.Map;
 
 public class SearchContactActivity extends AppCompatActivity {
 
-    private SearchView searchView;
     List<Users> users;
     DatabaseReference firebaseContacts;
     RVSearchContactAdapter rvSearchContactAdapter;
@@ -56,20 +51,18 @@ public class SearchContactActivity extends AppCompatActivity {
     int selected;
 
     //Multiselect stuff
-    private ActionMode mActionMode;
     private boolean isShowing;
-    private int pxUp;
 
     DatabaseReference mUsersDatabase;
     DatabaseReference mGroupsDatabase;
 
-    View v;
-
-    //OnUserSelectionSetListener mOnUserSelectionSetListener;
-
     private String groupKey;
+    private String subGroupKey;
+    private String subGroupName;
     private List<Users> groupUsers;
     private String name;
+
+    Map<String, String> members;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,20 +75,18 @@ public class SearchContactActivity extends AppCompatActivity {
         coordinatorLayout = findViewById(R.id.clgroupaddmembers);
 
         groupKey = getIntent().getStringExtra("groupKey");
+        subGroupKey = getIntent().getStringExtra("subGroupKey");
+        subGroupName = getIntent().getStringExtra("subGroupName");
 
         mUsersDatabase = FirebaseDatabase.getInstance().getReference("Users");
         mGroupsDatabase = FirebaseDatabase.getInstance().getReference("Groups");
-        mGroupsDatabase.child(groupKey).child("name").addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                name = dataSnapshot.getValue().toString();
-            }
 
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
+        if(TextUtils.isEmpty(subGroupKey)){
+            name = ((FireApp) this.getApplication()).getGroupName();
+        }else{
+            name = subGroupName;
+            members = ((FireApp) this.getApplication()).getMembers();
+        }
 
         //RECYCLERVIEW INITIALIZATION
         rvAddGroupMember = findViewById(R.id.rvAddGroupMember);
@@ -112,7 +103,7 @@ public class SearchContactActivity extends AppCompatActivity {
         rvSearchContactAdapter = new RVSearchContactAdapter(users,this,null);
         rvAddGroupMember.setAdapter(rvSearchContactAdapter);
 
-        searchView = findViewById(R.id.toolbar);
+        SearchView searchView = findViewById(R.id.toolbar);
         searchView.setIconifiedByDefault(false);
         searchView.requestFocus();
         // listening to search query text change
@@ -217,25 +208,44 @@ public class SearchContactActivity extends AppCompatActivity {
 
     private void fetchContacts() {
 
-        firebaseContacts = FirebaseDatabase.getInstance().getReference("Users").child(StaticFirebaseSettings.currentUserId).child("friends");
-        firebaseContacts.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                users.clear();
-                rvSearchContactAdapter.notifyDataSetChanged();
-                for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
-                    //Getting the data from snapshot
-                    if(postSnapshot.child("status").getValue().equals(FriendshipStatus.ACCEPTED.toString())){
-                        getUser(postSnapshot.getKey());
+        if(TextUtils.isEmpty(subGroupName)){
+            firebaseContacts = FirebaseDatabase.getInstance().getReference("Users").child(StaticFirebaseSettings.currentUserId).child("friends");
+            firebaseContacts.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    users.clear();
+                    rvSearchContactAdapter.notifyDataSetChanged();
+                    for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
+                        //Getting the data from snapshot
+                        if(postSnapshot.child("status").getValue().equals(FriendshipStatus.ACCEPTED.toString())){
+                            getUser(postSnapshot.getKey());
+                        }
                     }
                 }
-            }
 
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
 
+                }
+            });
+        }else{
+
+            for(Users groupUser : groupUsers){
+                boolean isInGroupButAndInSubgroup = false;
+                for(Map.Entry<String, String> entry : members.entrySet()) {
+                    String memberId = entry.getKey();
+                    if(memberId.equals(groupUser.getUserid())){
+                        isInGroupButAndInSubgroup = true;
+                    }
+                }
+                if(!isInGroupButAndInSubgroup){
+                    users.add(groupUser);
+                }
             }
-        });
+            //users.addAll(groupUsers);
+        }
+
+
     }
 
     private void getUser(final String userKey) {
@@ -297,5 +307,11 @@ public class SearchContactActivity extends AppCompatActivity {
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        ((FireApp) this.getApplication()).setMembers(null);
     }
 }

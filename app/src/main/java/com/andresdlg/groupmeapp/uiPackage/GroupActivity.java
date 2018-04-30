@@ -133,7 +133,6 @@ public class GroupActivity extends AppCompatActivity{
                 .add(R.string.news_fragment, NewsFragment.class)
                 .add(R.string.sub_groups_fragment, SubGroupsFragment.class)
                 .add("Chat", GroupChatFragment.class)
-                //.add(R.string.messages_fragment, MessagesFragment.class)
                 .create());
 
         viewPager = findViewById(R.id.viewpager);
@@ -187,11 +186,10 @@ public class GroupActivity extends AppCompatActivity{
             @Override
             public void onPageSelected(int position) {
                 if(position == 2){
-                    ((View)navigationTabBar).animate().translationY(140);
+                    navigationTabBar.animate().translationY(140);
                     dummyView.animate().translationY(140);
 
                     int newMarginDp = 4;
-                    //final int px = (int) (TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, newMarginDp, metrics));
 
                     final CoordinatorLayout.LayoutParams params = (CoordinatorLayout.LayoutParams)viewPager.getLayoutParams();
                     ValueAnimator valueAnimator = ValueAnimator.ofInt(params.bottomMargin,newMarginDp);
@@ -296,12 +294,6 @@ public class GroupActivity extends AppCompatActivity{
         }
         return false;
     }
-
-    /*@Override
-    public void onBackPressed() {
-        super.onBackPressed();
-        supportFinishAfterTransition();
-    }*/
 
     @Override
     protected void onStop() {

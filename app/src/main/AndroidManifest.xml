@@ -104,7 +104,8 @@
         <activity android:name=".uiPackage.TaskWeekViewBaseActivty" />
         <activity android:name=".uiPackage.TaskWeekViewActivity" />
         <activity android:name=".uiPackage.SearchContactActivity"/>
-        <activity android:name=".uiPackage.SubGroupDetailActivity" />
+        <activity android:name=".uiPackage.SubGroupDetailActivity"
+            android:theme="@style/MyDialogTheme2"/>
     </application>
 
 </manifest>
