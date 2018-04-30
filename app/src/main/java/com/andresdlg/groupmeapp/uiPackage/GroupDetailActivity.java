@@ -103,10 +103,10 @@ public class GroupDetailActivity extends AppCompatActivity {
         usersRoles = new HashMap<>();
 
         groupKey = getIntent().getStringExtra("groupKey");
-        final String groupName = getIntent().getStringExtra("groupName");
+        //final String groupName = getIntent().getStringExtra("groupName");
         final String groupPhotoUrl = getIntent().getStringExtra("groupPhotoUrl");
 
-        setToolbar(groupName,myFadeInAnimation);
+        setToolbar(((FireApp) getApplication()).getGroupName(),myFadeInAnimation);
 
         final ImageButton editObjetiveBtn = findViewById(R.id.editObjetiveBtn);
         editObjetiveBtn.startAnimation(myFadeInAnimation);
@@ -147,6 +147,8 @@ public class GroupDetailActivity extends AppCompatActivity {
                 }
 
                 if(amIadmin()){
+
+                    appBarLayout.setExpanded(true);
 
                     fab.setVisibility(View.VISIBLE);
                     fab.setOnClickListener(new View.OnClickListener() {
@@ -241,7 +243,7 @@ public class GroupDetailActivity extends AppCompatActivity {
                             .title("Nombre del grupo")
                             .content("Nombre")
                             .inputType(InputType.TYPE_CLASS_TEXT)
-                            .input("Ingrese el nombre", null, new MaterialDialog.InputCallback() {
+                            .input("Ingrese el nombre", ((FireApp) getApplication()).getGroupName(), new MaterialDialog.InputCallback() {
                                 @Override
                                 public void onInput(@NonNull MaterialDialog dialog, CharSequence input) {
                                     if(!TextUtils.isEmpty(input)){
@@ -251,6 +253,7 @@ public class GroupDetailActivity extends AppCompatActivity {
                                     }
                                 }
                             })
+                            .inputRange(0,20,getResources().getColor(android.R.color.holo_red_dark))
                             .show();
                 }else{
                     Toast.makeText(this, "Debes ser administrador para actualizar el nombre del grupo", Toast.LENGTH_SHORT).show();

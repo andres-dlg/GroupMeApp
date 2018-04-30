@@ -175,9 +175,12 @@ public class RVSubGroupDetailAdapter extends RecyclerView.Adapter<RVSubGroupDeta
                             final PopupMenu popupMenu = new PopupMenu(context, view);
                             final Menu menu = popupMenu.getMenu();
                             if(rol.equals(Roles.SUBGROUP_ADMIN.toString()) && myRol.equals(Roles.SUBGROUP_ADMIN.toString())){
-                                //btnMenu.setVisibility(View.VISIBLE);
-                                //userRef =
                                 popupMenu.getMenuInflater().inflate(R.menu.activity_group_detail_item_admin_to_admin_menu, menu);
+
+                                if(iduser.equals(StaticFirebaseSettings.currentUserId)){
+                                    popupMenu.getMenu().getItem(1).setTitle("Abandonar grupo");
+                                }
+
                                 popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
                                     @Override
                                     public boolean onMenuItemClick(MenuItem menuItem) {
@@ -272,7 +275,7 @@ public class RVSubGroupDetailAdapter extends RecyclerView.Adapter<RVSubGroupDeta
             });
 
             //ELIMINAR DE LOS SUBGRUPOS
-            subGroupEventListener = new ValueEventListener() {
+            /*subGroupEventListener = new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     for(DataSnapshot d : dataSnapshot.getChildren()){
@@ -292,7 +295,7 @@ public class RVSubGroupDetailAdapter extends RecyclerView.Adapter<RVSubGroupDeta
 
                 }
             };
-            subGroupsRef.addListenerForSingleValueEvent(subGroupEventListener);
+            subGroupsRef.addListenerForSingleValueEvent(subGroupEventListener);*/
 
             //ELIMINAR DE LOS USUARIOS
             DatabaseReference usersRef = FirebaseDatabase.getInstance().getReference("Users").child(userId).child("groups").child(groupKey).child("subgroups").child(subGroupKey);
@@ -311,10 +314,5 @@ public class RVSubGroupDetailAdapter extends RecyclerView.Adapter<RVSubGroupDeta
             notifyItemRangeChanged(position, usersList.size());
 
         }
-
-        private void removeListener1() {
-            subGroupsRef.removeEventListener(subGroupEventListener);
-        }
-
     }
 }

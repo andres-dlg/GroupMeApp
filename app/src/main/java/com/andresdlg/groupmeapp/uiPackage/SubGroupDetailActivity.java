@@ -76,6 +76,7 @@ public class SubGroupDetailActivity extends AppCompatActivity {
 
     String groupKey;
     String subGroupKey;
+    String subGroupName;
     DatabaseReference subGroupRef;
     DatabaseReference usersRef;
     List<Users> usersList;
@@ -110,7 +111,7 @@ public class SubGroupDetailActivity extends AppCompatActivity {
 
         groupKey = getIntent().getStringExtra("groupKey");
         subGroupKey = getIntent().getStringExtra("subGroupKey");
-        final String subGroupName = getIntent().getStringExtra("subGroupName");
+        subGroupName = getIntent().getStringExtra("subGroupName");
         String groupName = ((FireApp) this.getApplication()).getGroupName();
         String subGroupPhotoUrl = getIntent().getStringExtra("subGroupPhotoUrl");
 
@@ -140,10 +141,9 @@ public class SubGroupDetailActivity extends AppCompatActivity {
                 .into(iv);
 
         subGroupRef = FirebaseDatabase.getInstance().getReference("Groups").child(groupKey).child("subgroups").child(subGroupKey);
-        subGroupRef.addListenerForSingleValueEvent(new ValueEventListener() {
+        subGroupRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot data) {
-
                 final SubGroup sgf = new SubGroup();
                 sgf.setName(data.child("name").getValue().toString());
                 sgf.setImageUrl(data.child("imageUrl").getValue().toString());
@@ -271,7 +271,7 @@ public class SubGroupDetailActivity extends AppCompatActivity {
                             .title("Nombre del subgrupo")
                             .content("Nombre")
                             .inputType(InputType.TYPE_CLASS_TEXT)
-                            .input("Ingrese el nombre", null, new MaterialDialog.InputCallback() {
+                            .input("Ingrese el nombre", subGroupName, new MaterialDialog.InputCallback() {
                                 @Override
                                 public void onInput(@NonNull MaterialDialog dialog, CharSequence input) {
                                     if(!TextUtils.isEmpty(input)){
@@ -281,6 +281,7 @@ public class SubGroupDetailActivity extends AppCompatActivity {
                                     }
                                 }
                             })
+                            .inputRange(0,20,getResources().getColor(android.R.color.holo_red_dark))
                             .show();
                 }else{
                     Toast.makeText(this, "Debes ser administrador para actualizar el nombre del grupo", Toast.LENGTH_SHORT).show();
@@ -432,6 +433,7 @@ public class SubGroupDetailActivity extends AppCompatActivity {
     }
 
     private void getMembers(final SubGroup g) {
+        //usersList.clear();
         members = g.getMembers();
         for(Map.Entry<String, String> entry : members.entrySet()) {
             String memberId = entry.getKey();
@@ -464,9 +466,21 @@ public class SubGroupDetailActivity extends AppCompatActivity {
         statusRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
+                //VALIDO QUE LA INVITACION AL SUBGRUPO ESTE ACEPTADA (POR DEFAULT Y POR AHORA ESTA EN ACCEPTED)
                 if(dataSnapshot.getValue().toString().equals(GroupStatus.ACCEPTED.toString())){
-                    usersList.add(u);
-                    adapter.notifyDataSetChanged();
+                    boolean exists = false;
+                    for(int i = 0; i<usersList.size(); i++){
+                        if(usersList.get(i).getUserid().equals(u.getUserid())){
+                            usersList.remove(i);
+                            usersList.add(i,u);
+                            adapter.notifyItemChanged(i);
+                            exists = true;
+                        }
+                    }
+                    if(!exists){
+                        usersList.add(u);
+                        adapter.notifyDataSetChanged();
+                    }
                 }
             }
 

@@ -43,15 +43,14 @@
                     <de.hdodenhof.circleimageview.CircleImageView
                         android:layout_width="60dp"
                         android:layout_height="60dp"
-                        android:src="@drawable/new_user"
-                        android:tint="@android:color/white"/>
+                        android:background="@drawable/profile_circular_border_imageview"
+                        />
 
                     <de.hdodenhof.circleimageview.CircleImageView
                         android:id="@+id/list_item_sub_group_icon"
                         android:layout_width="60dp"
                         android:layout_height="60dp"
-                        android:src="@drawable/new_user"
-                        android:padding="2dp"/>
+                        android:padding="1dp"/>
 
                     <ProgressBar
                         android:id="@+id/homeprogress"

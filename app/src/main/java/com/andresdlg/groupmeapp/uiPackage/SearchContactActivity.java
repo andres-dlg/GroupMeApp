@@ -94,7 +94,6 @@ public class SearchContactActivity extends AppCompatActivity {
         rvAddGroupMember.setItemAnimator(new DefaultItemAnimator());
 
         users = new ArrayList<>();
-        //groupUsers = new ArrayList<>();
 
         LinearLayoutManager llm = new LinearLayoutManager(this);
         llm.setOrientation(LinearLayoutManager.VERTICAL);
@@ -134,14 +133,6 @@ public class SearchContactActivity extends AppCompatActivity {
                         }
                     });
 
-        /*List<Fragment> fragments = parentFragment.getChildFragmentManager().getFragments();
-        v = fragments.get(0).getView().findViewById(R.id.nsSetup);
-
-        DisplayMetrics displayMetrics = getContext().getResources().getDisplayMetrics();
-        pxUp = Math.round(50 * (displayMetrics.xdpi) / DisplayMetrics.DENSITY_DEFAULT);*/
-
-
-        //groupKey = ((FireApp) getActivity().getApplication()).getGroupKey();
         groupUsers = ((FireApp) this.getApplication()).getGroupUsers();
 
         fetchContacts();
@@ -151,42 +142,86 @@ public class SearchContactActivity extends AppCompatActivity {
     }
 
     private void sendInvitations() {
+
+
+
         List<String> selectedMembersId = rvSearchContactAdapter.getSelectedIds();
 
-        DatabaseReference membersRef =  mGroupsDatabase.child(groupKey).child("members");
-        for(String id : selectedMembersId){
-            membersRef.child(id).setValue(Roles.MEMBER);
+        //SI ESTOY AGREGANDO MIEMBROS A UN GRUPO
+        if(subGroupKey==null){
+            DatabaseReference membersRef =  mGroupsDatabase.child(groupKey).child("members");
+            for(String id : selectedMembersId){
+                membersRef.child(id).setValue(Roles.MEMBER);
+            }
+
+            Map<String,Object> map2;
+            map2 = new HashMap<>();
+            map2.put("status", GroupStatus.PENDING);
+
+            for(final String id : selectedMembersId){
+                mUsersDatabase.child(id).child("groups").child(groupKey).updateChildren(map2).addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Toast.makeText(SearchContactActivity.this,"Grupo guardado en "+id,Toast.LENGTH_SHORT).show();
+                    }
+                });
+
+                DatabaseReference userToNotifications = mUsersDatabase.child(id).child("notifications");
+                String notificationKey = userToNotifications.push().getKey();
+                Map<String,Object> notification = new HashMap<>();
+                notification.put("notificationKey",notificationKey);
+                notification.put("title","Invitación a grupo");
+                notification.put("message","Has recibido una invitación para unirte al grupo " + name);
+                notification.put("from", groupKey);
+                notification.put("state", NotificationStatus.UNREAD);
+                notification.put("date", Calendar.getInstance().getTime());
+                notification.put("type", NotificationTypes.GROUP_INVITATION);
+
+                userToNotifications.child(notificationKey).setValue(notification).addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Toast.makeText(SearchContactActivity.this, "Invitación de grupo enviada", Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
         }
+        //SI ESTOY AGREGANDO MIEMBROS A UN SUBGRUPO
+        else{
+            DatabaseReference membersRef =  mGroupsDatabase.child(groupKey).child("subgroups").child(subGroupKey).child("members");
+            for(String id : selectedMembersId){
+                membersRef.child(id).setValue(Roles.SUBGROUP_MEMBER);
+            }
 
-        Map<String,Object> map2;
-        map2 = new HashMap<>();
-        map2.put("status", GroupStatus.PENDING);
+            Map<String,Object> map2;
+            map2 = new HashMap<>();
+            map2.put("status", GroupStatus.ACCEPTED);
 
-        for(final String id : selectedMembersId){
-            mUsersDatabase.child(id).child("groups").child(groupKey).updateChildren(map2).addOnSuccessListener(new OnSuccessListener<Void>() {
-                @Override
-                public void onSuccess(Void aVoid) {
-                    Toast.makeText(SearchContactActivity.this,"Grupo guardado en "+id,Toast.LENGTH_SHORT).show();
-                }
-            });
+            for(final String id : selectedMembersId){
+                mUsersDatabase.child(id).child("groups").child(groupKey).child("subgroups").child(subGroupKey).updateChildren(map2).addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Toast.makeText( SearchContactActivity.this,"Subgrupo guardado en "+id,Toast.LENGTH_SHORT).show();
+                    }
+                });
 
-            DatabaseReference userToNotifications = mUsersDatabase.child(id).child("notifications");
-            String notificationKey = userToNotifications.push().getKey();
-            Map<String,Object> notification = new HashMap<>();
-            notification.put("notificationKey",notificationKey);
-            notification.put("title","Invitación a grupo");
-            notification.put("message","Has recibido una invitación para unirte al grupo " + name);
-            notification.put("from", groupKey);
-            notification.put("state", NotificationStatus.UNREAD);
-            notification.put("date", Calendar.getInstance().getTime());
-            notification.put("type", NotificationTypes.GROUP_INVITATION);
+                DatabaseReference userToNotifications = mUsersDatabase.child(id).child("notifications");
+                String notificationKey = userToNotifications.push().getKey();
+                Map<String,Object> notification = new HashMap<>();
+                notification.put("notificationKey",notificationKey);
+                notification.put("title","Nuevo miembro de subgrupo");
+                notification.put("message","Has sido incorporado al subgrupo " + name);
+                notification.put("from", subGroupKey);
+                notification.put("state", NotificationStatus.UNREAD);
+                notification.put("date", Calendar.getInstance().getTime());
+                notification.put("type", NotificationTypes.GROUP_INVITATION);
 
-            userToNotifications.child(notificationKey).setValue(notification).addOnSuccessListener(new OnSuccessListener<Void>() {
-                @Override
-                public void onSuccess(Void aVoid) {
-                    Toast.makeText(SearchContactActivity.this, "Invitación de grupo enviada", Toast.LENGTH_SHORT).show();
-                }
-            });
+                userToNotifications.child(notificationKey).setValue(notification).addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Toast.makeText(SearchContactActivity.this, "Notificación de subgrupo enviada", Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
         }
 
     }

@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.TypedArray;
-import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.NonNull;
@@ -21,7 +20,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.text.InputType;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -266,7 +264,7 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
                 public void onResourceReady(@NonNull Object resource, @Nullable Transition transition) {
                     //Bitmap blurredBitmap = BlurBuilder.blur(context, ((BitmapDrawable) resource).getBitmap());
                     //subGroupBg.setImageBitmap(blurredBitmap);
-                    //subGroupBg.setScaleType(ImageView.ScaleType.CENTER_CROP);
+                    subGroupBg.setScaleType(ImageView.ScaleType.CENTER_CROP);
                     subGroupBg.setImageDrawable((BitmapDrawable)resource);
                     //subGroupBg.setImageBitmap(((BitmapDrawable) resource).getBitmap());
                 }
