@@ -177,17 +177,31 @@ public class SubGroupDetailActivity extends AppCompatActivity {
                         objetive.setText(sgf.getObjetive());
                     }
 
+                    fab.setVisibility(View.VISIBLE);
+                    fab.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            if(amIadmin()){
+                                onSelectImageClick(view);
+                            }else{
+                                Toast.makeText(SubGroupDetailActivity.this, "Debes ser administrador para actualizar la foto del grupo", Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                    });
+
                     if(amIadmin()){
+
+                        appBarLayout.setExpanded(true);
 
                         ((FireApp) getApplication()).setMembers(sgf.getMembers());
 
-                        fab.setVisibility(View.VISIBLE);
+                        /*fab.setVisibility(View.VISIBLE);
                         fab.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View view) {
                                 onSelectImageClick(view);
                             }
-                        });
+                        });*/
 
                         editObjetiveBtn.setVisibility(View.VISIBLE);
                         editObjetiveBtn.setOnClickListener(new View.OnClickListener() {
