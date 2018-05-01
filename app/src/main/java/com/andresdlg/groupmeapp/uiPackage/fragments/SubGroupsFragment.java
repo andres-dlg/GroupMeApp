@@ -131,8 +131,13 @@ public class SubGroupsFragment extends Fragment {
             }
 
             @Override
-            public void onChildRemoved(DataSnapshot dataSnapshot) {
-                rvSubGroupsAdapter.notifyDataSetChanged();
+            public void onChildRemoved(DataSnapshot data) {
+                int i = findPosition(data.child("subGroupKey").getValue().toString());
+                if(i != -1){
+                    subGroups.remove(i);
+                    rvSubGroupsAdapter.notifyItemRemoved(i);
+                    rvSubGroupsAdapter.notifyItemRangeChanged(i,subGroups.size());
+                }
             }
 
             @Override

@@ -3,6 +3,7 @@ package com.andresdlg.groupmeapp.uiPackage;
 import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
@@ -14,6 +15,7 @@ import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.view.ViewCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -145,89 +147,93 @@ public class SubGroupDetailActivity extends AppCompatActivity {
             @Override
             public void onDataChange(DataSnapshot data) {
                 final SubGroup sgf = new SubGroup();
-                sgf.setName(data.child("name").getValue().toString());
-                sgf.setImageUrl(data.child("imageUrl").getValue().toString());
-                sgf.setMembers((Map<String,String>) data.child("members").getValue());
-                sgf.setSubGroupKey(data.child("subGroupKey").getValue().toString());
-                if(data.child("objetive").getValue() == null){
-                    sgf.setObjetive(null);
-                }else{
-                    sgf.setObjetive(data.child("objetive").getValue().toString());
-                }
-                List<Task> tasks = new ArrayList();
-                for(DataSnapshot d : data.child("tasks").getChildren()){
-                    Task task = d.getValue(Task.class);
-                    tasks.add(task);
-                }
-                sgf.setTasks(tasks);
 
-                getMembers(sgf);
+                //SI ES NULL ES PORQUE FUE ELIMINIADO
+                if(data.child("name").getValue()!=null) {
+                    sgf.setName(data.child("name").getValue().toString());
+                    sgf.setImageUrl(data.child("imageUrl").getValue().toString());
+                    sgf.setMembers((Map<String,String>) data.child("members").getValue());
+                    sgf.setSubGroupKey(data.child("subGroupKey").getValue().toString());
+                    if(data.child("objetive").getValue() == null){
+                        sgf.setObjetive(null);
+                    }else{
+                        sgf.setObjetive(data.child("objetive").getValue().toString());
+                    }
+                    List<Task> tasks = new ArrayList();
+                    for(DataSnapshot d : data.child("tasks").getChildren()){
+                        Task task = d.getValue(Task.class);
+                        tasks.add(task);
+                    }
+                    sgf.setTasks(tasks);
 
-                adapter = new RVSubGroupDetailAdapter(usersList,usersRoles,groupKey,subGroupKey,SubGroupDetailActivity.this);
-                rv.setAdapter(adapter);
+                    getMembers(sgf);
 
-                if(TextUtils.isEmpty(sgf.getObjetive())){
-                    objetive.setText("Sin objetivo");
-                }else{
-                    objetive.setText(sgf.getObjetive());
-                }
+                    adapter = new RVSubGroupDetailAdapter(usersList,usersRoles,groupKey,subGroupKey,SubGroupDetailActivity.this);
+                    rv.setAdapter(adapter);
 
-                if(amIadmin()){
+                    if(TextUtils.isEmpty(sgf.getObjetive())){
+                        objetive.setText("Sin objetivo");
+                    }else{
+                        objetive.setText(sgf.getObjetive());
+                    }
 
-                    ((FireApp) getApplication()).setMembers(sgf.getMembers());
+                    if(amIadmin()){
 
-                    fab.setVisibility(View.VISIBLE);
-                    fab.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-                            onSelectImageClick(view);
-                        }
-                    });
+                        ((FireApp) getApplication()).setMembers(sgf.getMembers());
 
-                    editObjetiveBtn.setVisibility(View.VISIBLE);
-                    editObjetiveBtn.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-                            if(!editMode){
-
-                                Drawable i = getResources().getDrawable(R.drawable.check);
-                                i.setTint(getResources().getColor(R.color.green_file_download));
-                                editObjetiveBtn.setImageDrawable(i);
-
-                                editMode = true;
-                                objetive.setEnabled(true);
-                                objetive.setSelection(objetive.getText().length());
-                                objetive.requestFocus();
-                                InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-                                imm.showSoftInput(objetive, InputMethodManager.SHOW_IMPLICIT);
-                                //getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
+                        fab.setVisibility(View.VISIBLE);
+                        fab.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                onSelectImageClick(view);
                             }
-                            else{
-                                Drawable i = getResources().getDrawable(R.drawable.pen);
-                                i.setTint(getResources().getColor(R.color.mdtp_light_gray));
-                                editObjetiveBtn.setImageDrawable(i);
+                        });
 
-                                InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-                                imm.hideSoftInputFromWindow(objetive.getWindowToken(),0);
+                        editObjetiveBtn.setVisibility(View.VISIBLE);
+                        editObjetiveBtn.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                if(!editMode){
 
-                                editMode = false;
-                                objetive.setEnabled(false);
-                                saveObjetive();
+                                    Drawable i = getResources().getDrawable(R.drawable.check);
+                                    i.setTint(getResources().getColor(R.color.green_file_download));
+                                    editObjetiveBtn.setImageDrawable(i);
+
+                                    editMode = true;
+                                    objetive.setEnabled(true);
+                                    objetive.setSelection(objetive.getText().length());
+                                    objetive.requestFocus();
+                                    InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                                    imm.showSoftInput(objetive, InputMethodManager.SHOW_IMPLICIT);
+                                    //getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
+                                }
+                                else{
+                                    Drawable i = getResources().getDrawable(R.drawable.pen);
+                                    i.setTint(getResources().getColor(R.color.mdtp_light_gray));
+                                    editObjetiveBtn.setImageDrawable(i);
+
+                                    InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                                    imm.hideSoftInputFromWindow(objetive.getWindowToken(),0);
+
+                                    editMode = false;
+                                    objetive.setEnabled(false);
+                                    saveObjetive();
+                                }
                             }
-                        }
-                    });
+                        });
 
-                    addContact.setVisibility(View.VISIBLE);
-                    addContact.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-                            Intent i = new Intent(SubGroupDetailActivity.this, SearchContactActivity.class);
-                            i.putExtra("groupKey",groupKey);
-                            i.putExtra("subGroupKey",subGroupKey);
-                            i.putExtra("subGroupName",subGroupName);
-                            startActivity(i);
-                        }
-                    });
+                        addContact.setVisibility(View.VISIBLE);
+                        addContact.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                Intent i = new Intent(SubGroupDetailActivity.this, SearchContactActivity.class);
+                                i.putExtra("groupKey",groupKey);
+                                i.putExtra("subGroupKey",subGroupKey);
+                                i.putExtra("subGroupName",subGroupName);
+                                startActivity(i);
+                            }
+                        });
+                    }
                 }
             }
 
@@ -254,7 +260,7 @@ public class SubGroupDetailActivity extends AppCompatActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.activity_group_detail_menu,menu);
+        getMenuInflater().inflate(R.menu.activity_group_subgroup_detail_menu,menu);
         return true;
     }
 
@@ -284,13 +290,51 @@ public class SubGroupDetailActivity extends AppCompatActivity {
                             .inputRange(0,20,getResources().getColor(android.R.color.holo_red_dark))
                             .show();
                 }else{
-                    Toast.makeText(this, "Debes ser administrador para actualizar el nombre del grupo", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Debes ser administrador para actualizar el nombre del subgrupo", Toast.LENGTH_SHORT).show();
                 }
 
                 return true;
+            case R.id.delete:
+                if(amIadmin()){
+                    new AlertDialog.Builder(this,R.style.MyDialogTheme)
+                            .setTitle("¿Seguro desea elminiar este subgrupo?")
+                            //.setMessage("Ya no estará disponib")
+                            .setPositiveButton("Si", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    deleteSubgroup();
+                                }
+                            })
+                            .setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    dialog.dismiss();
+                                }
+                            })
+                            .setCancelable(false)
+                            .show();
+                }else{
+                    Toast.makeText(this, "Debes ser administrador para eliminar el subgrupo", Toast.LENGTH_SHORT).show();
+                }
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    private void deleteSubgroup() {
+
+        //ELIMINO EL SUBGRUPO DEL NODO GRUPOS
+        subGroupRef.removeValue();
+
+        //ELIMINO EL SUBGRUPO DEL NODO USUARIOS PARA TODOS LOS MIEMBROS DE ESTE SUBGRUPO
+        DatabaseReference userSubgroupRef = FirebaseDatabase.getInstance().getReference("Users");
+        for(Users member: usersList){
+            userSubgroupRef.child(member.getUserid()).child("groups").child(groupKey).child("subgroups").child(subGroupKey).removeValue();
+        }
+
+        onBackPressed();
+
+        //FALTARIA IMPLEMENTAR EL BORRADO DE LOS DIRECTORIOS EN FIREBASE STORAGE UNA VEZ QUE ESO ESTE DISPONIBLE
     }
 
     //NEW IMAGE SELECTION

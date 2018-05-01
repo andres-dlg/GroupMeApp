@@ -112,8 +112,6 @@ public class RVSubGroupDetailAdapter extends RecyclerView.Adapter<RVSubGroupDeta
 
     class SubGroupDetailViewHolder extends RecyclerView.ViewHolder{
 
-        ValueEventListener subGroupEventListener;
-
         DatabaseReference userRef;
 
         View mView;
