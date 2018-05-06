@@ -129,6 +129,7 @@ public class SubGroupDetailActivity extends AppCompatActivity {
         addContact.startAnimation(myFadeInAnimation);
 
         final FloatingActionButton fab = findViewById(R.id.fab);
+        fab.bringToFront();
 
         TextView groupNameTv = findViewById(R.id.groupNameTv);
         groupNameTv.setText(groupName);
@@ -146,10 +147,9 @@ public class SubGroupDetailActivity extends AppCompatActivity {
         subGroupRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot data) {
-                final SubGroup sgf = new SubGroup();
-
-                //SI ES NULL ES PORQUE FUE ELIMINIADO
-                if(data.child("name").getValue()!=null) {
+                //SI ES NULL ES PORQUE FUE ELIMINADO
+                if(data.child("members").getValue()!=null) {
+                    final SubGroup sgf = new SubGroup();
                     sgf.setName(data.child("name").getValue().toString());
                     sgf.setImageUrl(data.child("imageUrl").getValue().toString());
                     sgf.setMembers((Map<String,String>) data.child("members").getValue());
@@ -177,7 +177,8 @@ public class SubGroupDetailActivity extends AppCompatActivity {
                         objetive.setText(sgf.getObjetive());
                     }
 
-                    fab.setVisibility(View.VISIBLE);
+                    fab.startAnimation(myFadeInAnimation);
+                    fab.bringToFront();
                     fab.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View view) {
@@ -309,7 +310,7 @@ public class SubGroupDetailActivity extends AppCompatActivity {
 
                 return true;
             case R.id.delete:
-                if(amIadmin()){
+                /*if(amIadmin()){
                     new AlertDialog.Builder(this,R.style.MyDialogTheme)
                             .setTitle("¿Seguro desea elminiar este subgrupo?")
                             //.setMessage("Ya no estará disponib")
@@ -329,7 +330,7 @@ public class SubGroupDetailActivity extends AppCompatActivity {
                             .show();
                 }else{
                     Toast.makeText(this, "Debes ser administrador para eliminar el subgrupo", Toast.LENGTH_SHORT).show();
-                }
+                }*/
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -365,7 +366,7 @@ public class SubGroupDetailActivity extends AppCompatActivity {
                 .setFixAspectRatio(true)
                 //.setMaxCropResultSize(480,270)
                 //.setRequestedSize(1080,607, CropImageView.RequestSizeOptions.RESIZE_FIT)
-                .setRequestedSize(1280,720, CropImageView.RequestSizeOptions.RESIZE_FIT)
+                .setRequestedSize(1280,720, CropImageView.RequestSizeOptions.RESIZE_INSIDE)
                 .start(this);
     }
 

@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.TypedArray;
+import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.NonNull;
@@ -20,6 +21,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.text.InputType;
 import android.text.TextUtils;
+import android.util.DisplayMetrics;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -165,11 +168,15 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
         ImageView subGroupBg;
         String imageUrl;
 
+
+
         SubGroupViewHolder(final View itemView, final int position, ViewGroup parent) {
             super(itemView);
             this.position = position;
             this.parent = parent;
             context = itemView.getContext();
+
+            final DisplayMetrics metrics = context.getResources().getDisplayMetrics();
 
             View.OnClickListener onClickListener = new View.OnClickListener() {
                 @Override
@@ -221,7 +228,7 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
             relativeLayout.setOnClickListener(onClickListener);
 
             boolean isSubGroupMember = false;
-            Map<String,String> members = subGroups.get(position).getMembers();
+            final Map<String,String> members = subGroups.get(position).getMembers();
             for(Map.Entry<String, String> entry: members.entrySet()) {
                 if(entry.getKey().equals(StaticFirebaseSettings.currentUserId)){
                     isSubGroupMember = true;
@@ -264,9 +271,16 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
                 public void onResourceReady(@NonNull Object resource, @Nullable Transition transition) {
                     //Bitmap blurredBitmap = BlurBuilder.blur(context, ((BitmapDrawable) resource).getBitmap());
                     //subGroupBg.setImageBitmap(blurredBitmap);
-                    subGroupBg.setScaleType(ImageView.ScaleType.CENTER_CROP);
-                    subGroupBg.setImageDrawable((BitmapDrawable)resource);
-                    //subGroupBg.setImageBitmap(((BitmapDrawable) resource).getBitmap());
+
+                    //subGroupBg.setScaleType(ImageView.ScaleType.FIT_XY);
+                    //subGroupBg.setImageDrawable((BitmapDrawable)resource);
+
+
+                    int heightPx = (int) (TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 203, metrics));
+                    int widthPx = metrics.widthPixels;
+
+                    Bitmap bitmap = ((BitmapDrawable) resource).getBitmap();
+                    subGroupBg.setImageBitmap(Bitmap.createScaledBitmap(bitmap,widthPx,heightPx,true));
                 }
             };
 

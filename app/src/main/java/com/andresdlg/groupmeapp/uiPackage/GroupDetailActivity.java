@@ -146,7 +146,8 @@ public class GroupDetailActivity extends AppCompatActivity {
                     objetive.setText(g.getObjetive());
                 }
 
-                fab.setVisibility(View.VISIBLE);
+                fab.startAnimation(myFadeInAnimation);
+                fab.bringToFront();
                 fab.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {

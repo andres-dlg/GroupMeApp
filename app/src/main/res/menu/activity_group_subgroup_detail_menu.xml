@@ -5,8 +5,8 @@
         android:icon="@drawable/ic_pen_white_24dp"
         app:showAsAction="always"
         android:title="Editar Nombre" />
-    <item android:id="@+id/delete"
+    <!--<item android:id="@+id/delete"
         android:icon="@drawable/ic_delete_white_24dp"
         app:showAsAction="ifRoom"
-        android:title="Eliminar subgrupo" />
+        android:title="Eliminar subgrupo" />-->
 </menu>

@@ -7,6 +7,7 @@ import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.v4.app.ActivityOptionsCompat;
+import android.support.v4.app.Fragment;
 import android.support.v4.util.Pair;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
@@ -73,6 +74,8 @@ public class GroupActivity extends AppCompatActivity{
 
     String groupName;
 
+    boolean viewPagerWasInChatPage;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -83,6 +86,8 @@ public class GroupActivity extends AppCompatActivity{
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         clicked = false;
+
+        viewPagerWasInChatPage = false;
 
         dummyView = findViewById(R.id.dummyView);
 
@@ -124,7 +129,7 @@ public class GroupActivity extends AppCompatActivity{
 
         final String[] colors = getResources().getStringArray(R.array.default_preview);
 
-        StaticFirebaseSettings.currentUserId = FirebaseAuth.getInstance().getUid();
+        //StaticFirebaseSettings.currentUserId = FirebaseAuth.getInstance().getUid();
 
         ((FireApp) this.getApplication()).setGroupKey(groupKey);
 
@@ -186,6 +191,9 @@ public class GroupActivity extends AppCompatActivity{
             @Override
             public void onPageSelected(int position) {
                 if(position == 2){
+
+                    viewPagerWasInChatPage = true;
+
                     navigationTabBar.animate().translationY(140);
                     dummyView.animate().translationY(140);
 
@@ -203,23 +211,29 @@ public class GroupActivity extends AppCompatActivity{
                     valueAnimator.setDuration(300);
                     valueAnimator.start();
 
-                }else{
-                    ((View)navigationTabBar).animate().translationY(0);
-                    dummyView.animate().translationY(0);
+                }else if(position == 1){
 
-                    int newMarginDp = 50;
-                    final int px = (int) (TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, newMarginDp, metrics));
+                    if(viewPagerWasInChatPage){
 
-                    Animation a = new Animation() {
-                        @Override
-                        protected void applyTransformation(float interpolatedTime, Transformation t) {
-                            ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams)viewPager.getLayoutParams();
-                            params.bottomMargin = (int)(px * interpolatedTime);
-                            viewPager.setLayoutParams(params);
-                        }
-                    };
-                    a.setDuration(500);
-                    viewPager.startAnimation(a);
+                        ((View)navigationTabBar).animate().translationY(0);
+                        dummyView.animate().translationY(0);
+
+                        int newMarginDp = 50;
+                        final int px = (int) (TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, newMarginDp, metrics));
+
+                        Animation a = new Animation() {
+                            @Override
+                            protected void applyTransformation(float interpolatedTime, Transformation t) {
+                                ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams)viewPager.getLayoutParams();
+                                params.bottomMargin = (int)(px * interpolatedTime);
+                                viewPager.setLayoutParams(params);
+                            }
+                        };
+                        a.setDuration(500);
+                        viewPager.startAnimation(a);
+
+                        viewPagerWasInChatPage = false;
+                    }
                 }
             }
 

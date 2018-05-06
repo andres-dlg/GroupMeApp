@@ -25,6 +25,7 @@ import com.andresdlg.groupmeapp.DialogFragments.AddFriendsDialogFragment;
 import com.andresdlg.groupmeapp.DialogFragments.FriendsDialogFragment;
 import com.andresdlg.groupmeapp.Entities.Users;
 import com.andresdlg.groupmeapp.R;
+import com.andresdlg.groupmeapp.firebasePackage.FireApp;
 import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
 import com.andresdlg.groupmeapp.uiPackage.fragments.GroupsFragment;
 import com.andresdlg.groupmeapp.uiPackage.fragments.MessagesFragment;
@@ -86,7 +87,7 @@ public class MainActivity extends AppCompatActivity
 
         final String[] colors = getResources().getStringArray(R.array.default_preview);
 
-        StaticFirebaseSettings.currentUserId = FirebaseAuth.getInstance().getUid();
+        //StaticFirebaseSettings.currentUserId = FirebaseAuth.getInstance().getUid();
 
         FragmentPagerItemAdapter adapter = new FragmentPagerItemAdapter(
                 getSupportFragmentManager(), FragmentPagerItems.with(this)
@@ -171,6 +172,7 @@ public class MainActivity extends AppCompatActivity
         //FIREBASE INSTANCE INITIALIZATION
         mAuth = FirebaseAuth.getInstance();
         user = mAuth.getCurrentUser();
+        StaticFirebaseSettings.setCurrentUserId(user.getUid());
         mStorageReference = FirebaseStorage.getInstance().getReference();
     }
 

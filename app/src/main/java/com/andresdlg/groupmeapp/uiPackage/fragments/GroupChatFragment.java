@@ -7,6 +7,8 @@ import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.DisplayMetrics;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -99,6 +101,12 @@ public class GroupChatFragment extends Fragment {
         linearLayoutManager = new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false);
         RecyclerView recyclerChat = view.findViewById(R.id.recyclerChat);
         recyclerChat.setLayoutManager(linearLayoutManager);
+
+        DisplayMetrics metrics = getResources().getDisplayMetrics();
+        ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams)recyclerChat.getLayoutParams();
+        int newMarginDp = 20;
+        params.topMargin = (int) (TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, newMarginDp, metrics));
+
         adapter = new ListMessageAdapter(getContext(), conversation, null, null,"Group");
 
         FirebaseDatabase.getInstance().getReference().child("Conversations").child(conversationKey).child("messages").addChildEventListener(new ChildEventListener() {

@@ -59,36 +59,6 @@ public class SubGroupsFragment extends Fragment {
 
     private void fillSubGroups(final View v) {
         DatabaseReference subGroupsRef = FirebaseDatabase.getInstance().getReference("Groups").child(groupKey).child("subgroups");
-        /*subGroupsRef.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                rvSubGroupsAdapter.clear();
-                subGroups.clear();
-                for (DataSnapshot data : dataSnapshot.getChildren()){
-                    SubGroup sgf = new SubGroup();
-                    sgf.setName(data.child("name").getValue().toString());
-                    sgf.setImageUrl(data.child("imageUrl").getValue().toString());
-                    sgf.setMembers((Map<String,String>) data.child("members").getValue());
-                    sgf.setSubGroupKey(data.child("subGroupKey").getValue().toString());
-                    List<Task> tasks = new ArrayList();
-                    for(DataSnapshot d : data.child("tasks").getChildren()){
-                        Task task = d.getValue(Task.class);
-                        tasks.add(task);
-                    }
-                    sgf.setTasks(tasks);
-                    subGroups.add(sgf);
-                }
-                v.findViewById(R.id.tvNoGroups).setVisibility(View.GONE);
-                swipeContainer.setRefreshing(false);
-                rvSubGroupsAdapter.notifyDataSetChanged();
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });*/
-
         subGroupsRef.addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(DataSnapshot data, String s) {
@@ -103,31 +73,32 @@ public class SubGroupsFragment extends Fragment {
                     tasks.add(task);
                 }
                 sgf.setTasks(tasks);
-                //SubGroup sgf = data.getValue(SubGroup.class);
                 subGroups.add(sgf);
                 rvSubGroupsAdapter.notifyDataSetChanged();
             }
 
             @Override
             public void onChildChanged(DataSnapshot data, String s) {
-                SubGroup sgf = new SubGroup();
-                sgf.setName(data.child("name").getValue().toString());
-                sgf.setImageUrl(data.child("imageUrl").getValue().toString());
-                sgf.setMembers((Map<String,String>) data.child("members").getValue());
-                sgf.setSubGroupKey(data.child("subGroupKey").getValue().toString());
-                List<Task> tasks = new ArrayList();
-                for(DataSnapshot d : data.child("tasks").getChildren()){
-                    Task task = d.getValue(Task.class);
-                    tasks.add(task);
+                if(data.child("members").getValue()!=null){
+                    SubGroup sgf = new SubGroup();
+                    sgf.setName(data.child("name").getValue().toString());
+                    sgf.setImageUrl(data.child("imageUrl").getValue().toString());
+                    sgf.setMembers((Map<String,String>) data.child("members").getValue());
+                    sgf.setSubGroupKey(data.child("subGroupKey").getValue().toString());
+                    List<Task> tasks = new ArrayList();
+                    for(DataSnapshot d : data.child("tasks").getChildren()){
+                        Task task = d.getValue(Task.class);
+                        tasks.add(task);
+                    }
+                    sgf.setTasks(tasks);
+                    int i = findPosition(sgf.getSubGroupKey());
+                    if(i != -1){
+                        subGroups.remove(i);
+                        subGroups.add(i,sgf);
+                        rvSubGroupsAdapter.notifyItemChanged(i);
+                    }
+                    swipeContainer.setRefreshing(false);
                 }
-                sgf.setTasks(tasks);
-                int i = findPosition(sgf.getSubGroupKey());
-                if(i != -1){
-                    subGroups.remove(i);
-                    subGroups.add(i,sgf);
-                    rvSubGroupsAdapter.notifyItemChanged(i);
-                }
-                swipeContainer.setRefreshing(false);
             }
 
             @Override
