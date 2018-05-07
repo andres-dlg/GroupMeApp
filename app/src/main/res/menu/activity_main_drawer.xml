@@ -14,10 +14,9 @@
             android:title="Configuración" />
     </group>
 
-    <group
+    <!--<group
         android:checkableBehavior="single"
         android:id="@+id/actions">
-
             <item
                 android:id="@+id/nav_share"
                 android:icon="@drawable/ic_menu_share"
@@ -26,6 +25,6 @@
                 android:id="@+id/nav_log_out"
                 android:icon="@drawable/ic_exit_to_app_black_48dp"
                 android:title="Salir" />
+    </group>-->
 
-    </group>
 </menu>

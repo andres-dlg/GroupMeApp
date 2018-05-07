@@ -15,11 +15,14 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.andresdlg.groupmeapp.DialogFragments.AddFriendsDialogFragment;
 import com.andresdlg.groupmeapp.DialogFragments.FriendsDialogFragment;
@@ -157,14 +160,12 @@ public class MainActivity extends AppCompatActivity
             }
         }
 
-        DrawerLayout drawer = findViewById(R.id.drawer_layout);
+        final DrawerLayout drawer = findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.setDrawerListener(toggle);
         toggle.syncState();
 
-        navigationView = findViewById(R.id.nav_view);
-        navigationView.setNavigationItemSelectedListener(this);
 
         //FIREBASE DATABASE REFERENCE
         mDatabaseRef = FirebaseDatabase.getInstance().getReference().child("Users");
@@ -174,6 +175,72 @@ public class MainActivity extends AppCompatActivity
         user = mAuth.getCurrentUser();
         StaticFirebaseSettings.setCurrentUserId(user.getUid());
         mStorageReference = FirebaseStorage.getInstance().getReference();
+
+        //NAVIGATION DRAWER LISTENERS
+        navigationView = findViewById(R.id.nav_view);
+        navigationView.setNavigationItemSelectedListener(this);
+
+        LinearLayout rateReview = findViewById(R.id.rate_review);
+        rateReview.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(MainActivity.this, "Puntúa y comenta!", Toast.LENGTH_SHORT).show();
+                drawer.closeDrawer(Gravity.LEFT);
+            }
+        });
+
+        LinearLayout help = findViewById(R.id.help);
+        help.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(MainActivity.this, "Ayuda!", Toast.LENGTH_SHORT).show();
+                drawer.closeDrawer(Gravity.LEFT);
+            }
+        });
+
+        LinearLayout share = findViewById(R.id.share);
+        share.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(MainActivity.this, "Compartir!", Toast.LENGTH_SHORT).show();
+                drawer.closeDrawer(Gravity.LEFT);
+            }
+        });
+
+        LinearLayout about = findViewById(R.id.about);
+        about.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(MainActivity.this, "Acerca de!", Toast.LENGTH_SHORT).show();
+                drawer.closeDrawer(Gravity.LEFT);
+            }
+        });
+
+        LinearLayout logout = findViewById(R.id.logout);
+        logout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Map<String,Object> tokenMap = new HashMap<>();
+                tokenMap.put("token_id","");
+
+                DatabaseReference mUserRef = FirebaseDatabase.getInstance().getReference("Users").child(StaticFirebaseSettings.currentUserId);
+                mUserRef.updateChildren(tokenMap).addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+
+                        mDatabaseRef.removeEventListener(valueEventListener);
+                        mAuth.signOut();
+                        FirebaseAuth.getInstance().signOut();
+                        Intent moveToLogin = new Intent(MainActivity.this,LoginActivity.class);
+                        moveToLogin.putExtra("logout",true);
+                        moveToLogin.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                        startActivity(moveToLogin);
+                        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+                        finish();
+                    }
+                });
+            }
+        });
     }
 
 
@@ -279,7 +346,7 @@ public class MainActivity extends AppCompatActivity
             // Handle the camera action
         } else if (id == R.id.nav_manage) {
 
-        } else if (id == R.id.nav_share) {
+        } /*else if (id == R.id.nav_share) {
 
         } else if (id == R.id.nav_log_out){
             Map<String,Object> tokenMap = new HashMap<>();
@@ -301,12 +368,14 @@ public class MainActivity extends AppCompatActivity
                     finish();
                 }
             });
-        }
+        }*/
 
-        DrawerLayout drawer = findViewById(R.id.drawer_layout);
-        drawer.closeDrawer(GravityCompat.START);
+        //DrawerLayout drawer = findViewById(R.id.drawer_layout);
+        //drawer.closeDrawer(GravityCompat.START);
         return true;
     }
+
+
 
     private void sendToLogin(){
         Intent moveToLogin = new Intent(MainActivity.this,LoginActivity.class);
