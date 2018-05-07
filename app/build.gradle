@@ -63,6 +63,7 @@ dependencies {
     annotationProcessor 'com.github.bumptech.glide:compiler:4.7.1'
     implementation 'jp.wasabeef:glide-transformations:3.3.0'
     implementation 'org.ocpsoft.prettytime:prettytime:4.0.1.Final'
+    implementation 'com.codemybrainsout.rating:ratingdialog:1.0.8'
 }
 
 apply plugin: 'com.google.gms.google-services'

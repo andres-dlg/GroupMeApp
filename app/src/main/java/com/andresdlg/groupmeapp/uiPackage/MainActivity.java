@@ -9,6 +9,7 @@ import android.support.design.widget.NavigationView;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
@@ -36,6 +37,7 @@ import com.andresdlg.groupmeapp.uiPackage.fragments.NewsFragment;
 import com.andresdlg.groupmeapp.uiPackage.fragments.NotificationFragment;
 import com.andresdlg.groupmeapp.uiPackage.login.LoginActivity;
 import com.bumptech.glide.Glide;
+import com.codemybrainsout.ratingdialog.RatingDialog;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -184,7 +186,27 @@ public class MainActivity extends AppCompatActivity
         rateReview.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(MainActivity.this, "Puntúa y comenta!", Toast.LENGTH_SHORT).show();
+
+                RatingDialog ratingDialog = new RatingDialog.Builder(MainActivity.this)
+                        .title("¿Cómo fue su experiencia con GroupMeApp?")
+                        .threshold(6f)
+                        .formTitle("Deja tu comentario o sugerencia")
+                        .positiveButtonText("Quizas luego")
+                        //.negativeButtonText("Nunca")
+                        .positiveButtonTextColor(R.color.colorPrimary)
+                        //.negativeButtonTextColor(R.color.grey_500)
+                        .formHint("¿Cómo podemos mejorar?")
+                        .formSubmitText("Enviar")
+                        .formCancelText("Cancelar")
+                        //.playstoreUrl("YOUR_URL")
+                        .onRatingBarFormSumbit(new RatingDialog.Builder.RatingDialogFormListener() {
+                            @Override
+                            public void onFormSubmitted(String feedback) {
+
+                            }
+                        }).build();
+                ratingDialog.show();
+
                 drawer.closeDrawer(Gravity.LEFT);
             }
         });
@@ -202,7 +224,18 @@ public class MainActivity extends AppCompatActivity
         share.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(MainActivity.this, "Compartir!", Toast.LENGTH_SHORT).show();
+                try {
+                    Intent i = new Intent(Intent.ACTION_SEND);
+                    i.setType("text/plain");
+                    i.putExtra(Intent.EXTRA_SUBJECT, "GroupMeApp");
+                    String sAux = "\n¡Recomienda esta aplicación a tus conocidos!\n\n";
+                    //sAux = sAux + "https://play.google.com/store/apps/details?id=the.package.id \n\n";
+                    sAux = sAux + "https://futurolink.com \n\n";
+                    i.putExtra(Intent.EXTRA_TEXT, sAux);
+                    startActivity(Intent.createChooser(i, "Elije una opción"));
+                } catch(Exception e) {
+                    //e.toString();
+                }
                 drawer.closeDrawer(Gravity.LEFT);
             }
         });
