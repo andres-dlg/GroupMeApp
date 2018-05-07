@@ -9,14 +9,14 @@ import java.util.Date;
 public class Notification {
 
     private String notificationKey;
-    private Date date;
+    private long date;
     private String from;
     private String message;
     private String state;
     private String title;
     private String type;
 
-    private Notification(String notificationKey, Date date, String from, String message, String state, String title, String type ){
+    private Notification(String notificationKey, long date, String from, String message, String state, String title, String type ){
         this.notificationKey = notificationKey;
         this.date = date;
         this.from = from;
@@ -70,11 +70,11 @@ public class Notification {
         this.from = from;
     }
 
-    public Date getDate() {
+    public long getDate() {
         return date;
     }
 
-    public void setDate(Date date) {
+    public void setDate(long date) {
         this.date = date;
     }
 

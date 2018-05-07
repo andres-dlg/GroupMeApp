@@ -43,10 +43,11 @@
     <string name="title_app">GroupMeApp</string>
     <string name="group_name">Nombre del grupo</string>
     <string name="save">Guardar</string>
-    <string name="no_groups">No tienes ningún grupo</string>
-    <string name="no_news">No tienes ninguna noticia</string>
-    <string name="no_messages">No tienes nuevos mensajes</string>
-    <string name="no_notifications">No tienes nuevas notificaciones</string>
+    <string name="no_groups">Aún no perteneces a ningún grupo</string>
+    <string name="no_news">Anú no tienes noticias</string>
+    <string name="no_messages">Aún no tienes mensajes</string>
+    <string name="no_notifications">Aún no tienes notificaciones</string>
+    <string name="no_sub_groups">Aún no perteneces a ningún subgrupo</string>
     <string name="action_google_sign_in">Accede con google</string>
 
     <string name="fontNotice" translatable="false">fonts/Simplifica.ttf</string>
@@ -57,7 +58,6 @@
     <string name="default_notification_channel_id">ADLG_CH_01</string>
     <string name="title_activity_group">GroupActivity</string>
     <string name="sub_groups_fragment">Sub Grupos</string>
-    <string name="no_sub_groups">No hay Subgrupos</string>
 
 
 </resources>

@@ -99,14 +99,15 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
         this.contexto = context;
     }
 
+    @NonNull
     @Override
-    public SubGroupViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public SubGroupViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_parent_child_listing, parent, false);
         return new SubGroupViewHolder(v,viewType,parent);
     }
 
     @Override
-    public void onBindViewHolder(SubGroupViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull SubGroupViewHolder holder, int position) {
         SubGroup subGroup = subGroups.get(position);
         holder.textView_parentName.setText(subGroup.getName());
 

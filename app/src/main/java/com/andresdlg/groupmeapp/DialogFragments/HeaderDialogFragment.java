@@ -413,7 +413,7 @@ public class HeaderDialogFragment extends DialogFragment implements GroupAddMemb
                 notification.put("message","Te han añadido al subgrupo " + name);
                 notification.put("from", parentGroupKey);
                 notification.put("state", NotificationStatus.UNREAD);
-                notification.put("date", Calendar.getInstance().getTime());
+                notification.put("date", Calendar.getInstance().getTimeInMillis());
                 notification.put("type", NotificationTypes.GROUP_INVITATION);
 
                 userToNotifications.child(notificationKey).setValue(notification).addOnSuccessListener(new OnSuccessListener<Void>() {
@@ -464,7 +464,7 @@ public class HeaderDialogFragment extends DialogFragment implements GroupAddMemb
                 notification.put("message","Has recibido una invitación para unirte al grupo " + name);
                 notification.put("from", groupKey);
                 notification.put("state", NotificationStatus.UNREAD);
-                notification.put("date", Calendar.getInstance().getTime());
+                notification.put("date", Calendar.getInstance().getTimeInMillis());
                 notification.put("type", NotificationTypes.GROUP_INVITATION);
 
                 userToNotifications.child(notificationKey).setValue(notification).addOnSuccessListener(new OnSuccessListener<Void>() {

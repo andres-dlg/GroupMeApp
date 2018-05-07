@@ -7,7 +7,6 @@ import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.v4.app.ActivityOptionsCompat;
-import android.support.v4.app.Fragment;
 import android.support.v4.util.Pair;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
@@ -31,12 +30,10 @@ import com.andresdlg.groupmeapp.Entities.Users;
 import com.andresdlg.groupmeapp.R;
 import com.andresdlg.groupmeapp.Utils.GroupStatus;
 import com.andresdlg.groupmeapp.firebasePackage.FireApp;
-import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
 import com.andresdlg.groupmeapp.uiPackage.fragments.GroupChatFragment;
-import com.andresdlg.groupmeapp.uiPackage.fragments.NewsFragment;
+import com.andresdlg.groupmeapp.uiPackage.fragments.GroupNewsFragment;
 import com.andresdlg.groupmeapp.uiPackage.fragments.SubGroupsFragment;
 import com.bumptech.glide.Glide;
-import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -135,7 +132,7 @@ public class GroupActivity extends AppCompatActivity{
 
         FragmentPagerItemAdapter adapter = new FragmentPagerItemAdapter(
                 getSupportFragmentManager(), FragmentPagerItems.with(this)
-                .add(R.string.news_fragment, NewsFragment.class)
+                .add(R.string.news_fragment, GroupNewsFragment.class)
                 .add(R.string.sub_groups_fragment, SubGroupsFragment.class)
                 .add("Chat", GroupChatFragment.class)
                 .create());

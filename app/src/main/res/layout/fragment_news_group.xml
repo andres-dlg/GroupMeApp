@@ -10,6 +10,7 @@
     <android.support.v4.widget.SwipeRefreshLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_marginTop="20dp"
         android:id="@+id/swipeContainer">
 
         <FrameLayout
@@ -25,18 +26,17 @@
                 android:indeterminate="true"/>
 
             <android.support.v7.widget.RecyclerView
-                android:id="@+id/rvSubGroups"
-                android:layout_height="match_parent"
+                android:id="@+id/rvPosts"
+                android:layout_height="wrap_content"
                 android:layout_width="match_parent"
-                android:visibility="gone">
-            </android.support.v7.widget.RecyclerView>
+                android:visibility="gone"/>
 
             <TextView
-                android:id="@+id/tvNoSubGroups"
+                android:id="@+id/tvNoNews"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:gravity="center"
-                android:text="@string/no_sub_groups"
+                android:text="@string/no_news"
                 android:fontFamily="@font/simplifica"
                 android:textSize="40sp"
                 android:textColor="#e0e0e0"
@@ -44,10 +44,12 @@
 
         </FrameLayout>
 
+
+
     </android.support.v4.widget.SwipeRefreshLayout>
 
     <android.support.design.widget.FloatingActionButton
-        android:id="@+id/fabSubGroups"
+        android:id="@+id/fabNewPost"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:clickable="true"
@@ -56,9 +58,8 @@
         android:layout_marginBottom="15dp"
         android:layout_marginRight="15dp"
         android:tint="@color/common_google_signin_btn_text_dark"
+        android:src="@drawable/ic_create_post"
         app:backgroundTint="@color/colorPrimaryDark"
-        app:fabSize="normal"
-        app:srcCompat="@android:drawable/ic_input_add" />
-
+        app:fabSize="normal" />
 
 </RelativeLayout>

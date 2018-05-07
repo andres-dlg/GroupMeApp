@@ -36,9 +36,12 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import org.ocpsoft.prettytime.PrettyTime;
+
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import static com.andresdlg.groupmeapp.Utils.NotificationTypes.GROUP_INVITATION;
 
@@ -60,12 +63,14 @@ public class RVNotificationAdapter extends RecyclerView.Adapter<RVNotificationAd
     private Context context;
 
     private OnSaveGroupListener mOnSaveGroupListener;
+    private PrettyTime prettyTime;
 
     public RVNotificationAdapter(List<Notification> notifications, Context context){
         this.notifications = notifications;
         this.context = context;
         usersRef = FirebaseDatabase.getInstance().getReference("Users");
         groupsRef = FirebaseDatabase.getInstance().getReference("Groups");
+        this.prettyTime = new PrettyTime(new Locale("es"));
 
         onAttachToParentFragment(((AppCompatActivity)context).getSupportFragmentManager().getFragments().get(1));
     }
@@ -92,7 +97,12 @@ public class RVNotificationAdapter extends RecyclerView.Adapter<RVNotificationAd
                     notificationViewHolder.setImage(context,u.getImageURL());
                     notificationViewHolder.hideBtn(context,notifications.get(position).getType());
                     notificationViewHolder.notificationMessage.setText(notifications.get(position).getMessage());
-                    String date = dateDifference(notifications.get(position).getDate());
+
+                    //String date = dateDifference(notifications.get(position).getDate());
+                    Calendar calendar = Calendar.getInstance();
+                    calendar.setTimeInMillis(notifications.get(position).getDate());
+                    String date = prettyTime.format(calendar);
+
                     notificationViewHolder.notificationDate.setText(date);
                     notificationViewHolder.setNotificationKey(notifications.get(position).getNotificationKey());
 
@@ -116,7 +126,12 @@ public class RVNotificationAdapter extends RecyclerView.Adapter<RVNotificationAd
                     notificationViewHolder.hideBtn(context,notifications.get(position).getType());
                     notificationViewHolder.setImage(context,g.getImageUrl());
                     notificationViewHolder.notificationMessage.setText(notifications.get(position).getMessage());
-                    String date = dateDifference(notifications.get(position).getDate());
+                    //String date = dateDifference(notifications.get(position).getDate());
+
+                    Calendar calendar = Calendar.getInstance();
+                    calendar.setTimeInMillis(notifications.get(position).getDate());
+                    String date = prettyTime.format(calendar);
+
                     notificationViewHolder.notificationDate.setText(date);
                     notificationViewHolder.setGroupKey(g.getGroupKey(),usersRef);
                     notificationViewHolder.setNotificationKey(notifications.get(position).getNotificationKey());
@@ -141,7 +156,7 @@ public class RVNotificationAdapter extends RecyclerView.Adapter<RVNotificationAd
         userRef.removeEventListener(usersEventListener);
     }
 
-    private String dateDifference(Date d) {
+    /*private String dateDifference(Date d) {
 
         Calendar dateNoti = Calendar.getInstance();
         dateNoti.setTime(d);
@@ -159,7 +174,7 @@ public class RVNotificationAdapter extends RecyclerView.Adapter<RVNotificationAd
         }else{
             return ("Hace "+ Math.round(diff/1000/60/60/24)+ " dias");
         }
-    }
+    }*/
 
     @Override
     public int getItemCount() {

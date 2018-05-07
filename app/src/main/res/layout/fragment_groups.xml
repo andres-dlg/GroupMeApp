@@ -33,7 +33,9 @@
         android:layout_height="match_parent"
         android:gravity="center"
         android:text="@string/no_groups"
+        android:fontFamily="@font/simplifica"
         android:textSize="40sp"
-        android:textColor="#e0e0e0" />
+        android:textColor="#e0e0e0"
+        android:visibility="gone"/>
 
 </RelativeLayout>

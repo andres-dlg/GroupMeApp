@@ -14,6 +14,8 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import com.andresdlg.groupmeapp.Adapters.RVSubGroupAdapter;
 import com.andresdlg.groupmeapp.DialogFragments.HeaderDialogFragment;
@@ -45,6 +47,9 @@ public class SubGroupsFragment extends Fragment {
     FloatingActionButton fab;
     String groupKey;
     RecyclerView rvSubGroups;
+    ProgressBar progressBar;
+    TextView tvNoSubGroups;
+
     RVSubGroupAdapter rvSubGroupsAdapter;
     List<SubGroup> subGroups;
     LinearLayoutManager llm;
@@ -59,6 +64,7 @@ public class SubGroupsFragment extends Fragment {
 
     private void fillSubGroups(final View v) {
         DatabaseReference subGroupsRef = FirebaseDatabase.getInstance().getReference("Groups").child(groupKey).child("subgroups");
+
         subGroupsRef.addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(DataSnapshot data, String s) {
@@ -121,6 +127,26 @@ public class SubGroupsFragment extends Fragment {
 
             }
         });
+
+        subGroupsRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if(dataSnapshot.hasChildren()){
+                    tvNoSubGroups.setVisibility(View.GONE);
+                    rvSubGroups.setVisibility(View.VISIBLE);
+                    progressBar.setVisibility(View.GONE);
+                }else {
+                    tvNoSubGroups.setVisibility(View.VISIBLE);
+                    rvSubGroups.setVisibility(View.GONE);
+                    progressBar.setVisibility(View.GONE);
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
     }
 
     private int findPosition(String subGroupKey) {
@@ -142,6 +168,10 @@ public class SubGroupsFragment extends Fragment {
         vista = view;
 
         groupKey = ((FireApp) getActivity().getApplication()).getGroupKey();
+
+        progressBar = view.findViewById(R.id.progressBar);
+
+        tvNoSubGroups = view.findViewById(R.id.tvNoSubGroups);
 
         fab = view.findViewById(R.id.fabSubGroups);
         fab.setOnClickListener(new View.OnClickListener() {

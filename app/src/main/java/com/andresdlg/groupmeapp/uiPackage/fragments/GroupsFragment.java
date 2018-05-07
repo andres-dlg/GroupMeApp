@@ -44,6 +44,7 @@ public class GroupsFragment extends Fragment implements View.OnClickListener, He
     DatabaseReference groupsRef;
     List<Group> groups;
     RecyclerView rv;
+    FloatingActionButton mFloatingActionButton;
 
     View view;
 
@@ -63,6 +64,8 @@ public class GroupsFragment extends Fragment implements View.OnClickListener, He
 
         groups = new ArrayList<>();
 
+        tvNoGroups = view.findViewById(R.id.tvNoGroups);
+
         //Recicler view
         rv = view.findViewById(R.id.rvGroups);
         rv.setHasFixedSize(true); //El tamaño queda fijo, mejora el desempeño
@@ -70,7 +73,7 @@ public class GroupsFragment extends Fragment implements View.OnClickListener, He
         rv.setLayoutManager(llm);
 
         //Floating action button
-        FloatingActionButton mFloatingActionButton = view.findViewById(R.id.fabGroups);
+        mFloatingActionButton = view.findViewById(R.id.fabGroups);
         mFloatingActionButton.setOnClickListener(this);
 
         groupsRef = FirebaseDatabase.getInstance().getReference("Groups");
@@ -86,8 +89,13 @@ public class GroupsFragment extends Fragment implements View.OnClickListener, He
                 for(DataSnapshot data : dataSnapshot.getChildren()){
                     if(data.child("status").getValue().toString().equals(GroupStatus.ACCEPTED.toString())){
                         getGroup(data.getKey());
-                        view.findViewById(R.id.tvNoGroups).setVisibility(View.INVISIBLE);
                     }
+                }
+
+                if(!dataSnapshot.hasChildren()){
+                    tvNoGroups.setVisibility(View.VISIBLE);
+                }else {
+                    tvNoGroups.setVisibility(View.GONE);
                 }
             }
 
@@ -100,8 +108,7 @@ public class GroupsFragment extends Fragment implements View.OnClickListener, He
         adapter = new RVGroupAdapter(getContext(),groups);
         rv.setAdapter(adapter);
 
-        tvNoGroups = view.findViewById(R.id.tvNoGroups);
-        checkGroupsQuantity();
+
     }
 
     private void getGroup(String key) {
@@ -140,11 +147,6 @@ public class GroupsFragment extends Fragment implements View.OnClickListener, He
         });
     }
 
-    private void checkGroupsQuantity() {
-        if(adapter.getItemCount() == 0){
-            tvNoGroups.setVisibility(View.VISIBLE);
-        }
-    }
 
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
@@ -179,6 +181,18 @@ public class GroupsFragment extends Fragment implements View.OnClickListener, He
     public void onSavedGroup(boolean saved) {
         if(saved){
             getAllGroups();
+        }
+    }
+
+    @Override
+    public void setUserVisibleHint(boolean isVisibleToUser) {
+        super.setUserVisibleHint(isVisibleToUser);
+        if(isAdded()){
+            if(isVisibleToUser){
+                mFloatingActionButton.show();
+            }else{
+                mFloatingActionButton.hide();
+            }
         }
     }
 
