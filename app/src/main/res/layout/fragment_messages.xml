@@ -17,6 +17,8 @@
         android:gravity="center"
         android:text="@string/no_messages"
         android:fontFamily="@font/simplifica"
+        android:layout_marginRight="20dp"
+        android:layout_marginLeft="20dp"
         android:textSize="40sp"
         android:textColor="#e0e0e0" />
 

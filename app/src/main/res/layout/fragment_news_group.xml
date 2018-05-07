@@ -35,6 +35,8 @@
                 android:id="@+id/tvNoNews"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:layout_marginRight="20dp"
+                android:layout_marginLeft="20dp"
                 android:gravity="center"
                 android:text="@string/no_news"
                 android:fontFamily="@font/simplifica"

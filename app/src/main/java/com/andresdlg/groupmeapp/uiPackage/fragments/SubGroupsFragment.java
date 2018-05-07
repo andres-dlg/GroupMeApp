@@ -56,108 +56,20 @@ public class SubGroupsFragment extends Fragment {
 
     View vista;
 
+    DatabaseReference subGroupsRef;
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+
+        subGroups = new ArrayList<>();
+
+        groupKey = ((FireApp) getActivity().getApplication()).getGroupKey();
+
+        subGroupsRef = FirebaseDatabase.getInstance().getReference("Groups").child(groupKey).child("subgroups");
+
         return inflater.inflate(R.layout.fragment_sub_groups,container,false);
     }
-
-    private void fillSubGroups(final View v) {
-        DatabaseReference subGroupsRef = FirebaseDatabase.getInstance().getReference("Groups").child(groupKey).child("subgroups");
-
-        subGroupsRef.addChildEventListener(new ChildEventListener() {
-            @Override
-            public void onChildAdded(DataSnapshot data, String s) {
-                SubGroup sgf = new SubGroup();
-                sgf.setName(data.child("name").getValue().toString());
-                sgf.setImageUrl(data.child("imageUrl").getValue().toString());
-                sgf.setMembers((Map<String,String>) data.child("members").getValue());
-                sgf.setSubGroupKey(data.child("subGroupKey").getValue().toString());
-                List<Task> tasks = new ArrayList();
-                for(DataSnapshot d : data.child("tasks").getChildren()){
-                    Task task = d.getValue(Task.class);
-                    tasks.add(task);
-                }
-                sgf.setTasks(tasks);
-                subGroups.add(sgf);
-                rvSubGroupsAdapter.notifyDataSetChanged();
-            }
-
-            @Override
-            public void onChildChanged(DataSnapshot data, String s) {
-                if(data.child("members").getValue()!=null){
-                    SubGroup sgf = new SubGroup();
-                    sgf.setName(data.child("name").getValue().toString());
-                    sgf.setImageUrl(data.child("imageUrl").getValue().toString());
-                    sgf.setMembers((Map<String,String>) data.child("members").getValue());
-                    sgf.setSubGroupKey(data.child("subGroupKey").getValue().toString());
-                    List<Task> tasks = new ArrayList();
-                    for(DataSnapshot d : data.child("tasks").getChildren()){
-                        Task task = d.getValue(Task.class);
-                        tasks.add(task);
-                    }
-                    sgf.setTasks(tasks);
-                    int i = findPosition(sgf.getSubGroupKey());
-                    if(i != -1){
-                        subGroups.remove(i);
-                        subGroups.add(i,sgf);
-                        rvSubGroupsAdapter.notifyItemChanged(i);
-                    }
-                    swipeContainer.setRefreshing(false);
-                }
-            }
-
-            @Override
-            public void onChildRemoved(DataSnapshot data) {
-                int i = findPosition(data.child("subGroupKey").getValue().toString());
-                if(i != -1){
-                    subGroups.remove(i);
-                    rvSubGroupsAdapter.notifyItemRemoved(i);
-                    rvSubGroupsAdapter.notifyItemRangeChanged(i,subGroups.size());
-                }
-            }
-
-            @Override
-            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
-
-        subGroupsRef.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                if(dataSnapshot.hasChildren()){
-                    tvNoSubGroups.setVisibility(View.GONE);
-                    rvSubGroups.setVisibility(View.VISIBLE);
-                    progressBar.setVisibility(View.GONE);
-                }else {
-                    tvNoSubGroups.setVisibility(View.VISIBLE);
-                    rvSubGroups.setVisibility(View.GONE);
-                    progressBar.setVisibility(View.GONE);
-                }
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
-    }
-
-    private int findPosition(String subGroupKey) {
-        for(int i = 0; i < subGroups.size(); i++){
-            if (subGroupKey.equals(subGroups.get(i).getSubGroupKey())){
-                return i;
-            }
-        }
-        return -1;
-    }
-
 
     @Override
     public void onViewCreated(@NonNull final View view, @Nullable Bundle savedInstanceState) {
@@ -166,8 +78,6 @@ public class SubGroupsFragment extends Fragment {
         setRetainInstance(true);
 
         vista = view;
-
-        groupKey = ((FireApp) getActivity().getApplication()).getGroupKey();
 
         progressBar = view.findViewById(R.id.progressBar);
 
@@ -180,8 +90,6 @@ public class SubGroupsFragment extends Fragment {
                 showHeaderDialogFragment();
             }
         });
-
-        subGroups = new ArrayList<>();
 
         rvSubGroups = view.findViewById(R.id.rvSubGroups);
         rvSubGroups.setHasFixedSize(false); //El tamaño queda fijo, mejora el desempeño
@@ -245,10 +153,103 @@ public class SubGroupsFragment extends Fragment {
         }
     }
 
-
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+    }
+
+    private void fillSubGroups(final View v) {
+        subGroupsRef.addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(DataSnapshot data, String s) {
+                SubGroup sgf = new SubGroup();
+                sgf.setName(data.child("name").getValue().toString());
+                sgf.setImageUrl(data.child("imageUrl").getValue().toString());
+                sgf.setMembers((Map<String,String>) data.child("members").getValue());
+                sgf.setSubGroupKey(data.child("subGroupKey").getValue().toString());
+                List<Task> tasks = new ArrayList();
+                for(DataSnapshot d : data.child("tasks").getChildren()){
+                    Task task = d.getValue(Task.class);
+                    tasks.add(task);
+                }
+                sgf.setTasks(tasks);
+                subGroups.add(sgf);
+                rvSubGroupsAdapter.notifyDataSetChanged();
+            }
+
+            @Override
+            public void onChildChanged(DataSnapshot data, String s) {
+                if(data.child("members").getValue()!=null){
+                    SubGroup sgf = new SubGroup();
+                    sgf.setName(data.child("name").getValue().toString());
+                    sgf.setImageUrl(data.child("imageUrl").getValue().toString());
+                    sgf.setMembers((Map<String,String>) data.child("members").getValue());
+                    sgf.setSubGroupKey(data.child("subGroupKey").getValue().toString());
+                    List<Task> tasks = new ArrayList();
+                    for(DataSnapshot d : data.child("tasks").getChildren()){
+                        Task task = d.getValue(Task.class);
+                        tasks.add(task);
+                    }
+                    sgf.setTasks(tasks);
+                    int i = findPosition(sgf.getSubGroupKey());
+                    if(i != -1){
+                        subGroups.remove(i);
+                        subGroups.add(i,sgf);
+                        rvSubGroupsAdapter.notifyItemChanged(i);
+                    }
+                    swipeContainer.setRefreshing(false);
+                }
+            }
+
+            @Override
+            public void onChildRemoved(DataSnapshot data) {
+                int i = findPosition(data.child("subGroupKey").getValue().toString());
+                if(i != -1){
+                    subGroups.remove(i);
+                    rvSubGroupsAdapter.notifyItemRemoved(i);
+                    rvSubGroupsAdapter.notifyItemRangeChanged(i,subGroups.size());
+                }
+            }
+
+            @Override
+            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
+        subGroupsRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if(dataSnapshot.hasChildren()){
+                    tvNoSubGroups.setVisibility(View.GONE);
+                    rvSubGroups.setVisibility(View.VISIBLE);
+                    progressBar.setVisibility(View.GONE);
+                }else {
+                    tvNoSubGroups.setVisibility(View.VISIBLE);
+                    rvSubGroups.setVisibility(View.GONE);
+                    progressBar.setVisibility(View.GONE);
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    private int findPosition(String subGroupKey) {
+        for(int i = 0; i < subGroups.size(); i++){
+            if (subGroupKey.equals(subGroups.get(i).getSubGroupKey())){
+                return i;
+            }
+        }
+        return -1;
     }
 
     private void showHeaderDialogFragment() {

@@ -36,6 +36,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:gravity="center"
+                android:layout_marginRight="20dp"
+                android:layout_marginLeft="20dp"
                 android:text="@string/no_sub_groups"
                 android:fontFamily="@font/simplifica"
                 android:textSize="40sp"

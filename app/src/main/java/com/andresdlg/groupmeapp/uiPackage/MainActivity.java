@@ -213,7 +213,7 @@ public class MainActivity extends AppCompatActivity
                         finish();
                     }else{
                         DatabaseReference db = FirebaseDatabase.getInstance().getReference().child("Users").child(mAuth.getCurrentUser().getUid());
-                        db.addValueEventListener(new ValueEventListener() {
+                        db.addListenerForSingleValueEvent(new ValueEventListener() {
                             @Override
                             public void onDataChange(DataSnapshot dataSnapshot) {
                                 Users u = dataSnapshot.getValue(Users.class);

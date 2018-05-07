@@ -315,7 +315,7 @@ public class HeaderDialogFragment extends DialogFragment implements GroupAddMemb
                         });
                     }else{
                         final String finalSubGroupKey1 = subGroupKey;
-                        imageUrl = Uri.parse("https://firebasestorage.googleapis.com/v0/b/groupmeapp-5aaf6.appspot.com/o/group_work_grey_192x192.png?alt=media&token=4aadc31e-91e6-416e-a866-3138a08425d3");
+                        imageUrl = Uri.parse("https://firebasestorage.googleapis.com/v0/b/groupmeapp-5aaf6.appspot.com/o/ic_launcher.png?alt=media&token=9740457d-49b7-4463-b78c-4c3513d768a7");
                         userIds.add(StaticFirebaseSettings.currentUserId);
                         Map<Object,Object> map = new HashMap<>();
                         for(String id: userIds){

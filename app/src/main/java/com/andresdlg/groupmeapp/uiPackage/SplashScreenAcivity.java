@@ -16,12 +16,18 @@ import android.view.WindowManager;
 import android.widget.ImageView;
 
 import com.andresdlg.groupmeapp.R;
+import com.andresdlg.groupmeapp.uiPackage.login.LoginActivity;
+import com.google.firebase.auth.FirebaseAuth;
 
 public class SplashScreenAcivity extends AppCompatActivity {
+
+    FirebaseAuth mAuth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        mAuth = FirebaseAuth.getInstance();
 
         Bitmap bmp;
 
@@ -50,10 +56,18 @@ public class SplashScreenAcivity extends AppCompatActivity {
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
-                Intent mainIntent = new Intent(SplashScreenAcivity.this,MainActivity.class);
-                startActivity(mainIntent);
-                overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
-                finish();
+
+                if(mAuth.getCurrentUser() != null){
+                    Intent mainIntent = new Intent(SplashScreenAcivity.this,MainActivity.class);
+                    startActivity(mainIntent);
+                    overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+                    finish();
+                }else{
+                    Intent mainIntent = new Intent(SplashScreenAcivity.this,LoginActivity.class);
+                    startActivity(mainIntent);
+                    overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+                    finish();
+                }
             }
         }, SPLASH_TIME_OUT);
 
