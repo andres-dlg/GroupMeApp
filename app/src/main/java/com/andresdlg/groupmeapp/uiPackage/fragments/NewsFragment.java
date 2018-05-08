@@ -19,6 +19,7 @@ import com.afollestad.materialdialogs.MaterialDialog;
 import com.andresdlg.groupmeapp.Adapters.RVNewsAdapter;
 import com.andresdlg.groupmeapp.Entities.Post;
 import com.andresdlg.groupmeapp.R;
+import com.andresdlg.groupmeapp.Utils.GroupStatus;
 import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
@@ -161,8 +162,10 @@ public class NewsFragment extends Fragment {
                     groupNames.clear();
                     groupKeys.clear();
                     for(DataSnapshot data : dataSnapshot.getChildren()){
-                        groupKeys.add(data.getKey());
-                        fetchGroupName(data.getKey());
+                        if(data.child("status").getValue().toString().equals(GroupStatus.ACCEPTED.toString())){
+                            groupKeys.add(data.getKey());
+                            fetchGroupName(data.getKey());
+                        }
                     }
                     fetchPosts(groupKeys);
                 }else{
@@ -281,10 +284,8 @@ public class NewsFragment extends Fragment {
     private void hideOrNotTextViewNoNews() {
         if(posts.size()==0){
             tvNoNews.setVisibility(View.VISIBLE);
-            fab.setVisibility(View.GONE);
         }else {
             tvNoNews.setVisibility(View.GONE);
-            fab.setVisibility(View.VISIBLE);
         }
     }
 
