@@ -1,6 +1,7 @@
 package com.andresdlg.groupmeapp.uiPackage;
 
 import android.content.Intent;
+import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
@@ -23,6 +24,9 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.afollestad.materialdialogs.GravityEnum;
+import com.afollestad.materialdialogs.MaterialDialog;
+import com.afollestad.materialdialogs.Theme;
 import com.andresdlg.groupmeapp.DialogFragments.AddFriendsDialogFragment;
 import com.andresdlg.groupmeapp.DialogFragments.FriendsDialogFragment;
 import com.andresdlg.groupmeapp.Entities.Users;
@@ -323,7 +327,16 @@ public class MainActivity extends AppCompatActivity
                 drawer.closeDrawer(Gravity.LEFT);
                 break;
             case R.id.about:
-                Toast.makeText(MainActivity.this, "Acerca de!", Toast.LENGTH_SHORT).show();
+                new MaterialDialog.Builder(this)
+                        .title("Acerca de GroupMeApp")
+                        .titleGravity(GravityEnum.CENTER)
+                        .icon(getResources().getDrawable(R.drawable.ic_launcher))
+                        .limitIconToDefaultSize()
+                        .content("GroupMeApp para Android\n2018")
+                        .contentGravity(GravityEnum.CENTER)
+                        .positiveText("OK")
+                        .negativeText("Cancelar")
+                        .show();
                 drawer.closeDrawer(Gravity.LEFT);
                 break;
             case R.id.privacy:

@@ -1,6 +1,5 @@
 package com.andresdlg.groupmeapp.uiPackage.fragments;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -9,8 +8,6 @@ import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.DisplayMetrics;
-import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,12 +15,11 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.afollestad.materialdialogs.MaterialDialog;
 import com.andresdlg.groupmeapp.Adapters.RVNewsAdapter;
 import com.andresdlg.groupmeapp.Entities.Post;
 import com.andresdlg.groupmeapp.R;
-import com.andresdlg.groupmeapp.firebasePackage.FireApp;
 import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
-import com.andresdlg.groupmeapp.uiPackage.NewPostActivity;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -35,7 +31,6 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -45,6 +40,7 @@ import java.util.List;
 public class NewsFragment extends Fragment {
 
     DatabaseReference postsRef;
+    DatabaseReference groupsRef;
 
     FloatingActionButton fab;
     ProgressBar progressBar;
@@ -58,9 +54,20 @@ public class NewsFragment extends Fragment {
 
     List<String> groupKeys;
 
+    List<String> groupNames;
+
+    int cantidadDeGrupos;
+
+    int cantidadDePosts;
+
+    Integer selectedItems[] = {};
+
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        posts = new ArrayList<>();
+        groupKeys = new ArrayList<>();
+        groupNames = new ArrayList<>();
     }
 
     @Nullable
@@ -76,7 +83,29 @@ public class NewsFragment extends Fragment {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Toast.makeText(getContext(), "Filter!", Toast.LENGTH_SHORT).show();
+                new MaterialDialog.Builder(getContext())
+                        .title("Elije un grupo")
+                        .items(groupNames)
+                        .itemsCallbackMultiChoice(selectedItems, new MaterialDialog.ListCallbackMultiChoice() {
+                            @Override
+                            public boolean onSelection(MaterialDialog dialog, Integer[] which, CharSequence[] text) {
+                                List<String> groupKeysFiltered = new ArrayList<>();
+                                for(int i : which){
+                                    groupKeysFiltered.add(groupKeys.get(i));
+                                }
+                                posts.clear();
+                                rvNewsAdapter.notifyDataSetChanged();
+                                if(which.length != 0){
+                                    fetchPosts(groupKeysFiltered);
+                                }else{
+                                    fetchPosts(groupKeys);
+                                }
+                                selectedItems = which;
+                                return true;
+                            }
+                        })
+                        .positiveText("Elegir")
+                        .show();
             }
         });
 
@@ -85,7 +114,8 @@ public class NewsFragment extends Fragment {
             @Override
             public void onRefresh() {
                 posts.clear();
-                fetchPosts();
+                fetchPosts(groupKeys);
+                selectedItems = new Integer[]{};
             }
         });
 
@@ -96,9 +126,6 @@ public class NewsFragment extends Fragment {
                 android.R.color.holo_red_light);
 
 
-        posts = new ArrayList<>();
-        groupKeys = new ArrayList<>();
-
         rvNewsAdapter = new RVNewsAdapter(getContext(),posts,false,null);
 
         //rvPosts.setHasFixedSize(true);
@@ -107,7 +134,7 @@ public class NewsFragment extends Fragment {
         rvPosts.setLayoutManager(llm);
         rvPosts.setAdapter(rvNewsAdapter);
 
-
+        groupsRef = FirebaseDatabase.getInstance().getReference("Groups");
 
         return view;
     }
@@ -116,6 +143,7 @@ public class NewsFragment extends Fragment {
     public void onResume() {
         super.onResume();
         posts.clear();
+        rvNewsAdapter.notifyDataSetChanged();
         getUserGroups();
     }
 
@@ -126,15 +154,17 @@ public class NewsFragment extends Fragment {
                 .child(StaticFirebaseSettings.currentUserId)
                 .child("groups");
 
-        userGroupsRef.addListenerForSingleValueEvent(new ValueEventListener() {
+        userGroupsRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-
                 if(dataSnapshot.hasChildren()){
+                    groupNames.clear();
+                    groupKeys.clear();
                     for(DataSnapshot data : dataSnapshot.getChildren()){
                         groupKeys.add(data.getKey());
+                        fetchGroupName(data.getKey());
                     }
-                    fetchPosts();
+                    fetchPosts(groupKeys);
                 }else{
                     rvPosts.setVisibility(View.VISIBLE);
                     progressBar.setVisibility(View.GONE);
@@ -155,10 +185,34 @@ public class NewsFragment extends Fragment {
         });
     }
 
-    private void fetchPosts() {
-        for(String groupKey : groupKeys){
-            postsRef = FirebaseDatabase.getInstance().getReference("Groups").child(groupKey).child("posts");
+    private void fetchGroupName(String groupKey) {
+        groupsRef.child(groupKey).child("name").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                boolean exists = false;
+                String name = dataSnapshot.getValue().toString();
+                for(String s : groupNames){
+                    if(s.equals(name)){
+                        exists = true;
+                    }
+                }
+                if(!exists){
+                    groupNames.add(name);
+                }
+            }
 
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    private void fetchPosts(List<String> groupKeys) {
+        cantidadDeGrupos = groupKeys.size();
+        for(int i = 0; i< cantidadDeGrupos ; i++){
+            postsRef = FirebaseDatabase.getInstance().getReference("Groups").child(groupKeys.get(i)).child("posts");
+            final int finalI1 = i;
             postsRef.addChildEventListener(new ChildEventListener() {
                 @Override
                 public void onChildAdded(DataSnapshot dataSnapshot, String s) {
@@ -176,7 +230,10 @@ public class NewsFragment extends Fragment {
                             return calendar2.compareTo(calendar1);
                         }
                     });
-                    rvNewsAdapter.notifyDataSetChanged();
+                    if(finalI1 == cantidadDeGrupos-1){
+                        rvNewsAdapter.notifyDataSetChanged();
+                    }
+
                 }
 
                 @Override
@@ -202,6 +259,7 @@ public class NewsFragment extends Fragment {
                 }
             });
 
+            final int finalI = i;
             postsRef.addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
@@ -209,16 +267,24 @@ public class NewsFragment extends Fragment {
                     progressBar.setVisibility(View.GONE);
                     swipeContainer.setRefreshing(false);
 
-                    if(!dataSnapshot.hasChildren()){
-                        tvNoNews.setVisibility(View.VISIBLE);
-                    }else {
-                        tvNoNews.setVisibility(View.GONE);
+                    if(finalI == cantidadDeGrupos-1){
+                        hideOrNotTextViewNoNews();
                     }
                 }
 
                 @Override
                 public void onCancelled(DatabaseError databaseError) {}
             });
+        }
+    }
+
+    private void hideOrNotTextViewNoNews() {
+        if(posts.size()==0){
+            tvNoNews.setVisibility(View.VISIBLE);
+            fab.setVisibility(View.GONE);
+        }else {
+            tvNoNews.setVisibility(View.GONE);
+            fab.setVisibility(View.VISIBLE);
         }
     }
 
