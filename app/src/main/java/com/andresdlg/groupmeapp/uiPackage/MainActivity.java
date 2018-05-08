@@ -9,7 +9,6 @@ import android.support.design.widget.NavigationView;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
-import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
@@ -21,7 +20,6 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -29,7 +27,6 @@ import com.andresdlg.groupmeapp.DialogFragments.AddFriendsDialogFragment;
 import com.andresdlg.groupmeapp.DialogFragments.FriendsDialogFragment;
 import com.andresdlg.groupmeapp.Entities.Users;
 import com.andresdlg.groupmeapp.R;
-import com.andresdlg.groupmeapp.firebasePackage.FireApp;
 import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
 import com.andresdlg.groupmeapp.uiPackage.fragments.GroupsFragment;
 import com.andresdlg.groupmeapp.uiPackage.fragments.MessagesFragment;
@@ -76,6 +73,7 @@ public class MainActivity extends AppCompatActivity
     ValueEventListener valueEventListener;
 
     ViewPager viewPager;
+    DrawerLayout drawer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -162,10 +160,10 @@ public class MainActivity extends AppCompatActivity
             }
         }
 
-        final DrawerLayout drawer = findViewById(R.id.drawer_layout);
+        drawer = findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-        drawer.setDrawerListener(toggle);
+        drawer.addDrawerListener(toggle);
         toggle.syncState();
 
 
@@ -181,99 +179,6 @@ public class MainActivity extends AppCompatActivity
         //NAVIGATION DRAWER LISTENERS
         navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
-
-        LinearLayout rateReview = findViewById(R.id.rate_review);
-        rateReview.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                RatingDialog ratingDialog = new RatingDialog.Builder(MainActivity.this)
-                        .title("¿Cómo fue su experiencia con GroupMeApp?")
-                        .threshold(6f)
-                        .formTitle("Deja tu comentario o sugerencia")
-                        .positiveButtonText("Quizas luego")
-                        //.negativeButtonText("Nunca")
-                        .positiveButtonTextColor(R.color.colorPrimary)
-                        //.negativeButtonTextColor(R.color.grey_500)
-                        .formHint("¿Cómo podemos mejorar?")
-                        .formSubmitText("Enviar")
-                        .formCancelText("Cancelar")
-                        //.playstoreUrl("YOUR_URL")
-                        .onRatingBarFormSumbit(new RatingDialog.Builder.RatingDialogFormListener() {
-                            @Override
-                            public void onFormSubmitted(String feedback) {
-
-                            }
-                        }).build();
-                ratingDialog.show();
-
-                drawer.closeDrawer(Gravity.LEFT);
-            }
-        });
-
-        LinearLayout help = findViewById(R.id.help);
-        help.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Toast.makeText(MainActivity.this, "Ayuda!", Toast.LENGTH_SHORT).show();
-                drawer.closeDrawer(Gravity.LEFT);
-            }
-        });
-
-        LinearLayout share = findViewById(R.id.share);
-        share.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                try {
-                    Intent i = new Intent(Intent.ACTION_SEND);
-                    i.setType("text/plain");
-                    i.putExtra(Intent.EXTRA_SUBJECT, "GroupMeApp");
-                    String sAux = "\n¡Recomienda esta aplicación a tus conocidos!\n\n";
-                    //sAux = sAux + "https://play.google.com/store/apps/details?id=the.package.id \n\n";
-                    sAux = sAux + "https://futurolink.com \n\n";
-                    i.putExtra(Intent.EXTRA_TEXT, sAux);
-                    startActivity(Intent.createChooser(i, "Elije una opción"));
-                } catch(Exception e) {
-                    //e.toString();
-                }
-                drawer.closeDrawer(Gravity.LEFT);
-            }
-        });
-
-        LinearLayout about = findViewById(R.id.about);
-        about.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Toast.makeText(MainActivity.this, "Acerca de!", Toast.LENGTH_SHORT).show();
-                drawer.closeDrawer(Gravity.LEFT);
-            }
-        });
-
-        LinearLayout logout = findViewById(R.id.logout);
-        logout.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Map<String,Object> tokenMap = new HashMap<>();
-                tokenMap.put("token_id","");
-
-                DatabaseReference mUserRef = FirebaseDatabase.getInstance().getReference("Users").child(StaticFirebaseSettings.currentUserId);
-                mUserRef.updateChildren(tokenMap).addOnSuccessListener(new OnSuccessListener<Void>() {
-                    @Override
-                    public void onSuccess(Void aVoid) {
-
-                        mDatabaseRef.removeEventListener(valueEventListener);
-                        mAuth.signOut();
-                        FirebaseAuth.getInstance().signOut();
-                        Intent moveToLogin = new Intent(MainActivity.this,LoginActivity.class);
-                        moveToLogin.putExtra("logout",true);
-                        moveToLogin.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                        startActivity(moveToLogin);
-                        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
-                        finish();
-                    }
-                });
-            }
-        });
     }
 
 
@@ -375,37 +280,78 @@ public class MainActivity extends AppCompatActivity
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.nav_camera) {
-            // Handle the camera action
-        } else if (id == R.id.nav_manage) {
+        switch(id){
+            case R.id.rate_review:
+                RatingDialog ratingDialog = new RatingDialog.Builder(MainActivity.this)
+                        .title("¿Cómo fue su experiencia con GroupMeApp?")
+                        .threshold(6f)
+                        .formTitle("Deja tu comentario o sugerencia")
+                        .positiveButtonText("Quizas luego")
+                        //.negativeButtonText("Nunca")
+                        .positiveButtonTextColor(R.color.colorPrimary)
+                        //.negativeButtonTextColor(R.color.grey_500)
+                        .formHint("¿Cómo podemos mejorar?")
+                        .formSubmitText("Enviar")
+                        .formCancelText("Cancelar")
+                        //.playstoreUrl("YOUR_URL")
+                        .onRatingBarFormSumbit(new RatingDialog.Builder.RatingDialogFormListener() {
+                            @Override
+                            public void onFormSubmitted(String feedback) {
 
-        } /*else if (id == R.id.nav_share) {
-
-        } else if (id == R.id.nav_log_out){
-            Map<String,Object> tokenMap = new HashMap<>();
-            tokenMap.put("token_id","");
-
-            DatabaseReference mUserRef = FirebaseDatabase.getInstance().getReference("Users").child(mAuth.getUid());
-            mUserRef.updateChildren(tokenMap).addOnSuccessListener(new OnSuccessListener<Void>() {
-                @Override
-                public void onSuccess(Void aVoid) {
-
-                    mDatabaseRef.removeEventListener(valueEventListener);
-                    mAuth.signOut();
-                    FirebaseAuth.getInstance().signOut();
-                    Intent moveToLogin = new Intent(MainActivity.this,LoginActivity.class);
-                    moveToLogin.putExtra("logout",true);
-                    moveToLogin.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                    startActivity(moveToLogin);
-                    overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
-                    finish();
+                            }
+                        }).build();
+                ratingDialog.show();
+                drawer.closeDrawer(Gravity.LEFT);
+                break;
+            case R.id.help:
+                Toast.makeText(MainActivity.this, "Ayuda!", Toast.LENGTH_SHORT).show();
+                drawer.closeDrawer(Gravity.LEFT);
+                break;
+            case R.id.share:
+                try {
+                    Intent i = new Intent(Intent.ACTION_SEND);
+                    i.setType("text/plain");
+                    i.putExtra(Intent.EXTRA_SUBJECT, "GroupMeApp");
+                    String sAux = "\n¡Recomienda esta aplicación a tus conocidos!\n\n";
+                    //sAux = sAux + "https://play.google.com/store/apps/details?id=the.package.id \n\n";
+                    sAux = sAux + "https://futurolink.com \n\n";
+                    i.putExtra(Intent.EXTRA_TEXT, sAux);
+                    startActivity(Intent.createChooser(i, "Elije una opción"));
+                } catch(Exception e) {
+                    //e.toString();
                 }
-            });
-        }*/
+                drawer.closeDrawer(Gravity.LEFT);
+                break;
+            case R.id.about:
+                Toast.makeText(MainActivity.this, "Acerca de!", Toast.LENGTH_SHORT).show();
+                drawer.closeDrawer(Gravity.LEFT);
+                break;
+            case R.id.privacy:
+                Toast.makeText(MainActivity.this, "Condiciones!", Toast.LENGTH_SHORT).show();
+                drawer.closeDrawer(Gravity.LEFT);
+                break;
+            case R.id.logout:
+                Map<String,Object> tokenMap = new HashMap<>();
+                tokenMap.put("token_id","");
 
-        //DrawerLayout drawer = findViewById(R.id.drawer_layout);
-        //drawer.closeDrawer(GravityCompat.START);
-        return true;
+                DatabaseReference mUserRef = FirebaseDatabase.getInstance().getReference("Users").child(StaticFirebaseSettings.currentUserId);
+                mUserRef.updateChildren(tokenMap).addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        mDatabaseRef.removeEventListener(valueEventListener);
+                        mAuth.signOut();
+                        FirebaseAuth.getInstance().signOut();
+                        Intent moveToLogin = new Intent(MainActivity.this,LoginActivity.class);
+                        moveToLogin.putExtra("logout",true);
+                        moveToLogin.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                        startActivity(moveToLogin);
+                        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+                        finish();
+                    }
+                });
+        }
+
+        return false;
     }
 
 

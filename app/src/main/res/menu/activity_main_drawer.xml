@@ -5,13 +5,32 @@
         android:checkableBehavior="single"
         android:id="@+id/options">
         <item
-            android:id="@+id/nav_camera"
-            android:icon="@drawable/ic_menu_camera"
-            android:title="Grupos" />
+            android:id="@+id/rate_review"
+            android:icon="@drawable/ic_rate_review"
+            android:title="Puntúa y comenta" />
         <item
-            android:id="@+id/nav_manage"
-            android:icon="@drawable/ic_menu_manage"
-            android:title="Configuración" />
+            android:id="@+id/help"
+            android:icon="@drawable/ic_help"
+            android:title="Ayuda" />
+        <item
+            android:id="@+id/share"
+            android:icon="@drawable/ic_share"
+            android:title="Compartir" />
+        <item
+            android:id="@+id/privacy"
+            android:icon="@drawable/ic_lock"
+            android:title="Condiciones y políticas" />
+        <item
+            android:id="@+id/about"
+            android:icon="@drawable/ic_about"
+            android:title="Acerca de" />
+        <item
+            android:id="@+id/logout"
+            android:icon="@drawable/ic_logout"
+            android:title="Salir de la cuenta" />
+        <item
+            android:id="@+id/noid"
+            android:title="" />
     </group>
 
     <!--<group
