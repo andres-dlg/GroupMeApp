@@ -32,8 +32,11 @@ import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
 import com.andresdlg.groupmeapp.uiPackage.fragments.GroupAddMembersFragment;
 import com.andresdlg.groupmeapp.uiPackage.fragments.GroupSetupFragment;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
@@ -229,7 +232,7 @@ public class HeaderDialogFragment extends DialogFragment implements GroupAddMemb
 
         fragments = new ArrayList<>();
         fragments = getChildFragmentManager().getFragments();
-
+        mProgressBar.setVisibility(View.VISIBLE);
         if(validateFields()){
             String groupKey = null;
             String subGroupKey = null;
@@ -238,57 +241,6 @@ public class HeaderDialogFragment extends DialogFragment implements GroupAddMemb
             }else {
                 subGroupKey = mGroupsDatabase.child(parentGroupKey).child("subgroups").push().getKey();
             }
-
-            if(type == GroupType.GROUP){
-                if(imageUrl != null){
-                    mProgressBar.setVisibility(View.VISIBLE);
-                    StorageReference mGroupsStorage = mStorageReference.child("Groups").child(groupKey).child(imageUrl.getLastPathSegment());
-                    final String finalGroupKey = groupKey;
-                    mGroupsStorage.putFile(imageUrl).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                        @Override
-                        public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                            imageUrl = taskSnapshot.getDownloadUrl();
-                            userIds.add(StaticFirebaseSettings.currentUserId);
-                            Map<Object,Object> map = new HashMap<>();
-                            for(String id: userIds){
-                                if(id.equals(StaticFirebaseSettings.currentUserId)){
-                                    map.put(id,Roles.ADMIN);
-                                }else{
-                                    map.put(id,Roles.MEMBER);
-                                }
-                            }
-                            createGroupData(finalGroupKey,nameText.getText().toString(),objetiveText.getText().toString(),map);
-                            mProgressBar.setVisibility(View.INVISIBLE);
-                            mOnSaveGroupListener.onSavedGroup(true);
-                            dismiss();
-                        }
-                    });
-                }else{
-                    final String finalGroupKey1 = groupKey;
-                    imageUrl = Uri.parse("android.resource://com.andresdlg.groupmeapp/"+R.drawable.login_background_cardview);
-                    StorageReference mGroupsStorage = mStorageReference.child("Groups").child(groupKey).child(imageUrl.getLastPathSegment());
-                    mGroupsStorage.putFile(imageUrl).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                        @Override
-                        public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                            imageUrl = taskSnapshot.getDownloadUrl();
-                            userIds.add(StaticFirebaseSettings.currentUserId);
-                            Map<Object,Object> map = new HashMap<>();
-                            for(String id: userIds){
-                                if(id.equals(StaticFirebaseSettings.currentUserId)){
-                                    map.put(id,Roles.ADMIN);
-                                }else{
-                                    map.put(id,Roles.MEMBER);
-                                }
-                            }
-                            createGroupData(finalGroupKey1,nameText.getText().toString(),objetiveText.getText().toString(),map);
-                            mProgressBar.setVisibility(View.INVISIBLE);
-                            mOnSaveGroupListener.onSavedGroup(true);
-                            dismiss();
-                        }
-                    });
-                }
-            }
-
             if(type == GroupType.SUBGROUP){
                 if(userIds.size()>0){
                     mProgressBar.setVisibility(View.VISIBLE);
@@ -488,16 +440,108 @@ public class HeaderDialogFragment extends DialogFragment implements GroupAddMemb
 
 
     private boolean validateFields() {
+
         View focusView;
         objetiveText = fragments.get(0).getView().findViewById(R.id.etobj);
         nameText = fragments.get(0).getView().findViewById(R.id.etId);
-        if(TextUtils.isEmpty(nameText.getText())){
-            Toast.makeText(getContext(),"Ingrese un nombre para el grupo",Toast.LENGTH_SHORT).show();
-            focusView = nameText;
-            focusView.requestFocus();
-            return false;
+
+        if(type == GroupType.GROUP){
+
+            if(TextUtils.isEmpty(nameText.getText())){
+                Toast.makeText(getContext(),"Ingrese un nombre para el grupo",Toast.LENGTH_SHORT).show();
+                focusView = nameText;
+                focusView.requestFocus();
+                mProgressBar.setVisibility(View.INVISIBLE);
+            }else{
+                mGroupsDatabase.addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        boolean exists = false;
+                        String n = nameText.getText().toString().trim();
+                        for(DataSnapshot data : dataSnapshot.getChildren()){
+                            if(n.equals(data.child("name").getValue().toString())){
+                                exists = true;
+                                Toast.makeText(getContext(), "El nombre ingresado ya está en uso", Toast.LENGTH_SHORT).show();
+                                mProgressBar.setVisibility(View.INVISIBLE);
+                                break;
+                            }
+                        }
+
+                        if(!exists){
+
+                            String groupKey = mGroupsDatabase.push().getKey();
+
+                            if(type == GroupType.GROUP){
+                                if(imageUrl != null){
+                                    mProgressBar.setVisibility(View.VISIBLE);
+                                    StorageReference mGroupsStorage = mStorageReference.child("Groups").child(groupKey).child(imageUrl.getLastPathSegment());
+                                    final String finalGroupKey = groupKey;
+                                    mGroupsStorage.putFile(imageUrl).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                                        @Override
+                                        public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                                            imageUrl = taskSnapshot.getDownloadUrl();
+                                            userIds.add(StaticFirebaseSettings.currentUserId);
+                                            Map<Object,Object> map = new HashMap<>();
+                                            for(String id: userIds){
+                                                if(id.equals(StaticFirebaseSettings.currentUserId)){
+                                                    map.put(id,Roles.ADMIN);
+                                                }else{
+                                                    map.put(id,Roles.MEMBER);
+                                                }
+                                            }
+                                            createGroupData(finalGroupKey,nameText.getText().toString(),objetiveText.getText().toString(),map);
+                                            mProgressBar.setVisibility(View.INVISIBLE);
+                                            mOnSaveGroupListener.onSavedGroup(true);
+                                            dismiss();
+                                        }
+                                    });
+                                }else{
+                                    final String finalGroupKey1 = groupKey;
+                                    imageUrl = Uri.parse("android.resource://com.andresdlg.groupmeapp/"+R.drawable.login_background_cardview);
+                                    StorageReference mGroupsStorage = mStorageReference.child("Groups").child(groupKey).child(imageUrl.getLastPathSegment());
+                                    mGroupsStorage.putFile(imageUrl).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                                        @Override
+                                        public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                                            imageUrl = taskSnapshot.getDownloadUrl();
+                                            userIds.add(StaticFirebaseSettings.currentUserId);
+                                            Map<Object,Object> map = new HashMap<>();
+                                            for(String id: userIds){
+                                                if(id.equals(StaticFirebaseSettings.currentUserId)){
+                                                    map.put(id,Roles.ADMIN);
+                                                }else{
+                                                    map.put(id,Roles.MEMBER);
+                                                }
+                                            }
+                                            createGroupData(finalGroupKey1,nameText.getText().toString(),objetiveText.getText().toString(),map);
+                                            mProgressBar.setVisibility(View.INVISIBLE);
+                                            mOnSaveGroupListener.onSavedGroup(true);
+                                            dismiss();
+                                        }
+                                    });
+                                }
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
+            }
+            return true;
+
+            //PARA LOS SUBGRUPOS SOLO VALIDO QUE PONGA UN NOMBRE. NO IMPORTA SI SON REPETIDOS
+        }else{
+            if(TextUtils.isEmpty(nameText.getText())){
+                Toast.makeText(getContext(),"Ingrese un nombre para el grupo",Toast.LENGTH_SHORT).show();
+                focusView = nameText;
+                focusView.requestFocus();
+                return false;
+            }else {
+                return true;
+            }
         }
-        return true;
     }
 
     @Override

@@ -244,6 +244,10 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
                 membersiv.setEnabled(false);
                 files.setEnabled(false);
                 cardLl.setBackgroundColor(context.getResources().getColor(R.color.gray_200));
+                textView_parentName.setOnClickListener(null);
+                subGroupPhoto.setOnClickListener(null);
+                subGroupBg.setOnClickListener(null);
+                relativeLayout.setOnClickListener(null);
             }
 
             //SETEO LAS FOTOS DE PERFIL Y EL BACKGROUND

@@ -98,6 +98,7 @@ public class NewsFragment extends Fragment {
                             @Override
                             public boolean onSelection(MaterialDialog dialog, Integer[] which, CharSequence[] text) {
                                 List<String> groupKeysFiltered = new ArrayList<>();
+
                                 for(int i : which){
                                     groupKeysFiltered.add(groupKeys.get(i));
                                 }
