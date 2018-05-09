@@ -29,6 +29,7 @@ import com.afollestad.materialdialogs.MaterialDialog;
 import com.afollestad.materialdialogs.Theme;
 import com.andresdlg.groupmeapp.DialogFragments.AddFriendsDialogFragment;
 import com.andresdlg.groupmeapp.DialogFragments.FriendsDialogFragment;
+import com.andresdlg.groupmeapp.DialogFragments.TermsAndConditionsDialogFragment;
 import com.andresdlg.groupmeapp.Entities.Users;
 import com.andresdlg.groupmeapp.R;
 import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
@@ -339,7 +340,7 @@ public class MainActivity extends AppCompatActivity
                 drawer.closeDrawer(Gravity.LEFT);
                 break;
             case R.id.privacy:
-                Toast.makeText(MainActivity.this, "Condiciones!", Toast.LENGTH_SHORT).show();
+                showTermsAndConditionDialogFragment();
                 drawer.closeDrawer(Gravity.LEFT);
                 break;
             case R.id.logout:
@@ -389,6 +390,15 @@ public class MainActivity extends AppCompatActivity
     private void showContactsDialogFragment() {
         FragmentManager fragmentManager = getSupportFragmentManager();
         FriendsDialogFragment newFragment = new FriendsDialogFragment();
+        newFragment.setStyle(DialogFragment.STYLE_NORMAL,R.style.AppTheme_DialogFragment);
+        FragmentTransaction transaction = fragmentManager.beginTransaction();
+        transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
+        transaction.add(android.R.id.content, newFragment).addToBackStack(null).commit();
+    }
+
+    private void showTermsAndConditionDialogFragment() {
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        TermsAndConditionsDialogFragment newFragment = new TermsAndConditionsDialogFragment();
         newFragment.setStyle(DialogFragment.STYLE_NORMAL,R.style.AppTheme_DialogFragment);
         FragmentTransaction transaction = fragmentManager.beginTransaction();
         transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);

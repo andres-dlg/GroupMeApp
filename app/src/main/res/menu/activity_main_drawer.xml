@@ -19,7 +19,7 @@
         <item
             android:id="@+id/privacy"
             android:icon="@drawable/ic_lock"
-            android:title="Condiciones y políticas" />
+            android:title="Términos y condiciones" />
         <item
             android:id="@+id/about"
             android:icon="@drawable/ic_about"

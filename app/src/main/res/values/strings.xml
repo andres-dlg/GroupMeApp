@@ -59,5 +59,21 @@
     <string name="title_activity_group">GroupActivity</string>
     <string name="sub_groups_fragment">Sub Grupos</string>
 
+    <string name="terms_and_conditions">
+
+        Al descargar o utilizar la aplicación, aceptará automáticamente estos términos. Asegúrese de leerlos atentamente antes de utilizar la aplicación. Le ofrecemos esta aplicación para su uso personal sin ningún coste, pero debe saber que no está autorizado a enviársela a otra persona ni a copiar o modificar la aplicación, así como ninguna parte de esta. No deberá intentar extraer el código fuente de la aplicación, traducir la aplicación a otros idiomas ni crear versiones derivadas. La aplicación y todas las marcas comerciales, los derechos de autor, los derechos sobre bases de datos y demás derechos de propiedad intelectual relacionados continuarán siendo propiedad del equipo desarrollador de GroupMeApp.
+        \n\n
+        GroupMeApp pretende ser siempre lo más amigable y eficiente posible. Por este motivo, nos reservamos el derecho de efectuar cambios en la aplicación según sea necesario con el fin de ofrecer al usuario final la mejor experiencia de uso.
+        \n\n
+        La aplicación de GroupMeApp almacena y procesa los datos personales que nos has facilitado dentro de un servidor en la nube que cuenta con la mejor seguridad provista por Google. De esta forma nos aseguramos que tus datos no serán utilizados de forma no autorizada. Es tu responsabilidad mantener seguro tanto tu teléfono móvil como el acceso a tu aplicación. Por lo tanto, te recomendamos no liberar tu teléfono móvil para eliminar las restricciones y limitaciones impuestas por el sistema operativo oficial de tu dispositivo. Este proceso podría hacer que tu teléfono sea vulnerable a programas maliciosos, se comprometan las características de seguridad de tu teléfono móvil, así como no poder abrir la aplicación o que esta no funcione adecuadamente.
+        \n\n
+        Cabe destacar que existen algunos casos en los que el desarrollador no se hará responsable. Algunas funciones de la aplicación, requerirán que la aplicación disponga de una conexión a Internet activa. La conexión puede ser mediante Wi-Fi o a través del proveedor de servicios de red móvil, pero el desarrollador no se hará responsable del mal funcionamiento de la aplicación en caso de que no disponga de conexión Wi-Fi o haya superado su límite de uso de datos.
+        \n\n
+        Recuerde que, si utiliza la aplicación fuera de una zona con conexión Wi-Fi, se aplicarán los términos del contrato con su proveedor de servicios de red móvil. Por consiguiente, el proveedor de servicios móviles podrá aplicar cargos por los datos consumidos durante la conexión al acceder a la aplicación, así como otros cargos de terceros. Si utiliza la aplicación, acepta la responsabilidad en relación con dichos cargos, incluidos los cargos por los datos de roaming si utiliza la aplicación fuera del territorio de origen (su región o país) sin desactivar el roaming de datos. En caso de que no sea usted la persona encargada de pagar los recibos del dispositivo en el que utiliza la aplicación, nosotros asumimos que ha recibido su permiso para utilizar la aplicación.
+        \n\n
+        Es posible que en algún momento debamos actualizar la aplicación. Existe la posibilidad de que se modifiquen los requisitos necesarios para el sistema, por lo que se recomienda descargar las actualizaciones si desea continuar utilizando la aplicación con normalidad y así evitar cualquier inconveniente. El desarrollador no garantiza las actualizaciones sean compatibles con la versión de Android instalada en su dispositivo. Si hay un cambio concerniente a las versiones del sistema operativo soportado se notificará al usuario con anterioridad. No obstante, usted garantiza que aceptará todas las actualizaciones de la aplicación cuando se le ofrezcan. También es posible que deje de ofrecerse la aplicación y se interrumpa su uso en cualquier momento sin previo aviso. A menos que se indique lo contrario, tras la terminación: (a) cesarán los derechos y las licencias concedidos mediante los presentes términos; (b) deberá suspender el uso de la aplicación y, si fuera necesario, eliminarla de su dispositivo.
+
+    </string>
+
 
 </resources>
