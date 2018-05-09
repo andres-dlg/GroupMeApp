@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.DialogFragment;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
@@ -18,7 +19,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Gravity;
 import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
@@ -26,7 +26,6 @@ import android.widget.Toast;
 
 import com.afollestad.materialdialogs.GravityEnum;
 import com.afollestad.materialdialogs.MaterialDialog;
-import com.afollestad.materialdialogs.Theme;
 import com.andresdlg.groupmeapp.DialogFragments.AddFriendsDialogFragment;
 import com.andresdlg.groupmeapp.DialogFragments.FriendsDialogFragment;
 import com.andresdlg.groupmeapp.DialogFragments.TermsAndConditionsDialogFragment;
@@ -40,6 +39,9 @@ import com.andresdlg.groupmeapp.uiPackage.fragments.NotificationFragment;
 import com.andresdlg.groupmeapp.uiPackage.login.LoginActivity;
 import com.bumptech.glide.Glide;
 import com.codemybrainsout.ratingdialog.RatingDialog;
+import com.getkeepsafe.taptargetview.TapTarget;
+import com.getkeepsafe.taptargetview.TapTargetSequence;
+import com.getkeepsafe.taptargetview.TapTargetView;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -55,6 +57,7 @@ import com.ogaclejapan.smarttablayout.utils.v4.FragmentPagerItems;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import de.hdodenhof.circleimageview.CircleImageView;
@@ -80,18 +83,37 @@ public class MainActivity extends AppCompatActivity
     ViewPager viewPager;
     DrawerLayout drawer;
 
+    Toolbar toolbar;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        Toolbar toolbar = findViewById(R.id.toolbar);
+        toolbar = findViewById(R.id.toolbar);
+        toolbar.inflateMenu(R.menu.activity_main_menu);
+        toolbar.getMenu().getItem(0).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                showContactsDialogFragment();
+                return false;
+            }
+        });
+        toolbar.getMenu().getItem(1).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                showHeaderDialogFragment();
+                return false;
+            }
+        });
+
         TextView tv = findViewById(R.id.custom_title);
         Typeface customFont = Typeface.createFromAsset(this.getAssets(),"fonts/Simplifica.ttf");
         tv.setTypeface(customFont);
         tv.setTextColor(getResources().getColor(R.color.colorAccent));
         tv.setTextSize(30);
-        setSupportActionBar(toolbar);
+        //setSupportActionBar(toolbar);
+
 
         final String[] colors = getResources().getStringArray(R.array.default_preview);
 
@@ -259,8 +281,9 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater menuInflater = getMenuInflater();
-        menuInflater.inflate(R.menu.activity_main_menu, menu);
+        //MenuInflater menuInflater = getMenuInflater();
+        //menuInflater.inflate(R.menu.activity_main_menu, menu);
+        getMenuInflater().inflate(R.menu.activity_main_menu, menu);
         return true;
     }
 
@@ -309,8 +332,9 @@ public class MainActivity extends AppCompatActivity
                 drawer.closeDrawer(Gravity.LEFT);
                 break;
             case R.id.help:
-                Toast.makeText(MainActivity.this, "Ayuda!", Toast.LENGTH_SHORT).show();
+                //Toast.makeText(MainActivity.this, "Ayuda!", Toast.LENGTH_SHORT).show();
                 drawer.closeDrawer(Gravity.LEFT);
+                letTheShowStart();
                 break;
             case R.id.share:
                 try {
@@ -367,6 +391,93 @@ public class MainActivity extends AppCompatActivity
         return false;
     }
 
+    private void letTheShowStart() {
+
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        List<Fragment> fragments = fragmentManager.getFragments();
+
+        /*new TapTargetSequence(this)
+                .targets(
+                        TapTarget.forToolbarMenuItem(toolbar, R.id.contacts,"Test","Test")
+                                .outerCircleColor(R.color.colorPrimary)
+                                .outerCircleAlpha(0.96f)
+                                .targetCircleColor(R.color.white)
+                                .titleTextSize(30)
+                                .titleTextColor(R.color.white)
+                                .descriptionTextSize(20)
+                                .descriptionTextColor(R.color.colorPrimaryDark)
+                                .textColor(R.color.white)
+                                .textTypeface(Typeface.SANS_SERIF)
+                                .dimColor(R.color.black)
+                                .drawShadow(true)
+                                .cancelable(false)
+                                .tintTarget(false)
+                                .transparentTarget(false)
+                                .targetRadius(60),
+                        TapTarget.forToolbarMenuItem(toolbar, R.id.add_contact, "Test2","Test2")
+                                .outerCircleColor(R.color.colorPrimary)
+                                .outerCircleAlpha(0.96f)
+                                .targetCircleColor(R.color.white)
+                                .titleTextSize(30)
+                                .titleTextColor(R.color.white)
+                                .descriptionTextSize(20)
+                                .descriptionTextColor(R.color.colorPrimaryDark)
+                                .textColor(R.color.white)
+                                .textTypeface(Typeface.SANS_SERIF)
+                                .dimColor(R.color.black)
+                                .drawShadow(true)
+                                .cancelable(false)
+                                .tintTarget(false)
+                                .transparentTarget(false)
+                                .targetRadius(60) // SI QUIERO MAS TARGETS IR SEPARANDO POR COMAS DESDE ACA
+                                )
+                .listener(new TapTargetSequence.Listener() {
+                    // This listener will tell us when interesting(tm) events happen in regards
+                    // to the sequence
+                    @Override
+                    public void onSequenceFinish() {
+                        // Yay
+                    }
+
+                    @Override
+                    public void onSequenceStep(TapTarget lastTarget, boolean targetClicked) {
+
+                    }
+
+                    @Override
+                    public void onSequenceCanceled(TapTarget lastTarget) {
+                        // Boo
+                    }
+                });*/
+
+
+        // EJEMPLO DE TARGET EN UN FRAGMENT
+        View v = fragments.get(0).getView().findViewById(R.id.fabFilter);
+        TapTargetView.showFor(this,                 // `this` is an Activity
+                TapTarget.forView(v, "Filtro", "Con este filtro podrás elegir que posts ver ;)")
+                        // All options below are optional
+                        .outerCircleColor(R.color.colorPrimary)      // Specify a color for the outer circle
+                        .outerCircleAlpha(0.96f)            // Specify the alpha amount for the outer circle
+                        .targetCircleColor(R.color.white)   // Specify a color for the target circle
+                        .titleTextSize(30)                  // Specify the size (in sp) of the title text
+                        .titleTextColor(R.color.white)      // Specify the color of the title text
+                        .descriptionTextSize(20)            // Specify the size (in sp) of the description text
+                        .descriptionTextColor(R.color.colorPrimaryDark)  // Specify the color of the description text
+                        .textColor(R.color.white)            // Specify a color for both the title and description text
+                        .textTypeface(Typeface.SANS_SERIF)  // Specify a typeface for the text
+                        .dimColor(R.color.black)            // If set, will dim behind the view with 30% opacity of the given color
+                        .drawShadow(true)                   // Whether to draw a drop shadow or not
+                        .cancelable(false)                  // Whether tapping outside the outer circle dismisses the view
+                        .tintTarget(false)                   // Whether to tint the target view's color
+                        .transparentTarget(false)                 // Specify a custom drawable to draw as the target
+                        .targetRadius(60),                  // Specify the target radius (in dp)
+                new TapTargetView.Listener() {          // The listener can listen for regular clicks, long clicks or cancels
+                    @Override
+                    public void onTargetClick(TapTargetView view) {
+                        super.onTargetClick(view);
+                    }
+                });
+    }
 
 
     private void sendToLogin(){
