@@ -26,7 +26,8 @@
         android:theme="@style/AppTheme">
         <activity
             android:name=".uiPackage.SplashScreenAcivity"
-            android:theme="@style/AppTheme.NoActionBar">
+            android:theme="@style/AppTheme.NoActionBar"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -37,7 +38,8 @@
             android:configChanges="orientation|screenSize"
             android:label=""
             android:theme="@style/MyDialogTheme2"
-            android:windowSoftInputMode="adjustPan">
+            android:windowSoftInputMode="adjustPan"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="com.andresdlg.groupmeapp.firebasepushnotifications.TARGETNOTIFICATION" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -46,22 +48,27 @@
         <activity
             android:name=".uiPackage.login.LoginActivity"
             android:configChanges="orientation|screenSize"
-            android:theme="@style/AppTheme.NoActionBar" />
+            android:theme="@style/AppTheme.NoActionBar"
+            android:screenOrientation="portrait"/>
         <activity
             android:name=".uiPackage.login.RegisterActivity"
             android:configChanges="orientation|screenSize"
-            android:theme="@style/AppTheme.NoActionBar" />
+            android:theme="@style/AppTheme.NoActionBar"
+            android:screenOrientation="portrait"/>
         <activity
             android:name=".uiPackage.UserProfileSetupActivity"
             android:configChanges="orientation|screenSize"
             android:label="Datos personales"
-            android:theme="@style/AppTheme.NoActionBar2" />
+            android:theme="@style/AppTheme.NoActionBar2"
+            android:screenOrientation="portrait"/>
         <activity
             android:name="com.theartofdev.edmodo.cropper.CropImageActivity"
-            android:theme="@style/Base.Theme.AppCompat" />
+            android:theme="@style/Base.Theme.AppCompat"
+            android:screenOrientation="portrait"/>
         <activity
             android:name=".uiPackage.ChatActivity"
-            android:theme="@style/AppTheme.ChatNoActionBar" />
+            android:theme="@style/AppTheme.ChatNoActionBar"
+            android:screenOrientation="portrait"/>
 
         <service
             android:name=".firebasePackage.FirebaseMessagingService"
@@ -96,18 +103,25 @@
             android:name=".uiPackage.GroupActivity"
             android:label="@string/title_activity_group"
             android:theme="@style/AppTheme.NoActionBar"
-            android:windowSoftInputMode="adjustPan" />
+            android:windowSoftInputMode="adjustPan"
+            android:screenOrientation="portrait"/>
         <activity
             android:name=".uiPackage.GroupDetailActivity"
-            android:theme="@style/MyDialogTheme2" />
-        <activity android:name=".uiPackage.TaskWeekViewBaseActivty" />
-        <activity android:name=".uiPackage.TaskWeekViewActivity" />
-        <activity android:name=".uiPackage.SearchContactActivity" />
+            android:theme="@style/MyDialogTheme2"
+            android:screenOrientation="portrait"/>
+        <activity android:name=".uiPackage.TaskWeekViewBaseActivty"
+            android:screenOrientation="portrait"/>
+        <activity android:name=".uiPackage.TaskWeekViewActivity"
+            android:screenOrientation="portrait"/>
+        <activity android:name=".uiPackage.SearchContactActivity"
+            android:screenOrientation="portrait"/>
         <activity
             android:name=".uiPackage.SubGroupDetailActivity"
-            android:theme="@style/MyDialogTheme2" />
+            android:theme="@style/MyDialogTheme2"
+            android:screenOrientation="portrait"/>
         <activity android:name=".uiPackage.NewPostActivity"
-            android:theme="@style/MyDialogTheme2"/>
+            android:theme="@style/MyDialogTheme2"
+            android:screenOrientation="portrait"/>
     </application>
 
 </manifest>
