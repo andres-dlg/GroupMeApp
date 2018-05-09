@@ -42,6 +42,7 @@ import com.codemybrainsout.ratingdialog.RatingDialog;
 import com.getkeepsafe.taptargetview.TapTarget;
 import com.getkeepsafe.taptargetview.TapTargetSequence;
 import com.getkeepsafe.taptargetview.TapTargetView;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -368,11 +369,8 @@ public class MainActivity extends AppCompatActivity
                 drawer.closeDrawer(Gravity.LEFT);
                 break;
             case R.id.logout:
-                Map<String,Object> tokenMap = new HashMap<>();
-                tokenMap.put("token_id","");
-
                 DatabaseReference mUserRef = FirebaseDatabase.getInstance().getReference("Users").child(StaticFirebaseSettings.currentUserId);
-                mUserRef.updateChildren(tokenMap).addOnSuccessListener(new OnSuccessListener<Void>() {
+                mUserRef.child("token_id").setValue("").addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
                         mDatabaseRef.removeEventListener(valueEventListener);
@@ -385,9 +383,14 @@ public class MainActivity extends AppCompatActivity
                         overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
                         finish();
                     }
+                }).addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Toast.makeText(MainActivity.this, "Fallo al intentar cerrar sesión", Toast.LENGTH_SHORT).show();
+                    }
                 });
+                break;
         }
-
         return false;
     }
 
