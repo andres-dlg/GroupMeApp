@@ -1,11 +1,11 @@
 package com.andresdlg.groupmeapp.uiPackage.fragments;
 
 import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
-import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -13,7 +13,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.andresdlg.groupmeapp.Adapters.RVNewsAdapter;
@@ -43,7 +42,8 @@ public class NewsFragment extends Fragment {
     DatabaseReference postsRef;
     DatabaseReference groupsRef;
 
-    FloatingActionButton fab;
+    FloatingActionButton fabFilter;
+    FloatingActionButton fabClear;
     ProgressBar progressBar;
     TextView tvNoNews;
 
@@ -51,15 +51,12 @@ public class NewsFragment extends Fragment {
     RecyclerView rvPosts;
     RVNewsAdapter rvNewsAdapter;
     LinearLayoutManager llm;
-    SwipeRefreshLayout swipeContainer;
 
     List<String> groupKeys;
 
     List<String> groupNames;
 
     int cantidadDeGrupos;
-
-    int cantidadDePosts;
 
     Integer selectedItems[] = {};
 
@@ -80,8 +77,18 @@ public class NewsFragment extends Fragment {
 
         tvNoNews = view.findViewById(R.id.tvNoNews);
 
-        fab = view.findViewById(R.id.fabFilter);
-        fab.setOnClickListener(new View.OnClickListener() {
+        fabClear = view.findViewById(R.id.fabClear);
+        fabClear.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                fabClear.hide();
+                selectedItems = new Integer[]{};
+                filterPosts(groupKeys);
+            }
+        });
+
+        fabFilter = view.findViewById(R.id.fabFilter);
+        fabFilter.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 new MaterialDialog.Builder(getContext())
@@ -94,11 +101,11 @@ public class NewsFragment extends Fragment {
                                 for(int i : which){
                                     groupKeysFiltered.add(groupKeys.get(i));
                                 }
-                                posts.clear();
-                                rvNewsAdapter.notifyDataSetChanged();
                                 if(which.length != 0){
-                                    fetchPosts(groupKeysFiltered);
+                                    fabClear.show();
+                                    filterPosts(groupKeysFiltered);
                                 }else{
+                                    fabClear.hide();
                                     fetchPosts(groupKeys);
                                 }
                                 selectedItems = which;
@@ -110,26 +117,8 @@ public class NewsFragment extends Fragment {
             }
         });
 
-        swipeContainer = view.findViewById(R.id.swipeContainer);
-        swipeContainer.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                posts.clear();
-                fetchPosts(groupKeys);
-                selectedItems = new Integer[]{};
-            }
-        });
-
-        // Configure the refreshing colors
-        swipeContainer.setColorSchemeResources(android.R.color.holo_blue_bright,
-                android.R.color.holo_green_light,
-                android.R.color.holo_orange_light,
-                android.R.color.holo_red_light);
-
-
         rvNewsAdapter = new RVNewsAdapter(getContext(),posts,false,null);
 
-        //rvPosts.setHasFixedSize(true);
         llm = new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false);
         rvPosts = view.findViewById(R.id.rvPosts);
         rvPosts.setLayoutManager(llm);
@@ -137,15 +126,37 @@ public class NewsFragment extends Fragment {
 
         groupsRef = FirebaseDatabase.getInstance().getReference("Groups");
 
+        getUserGroups();
+
         return view;
+    }
+
+    private void filterPosts(List<String> groupKeysFiltered) {
+        cantidadDeGrupos = groupKeysFiltered.size();
+        posts.clear();
+        rvNewsAdapter.notifyDataSetChanged();
+        for(int i = 0; i< cantidadDeGrupos ; i++){
+            postsRef = FirebaseDatabase.getInstance().getReference("Groups").child(groupKeysFiltered.get(i)).child("posts");
+            postsRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    for(DataSnapshot d : dataSnapshot.getChildren()){
+                        Post post = d.getValue(Post.class);
+                        updatePosts(post,0);
+                    }
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
+                }
+            });
+        }
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        posts.clear();
-        rvNewsAdapter.notifyDataSetChanged();
-        getUserGroups();
     }
 
     private void getUserGroups() {
@@ -158,26 +169,18 @@ public class NewsFragment extends Fragment {
         userGroupsRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                if(dataSnapshot.hasChildren()){
-                    groupNames.clear();
-                    groupKeys.clear();
-                    for(DataSnapshot data : dataSnapshot.getChildren()){
-                        if(data.child("status").getValue().toString().equals(GroupStatus.ACCEPTED.toString())){
-                            groupKeys.add(data.getKey());
-                            fetchGroupName(data.getKey());
-                        }
+                groupNames.clear();
+                groupKeys.clear();
+                for(DataSnapshot data : dataSnapshot.getChildren()){
+                    if(data.child("status").getValue().toString().equals(GroupStatus.ACCEPTED.toString())){
+                        groupKeys.add(data.getKey());
+                        fetchGroupName(data.getKey());
                     }
+                }
+                progressBar.setVisibility(View.GONE);
+                tvNoNews.setVisibility(View.VISIBLE);
+                if(groupKeys.size()>0){
                     fetchPosts(groupKeys);
-                }else{
-                    rvPosts.setVisibility(View.VISIBLE);
-                    progressBar.setVisibility(View.GONE);
-                    swipeContainer.setRefreshing(false);
-
-                    if(!dataSnapshot.hasChildren()){
-                        tvNoNews.setVisibility(View.VISIBLE);
-                    }else {
-                        tvNoNews.setVisibility(View.GONE);
-                    }
                 }
             }
 
@@ -211,32 +214,19 @@ public class NewsFragment extends Fragment {
         });
     }
 
-    private void fetchPosts(List<String> groupKeys) {
+    private void fetchPosts(final List<String> groupKeys) {
         cantidadDeGrupos = groupKeys.size();
         for(int i = 0; i< cantidadDeGrupos ; i++){
             postsRef = FirebaseDatabase.getInstance().getReference("Groups").child(groupKeys.get(i)).child("posts");
-            final int finalI1 = i;
             postsRef.addChildEventListener(new ChildEventListener() {
                 @Override
                 public void onChildAdded(DataSnapshot dataSnapshot, String s) {
                     Post post = dataSnapshot.getValue(Post.class);
-                    updatePosts(post);
-                    Collections.sort(posts, new Comparator<Post>() {
-                        @Override
-                        public int compare(Post post, Post t1) {
-                            Calendar calendar1 = Calendar.getInstance();
-                            calendar1.setTimeInMillis(post.getTime());
+                    updatePosts(post,0);
 
-                            Calendar calendar2 = Calendar.getInstance();
-                            calendar2.setTimeInMillis(t1.getTime());
-
-                            return calendar2.compareTo(calendar1);
-                        }
-                    });
-                    if(finalI1 == cantidadDeGrupos-1){
-                        rvNewsAdapter.notifyDataSetChanged();
-                    }
-
+                    //SI HAY ALGUN POST SE VA A MOSTRAR LA LISTA Y EL TEXTVIEW
+                    rvPosts.setVisibility(View.VISIBLE);
+                    tvNoNews.setVisibility(View.GONE);
                 }
 
                 @Override
@@ -246,7 +236,12 @@ public class NewsFragment extends Fragment {
 
                 @Override
                 public void onChildRemoved(DataSnapshot dataSnapshot) {
-
+                    Post post = dataSnapshot.getValue(Post.class);
+                    updatePosts(post,1);
+                    if(posts.size() == 0){
+                        rvPosts.setVisibility(View.GONE);
+                        tvNoNews.setVisibility(View.VISIBLE);
+                    }
                 }
 
                 @Override
@@ -256,51 +251,44 @@ public class NewsFragment extends Fragment {
 
                 @Override
                 public void onCancelled(DatabaseError databaseError) {
-                    rvPosts.setVisibility(View.VISIBLE);
-                    progressBar.setVisibility(View.GONE);
-                    swipeContainer.setRefreshing(false);
+
                 }
-            });
-
-            final int finalI = i;
-            postsRef.addListenerForSingleValueEvent(new ValueEventListener() {
-                @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
-                    rvPosts.setVisibility(View.VISIBLE);
-                    progressBar.setVisibility(View.GONE);
-                    swipeContainer.setRefreshing(false);
-
-                    if(finalI == cantidadDeGrupos-1){
-                        hideOrNotTextViewNoNews();
-                    }
-                }
-
-                @Override
-                public void onCancelled(DatabaseError databaseError) {}
             });
         }
     }
 
-    private void hideOrNotTextViewNoNews() {
-        if(posts.size()==0){
-            tvNoNews.setVisibility(View.VISIBLE);
-        }else {
-            tvNoNews.setVisibility(View.GONE);
-        }
-    }
-
-    private void updatePosts(Post post) {
+    private void updatePosts(Post post, int mode) {
         boolean exists = false;
         for(int i=0; i < posts.size(); i++){
             if(posts.get(i).getPostId().equals(post.getPostId())){
                 exists = true;
                 posts.remove(i);
-                posts.add(i,post);
+                if(mode == 0){
+                    posts.add(i,post);
+                    rvNewsAdapter.notifyItemChanged(i);
+                }else{
+                    rvNewsAdapter.notifyItemRemoved(i);
+                    rvNewsAdapter.notifyItemRangeChanged(i,posts.size());
+                }
             }
         }
-        if(!exists){
+        if(!exists && mode == 0){
             posts.add(0,post);
+            rvNewsAdapter.notifyDataSetChanged();
+            //rvNewsAdapter.notifyItemInserted(0);
         }
+        Collections.sort(posts, new Comparator<Post>() {
+            @Override
+            public int compare(Post post, Post t1) {
+                Calendar calendar1 = Calendar.getInstance();
+                calendar1.setTimeInMillis(post.getTime());
+
+                Calendar calendar2 = Calendar.getInstance();
+                calendar2.setTimeInMillis(t1.getTime());
+
+                return calendar2.compareTo(calendar1);
+            }
+        });
     }
 
 
@@ -309,9 +297,12 @@ public class NewsFragment extends Fragment {
         super.setUserVisibleHint(isVisibleToUser);
         if(isAdded()){
             if(isVisibleToUser){
-                fab.show();
+                fabFilter.show();
             }else{
-                fab.hide();
+                selectedItems = new Integer[]{};
+                filterPosts(groupKeys);
+                fabClear.hide();
+                fabFilter.hide();
             }
         }
     }

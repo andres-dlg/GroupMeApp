@@ -7,56 +7,56 @@
     android:fitsSystemWindows="true"
     android:theme="@style/AppTheme.DialogFragment">
 
-    <android.support.v4.widget.SwipeRefreshLayout
+
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:id="@+id/swipeContainer">
+        android:layout_height="match_parent">
 
-        <FrameLayout
+        <ProgressBar
+            android:id="@+id/progressBar"
+            style="?android:progressBarStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:indeterminate="true"/>
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/rvPosts"
+            android:layout_height="wrap_content"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
-            <ProgressBar
-                android:id="@+id/progressBar"
-                style="?android:progressBarStyle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:indeterminate="true"/>
-
-            <android.support.v7.widget.RecyclerView
-                android:id="@+id/rvPosts"
-                android:layout_height="wrap_content"
-                android:layout_width="match_parent"
-                android:visibility="gone"/>
-
-            <TextView
-                android:id="@+id/tvNoNews"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_marginRight="20dp"
-                android:layout_marginLeft="20dp"
-                android:gravity="center"
-                android:text="@string/no_news"
-                android:fontFamily="@font/simplifica"
-                android:textSize="40sp"
-                android:textColor="#e0e0e0"
-                android:visibility="gone"/>
-
-        </FrameLayout>
-
-
+            android:visibility="gone"/>
 
         <TextView
-            android:id="@+id/tvNoGroups"
+            android:id="@+id/tvNoNews"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:layout_marginRight="20dp"
+            android:layout_marginLeft="20dp"
             android:gravity="center"
             android:text="@string/no_news"
+            android:fontFamily="@font/simplifica"
             android:textSize="40sp"
-            android:textColor="#e0e0e0" />
+            android:textColor="#e0e0e0"
+            android:visibility="gone"/>
 
-    </android.support.v4.widget.SwipeRefreshLayout>
+    </FrameLayout>
+
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/fabClear"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginBottom="80dp"
+        android:layout_marginEnd="25dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:src="@drawable/ic_clear"
+        android:tint="@color/common_google_signin_btn_text_dark"
+        android:visibility="gone"
+        app:backgroundTint="#d50000"
+        app:fabSize="mini" />
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fabFilter"
@@ -65,11 +65,12 @@
         android:clickable="true"
         android:layout_alignParentBottom="true"
         android:layout_alignParentRight="true"
-        android:layout_marginBottom="15dp"
-        android:layout_marginRight="15dp"
+        android:layout_marginBottom="16dp"
+        android:layout_marginRight="16dp"
         android:tint="@color/common_google_signin_btn_text_dark"
         android:src="@drawable/ic_filter"
         app:backgroundTint="@color/colorPrimaryDark"
-        app:fabSize="normal" />
+        app:fabSize="normal"
+        android:focusable="true" />
 
 </RelativeLayout>

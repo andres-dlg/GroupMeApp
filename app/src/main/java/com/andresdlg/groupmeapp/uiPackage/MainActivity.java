@@ -335,7 +335,6 @@ public class MainActivity extends AppCompatActivity
                         .content("GroupMeApp para Android\n2018")
                         .contentGravity(GravityEnum.CENTER)
                         .positiveText("OK")
-                        .negativeText("Cancelar")
                         .show();
                 drawer.closeDrawer(Gravity.LEFT);
                 break;

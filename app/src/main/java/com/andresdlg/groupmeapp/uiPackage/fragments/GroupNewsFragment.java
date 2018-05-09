@@ -46,7 +46,6 @@ public class GroupNewsFragment extends Fragment {
     RecyclerView rvPosts;
     RVNewsAdapter rvNewsAdapter;
     LinearLayoutManager llm;
-    SwipeRefreshLayout swipeContainer;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -70,22 +69,6 @@ public class GroupNewsFragment extends Fragment {
                 getContext().startActivity(i);
             }
         });
-
-        swipeContainer = view.findViewById(R.id.swipeContainer);
-        swipeContainer.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                posts.clear();
-                fetchPosts();
-            }
-        });
-
-        // Configure the refreshing colors
-        swipeContainer.setColorSchemeResources(android.R.color.holo_blue_bright,
-                android.R.color.holo_green_light,
-                android.R.color.holo_orange_light,
-                android.R.color.holo_red_light);
-
 
         String groupKey = ((FireApp) getContext().getApplicationContext()).getGroupKey();
 
@@ -138,7 +121,6 @@ public class GroupNewsFragment extends Fragment {
             public void onCancelled(DatabaseError databaseError) {
                 rvPosts.setVisibility(View.VISIBLE);
                 progressBar.setVisibility(View.GONE);
-                swipeContainer.setRefreshing(false);
             }
         });
 
@@ -147,7 +129,6 @@ public class GroupNewsFragment extends Fragment {
             public void onDataChange(DataSnapshot dataSnapshot) {
                 rvPosts.setVisibility(View.VISIBLE);
                 progressBar.setVisibility(View.GONE);
-                swipeContainer.setRefreshing(false);
 
                 if(!dataSnapshot.hasChildren()){
                     tvNoNews.setVisibility(View.VISIBLE);
