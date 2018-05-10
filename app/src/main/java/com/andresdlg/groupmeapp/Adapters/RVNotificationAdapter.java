@@ -17,19 +17,21 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.PopupMenu;
 import android.widget.TextView;
+import android.widget.Toast;
 
-import com.andresdlg.groupmeapp.DialogFragments.HeaderDialogFragment;
 import com.andresdlg.groupmeapp.Entities.Group;
 import com.andresdlg.groupmeapp.Entities.Notification;
 import com.andresdlg.groupmeapp.Entities.Users;
 import com.andresdlg.groupmeapp.R;
 import com.andresdlg.groupmeapp.Utils.GroupStatus;
+import com.andresdlg.groupmeapp.Utils.Roles;
 import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.DataSource;
 import com.bumptech.glide.load.engine.GlideException;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -39,7 +41,6 @@ import com.google.firebase.database.ValueEventListener;
 import org.ocpsoft.prettytime.PrettyTime;
 
 import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -133,7 +134,7 @@ public class RVNotificationAdapter extends RecyclerView.Adapter<RVNotificationAd
                     String date = prettyTime.format(calendar);
 
                     notificationViewHolder.notificationDate.setText(date);
-                    notificationViewHolder.setGroupKey(g.getGroupKey(),usersRef);
+                    notificationViewHolder.setGroupKey(g.getGroupKey());
                     notificationViewHolder.setNotificationKey(notifications.get(position).getNotificationKey());
 
                     removeGroupsListener();
@@ -156,26 +157,6 @@ public class RVNotificationAdapter extends RecyclerView.Adapter<RVNotificationAd
         userRef.removeEventListener(usersEventListener);
     }
 
-    /*private String dateDifference(Date d) {
-
-        Calendar dateNoti = Calendar.getInstance();
-        dateNoti.setTime(d);
-
-        Calendar today = Calendar.getInstance();
-
-        long diff = today.getTimeInMillis() - dateNoti.getTimeInMillis();
-
-        if(diff/1000 <= 60){
-            return ("Hace "+ Math.round(diff/1000)+ " segundos");
-        }else if(diff/1000/60 < 60){
-            return ("Hace "+ Math.round(diff/1000/60)+ " minutos");
-        }else if(diff/1000/60/60 < 24){
-            return ("Hace "+ Math.round(diff/1000/60/60)+ " horas");
-        }else{
-            return ("Hace "+ Math.round(diff/1000/60/60/24)+ " dias");
-        }
-    }*/
-
     @Override
     public int getItemCount() {
         return notifications.size();
@@ -186,11 +167,6 @@ public class RVNotificationAdapter extends RecyclerView.Adapter<RVNotificationAd
         super.onAttachedToRecyclerView(recyclerView);
     }
 
-    public void setNotifications(List<Notification> notifications) {
-        this.notifications = notifications;
-        notifyDataSetChanged();
-    }
-
     class NotificationViewHolder extends RecyclerView.ViewHolder {
         ImageButton menuBtn;
         TextView userAlias;
@@ -198,9 +174,10 @@ public class RVNotificationAdapter extends RecyclerView.Adapter<RVNotificationAd
         TextView notificationMessage;
         TextView notificationDate;
         private String groupKey;
-        private DatabaseReference usersRef;
+        private DatabaseReference groupRef;
         private String notificationKey;
         private int position;
+        DatabaseReference userRef;
 
         NotificationViewHolder(View itemView) {
             super(itemView);
@@ -211,6 +188,7 @@ public class RVNotificationAdapter extends RecyclerView.Adapter<RVNotificationAd
             notificationMessage.setSelected(true);
             notificationDate = itemView.findViewById(R.id.date);
             menuBtn = itemView.findViewById(R.id.menu_btn);
+            userRef = FirebaseDatabase.getInstance().getReference("Users").child(StaticFirebaseSettings.currentUserId);
         }
 
         void setPosition(int position){
@@ -236,9 +214,9 @@ public class RVNotificationAdapter extends RecyclerView.Adapter<RVNotificationAd
 
         }
 
-        void setGroupKey(String groupKey, DatabaseReference usersRef){
+        void setGroupKey(String groupKey){
             this.groupKey = groupKey;
-            this.usersRef = usersRef;
+            groupRef = FirebaseDatabase.getInstance().getReference("Groups").child(groupKey);
         }
 
         void hideBtn(final Context context, String type) {
@@ -260,17 +238,13 @@ public class RVNotificationAdapter extends RecyclerView.Adapter<RVNotificationAd
                                 switch (id){
                                     case R.id.accept:
                                         //ENVIAR MENSAJE
-                                        acceptInvitation(context, groupKey, position);
-                                        //Toast.makeText(context,"aceptar "+contactName, Toast.LENGTH_SHORT).show();
+                                        acceptInvitation(groupKey, position);
                                         break;
                                     case R.id.reject:
                                         //AGREGAR A GRUPO
-                                        //rejectRequest(iduser);
-                                        //Toast.makeText(context,"rechazar"+contactName, Toast.LENGTH_SHORT).show();
+                                        rejectInvitation(groupKey, position);
                                         break;
-                                    case R.id.delete:
-                                        //ELIMINAR CONTACTO
-                                        rejectInvitation(context, groupKey, position);
+                                    default:
                                         break;
                                 }
                                 return true;
@@ -282,33 +256,54 @@ public class RVNotificationAdapter extends RecyclerView.Adapter<RVNotificationAd
             }
         }
 
-        private void acceptInvitation(Context context, String groupKey, int position) {
-            DatabaseReference userGroupRef = usersRef.child(StaticFirebaseSettings.currentUserId).child("groups").child(groupKey);
-            userGroupRef.child("status").setValue(GroupStatus.ACCEPTED.toString());
-            deleteNotification(context);
+        private void acceptInvitation(String groupKey, int position) {
+            userRef.child("groups").child(groupKey).child("status").setValue(GroupStatus.ACCEPTED.toString()).addOnSuccessListener(new OnSuccessListener<Void>() {
+                @Override
+                public void onSuccess(Void aVoid) {
+                    Toast.makeText(context, "Invitación aceptada", Toast.LENGTH_SHORT).show();
+                }
+            });
+            userRef.child("notifications").child(notificationKey).removeValue();
+
+            notifications.remove(position);
+            notifyItemRemoved(position);
+            notifyItemRangeChanged(position, notifications.size());
+
+
+            //ESTO ES POR SI CUANDO ACEPTO LA INVITACION, NO HAY MIEMBROS EN EL GRUPO. EL QUE ACEPTA SE GUARDA COMO ADMINISTRADOR
+            groupRef.child("members").addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    if(dataSnapshot.getChildrenCount() == 1){
+                        if(dataSnapshot.getKey().equals(StaticFirebaseSettings.currentUserId)){
+                            setMeAsAdmin(groupRef);
+                        }
+                    }
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
+                }
+            });
+
+            mOnSaveGroupListener.onSavedGroup(true);
+        }
+
+        private void rejectInvitation(String groupKey, int position) {
+            userRef.child("groups").child(groupKey).removeValue().addOnSuccessListener(new OnSuccessListener<Void>() {
+                @Override
+                public void onSuccess(Void aVoid) {
+                    Toast.makeText(context, "Invitación rechazada", Toast.LENGTH_SHORT).show();
+                }
+            });
+            userRef.child("notifications").child(notificationKey).removeValue();
 
             notifications.remove(position);
             notifyItemRemoved(position);
             notifyItemRangeChanged(position, notifications.size());
 
             mOnSaveGroupListener.onSavedGroup(true);
-        }
-
-        private void rejectInvitation(Context context, String groupKey, int position) {
-            DatabaseReference userGroupRef = usersRef.child(StaticFirebaseSettings.currentUserId).child("groups").child(groupKey);
-            userGroupRef.child("status").setValue(GroupStatus.REJECTED.toString());
-            deleteNotification(context);
-
-            notifications.remove(position);
-            notifyItemRemoved(position);
-            notifyItemRangeChanged(position, notifications.size());
-
-            mOnSaveGroupListener.onSavedGroup(true);
-        }
-
-        private void deleteNotification(Context context) {
-            DatabaseReference userGroupRef = usersRef.child(StaticFirebaseSettings.currentUserId).child("notifications").child(notificationKey);
-            userGroupRef.removeValue();
         }
 
         void setNotificationKey(String notificationKey) {
@@ -316,9 +311,12 @@ public class RVNotificationAdapter extends RecyclerView.Adapter<RVNotificationAd
         }
     }
 
+    private void setMeAsAdmin(DatabaseReference groupRef) {
+        groupRef.child("members").child(StaticFirebaseSettings.currentUserId).setValue(Roles.ADMIN);
+    }
 
     public interface OnSaveGroupListener{
-        public void onSavedGroup(boolean saved);
+        void onSavedGroup(boolean saved);
     }
 
     private void onAttachToParentFragment(Fragment fragment){
@@ -329,5 +327,4 @@ public class RVNotificationAdapter extends RecyclerView.Adapter<RVNotificationAd
             throw new ClassCastException(fragment.toString() + " must implement OnUserSelectionSetListener");
         }
     }
-
 }

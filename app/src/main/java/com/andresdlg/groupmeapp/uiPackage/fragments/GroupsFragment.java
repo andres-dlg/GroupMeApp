@@ -89,6 +89,24 @@ public class GroupsFragment extends Fragment implements View.OnClickListener, He
                 for(DataSnapshot data : dataSnapshot.getChildren()){
                     if(data.child("status").getValue().toString().equals(GroupStatus.ACCEPTED.toString())){
                         getGroup(data.getKey());
+                        boolean contains = false;
+                        //Group u = dataSnapshot.getValue(Group.class);
+
+                        /*int j = 0;
+                        for(int i = 0 ; i<groups.size(); i++){
+                            if(groups.get(i).getGroupKey().equals(u.getGroupKey())){
+                                contains = true;
+                                j = i;
+                            }
+                        }
+                        if(!contains){
+                            groups.add(u);
+                            adapter.notifyDataSetChanged();
+                        }else{
+                            groups.remove(j);
+                            groups.add(j,u);
+                            adapter.notifyDataSetChanged();
+                        }*/
                     }
                 }
 
@@ -118,18 +136,15 @@ public class GroupsFragment extends Fragment implements View.OnClickListener, He
             public void onDataChange(DataSnapshot dataSnapshot) {
                 boolean contains = false;
                 Group u = dataSnapshot.getValue(Group.class);
-                int j = 0;
+                updateGroups(u);
+
+                /*int j = 0;
                 for(int i = 0 ; i<groups.size(); i++){
                     if(groups.get(i).getGroupKey().equals(u.getGroupKey())){
                         contains = true;
                         j = i;
                     }
                 }
-                /*for(Group g : groups){
-                    if(g.getGroupKey().equals(u.getGroupKey())){
-                        contains = true;
-                    }
-                }*/
                 if(!contains){
                     groups.add(u);
                     adapter.notifyDataSetChanged();
@@ -137,7 +152,7 @@ public class GroupsFragment extends Fragment implements View.OnClickListener, He
                     groups.remove(j);
                     groups.add(j,u);
                     adapter.notifyDataSetChanged();
-                }
+                }*/
             }
 
             @Override
@@ -196,4 +211,22 @@ public class GroupsFragment extends Fragment implements View.OnClickListener, He
         }
     }
 
+    private void updateGroups(Group group) {
+        boolean exists = false;
+        for(int i=0; i < groups.size(); i++){
+            if(groups.get(i).getGroupKey().equals(group.getGroupKey())){
+                exists = true;
+                groups.remove(i);
+                groups.add(i,group);
+                adapter.notifyItemChanged(i);
+            }
+        }
+        if(!exists){
+            groups.add(group);
+            adapter.notifyDataSetChanged();
+            /*int position = groups.size();
+            groups.add(position,group);
+            adapter.notifyItemInserted(position);*/
+        }
+    }
 }

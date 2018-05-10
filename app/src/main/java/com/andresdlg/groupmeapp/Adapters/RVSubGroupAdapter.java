@@ -47,7 +47,6 @@ import com.andresdlg.groupmeapp.DialogFragments.SubGroupMembersDialogFragment;
 import com.andresdlg.groupmeapp.Entities.SubGroup;
 import com.andresdlg.groupmeapp.Entities.Task;
 import com.andresdlg.groupmeapp.R;
-import com.andresdlg.groupmeapp.Utils.BlurBuilder;
 import com.andresdlg.groupmeapp.firebasePackage.FireApp;
 import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
 import com.andresdlg.groupmeapp.uiPackage.GroupActivity;
@@ -58,26 +57,19 @@ import com.borax12.materialdaterangepicker.time.TimePickerDialog;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.DataSource;
 import com.bumptech.glide.load.engine.GlideException;
-import com.bumptech.glide.request.FutureTarget;
-import com.bumptech.glide.request.Request;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.RequestOptions;
 import com.bumptech.glide.request.target.SimpleTarget;
-import com.bumptech.glide.request.target.SizeReadyCallback;
 import com.bumptech.glide.request.transition.Transition;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import de.hdodenhof.circleimageview.CircleImageView;
-import jp.wasabeef.glide.transformations.BlurTransformation;
-import jp.wasabeef.glide.transformations.SupportRSBlurTransformation;
 
 /**
  * Created by andresdlg on 17/02/18.
@@ -134,18 +126,6 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
 
     public void clear() {
         subGroups.clear();
-        notifyDataSetChanged();
-    }
-
-    public void notify(List<SubGroup> list) {
-        List<SubGroup> aux = new ArrayList<>();
-        aux.addAll(list);
-        if (this.subGroups != null) {
-            this.subGroups.clear();
-            this.subGroups.addAll(aux);
-        } else {
-            this.subGroups.addAll(aux);
-        }
         notifyDataSetChanged();
     }
 

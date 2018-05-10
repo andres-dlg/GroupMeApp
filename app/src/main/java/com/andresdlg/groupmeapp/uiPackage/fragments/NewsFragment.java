@@ -274,9 +274,13 @@ public class NewsFragment extends Fragment {
             }
         }
         if(!exists && mode == 0){
-            posts.add(0,post);
+            //int position = posts.size();
+            //posts.add(position,post);
+            //rvNewsAdapter.notifyDataSetChanged();
+            //rvNewsAdapter.notifyItemInserted(position);
+            //rvNewsAdapter.notifyItemRangeChanged(position,posts.size());
+            posts.add(post);
             rvNewsAdapter.notifyDataSetChanged();
-            //rvNewsAdapter.notifyItemInserted(0);
         }
         Collections.sort(posts, new Comparator<Post>() {
             @Override

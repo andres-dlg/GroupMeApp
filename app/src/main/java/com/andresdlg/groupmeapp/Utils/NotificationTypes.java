@@ -9,4 +9,5 @@ public enum NotificationTypes {
     MESSAGE,
     NEWS,
     GROUP_INVITATION,
+    SUBGROUP_INVITATION,
 }

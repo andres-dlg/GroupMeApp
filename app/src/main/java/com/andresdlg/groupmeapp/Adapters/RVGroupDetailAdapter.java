@@ -144,7 +144,7 @@ public class RVGroupDetailAdapter extends RecyclerView.Adapter<RVGroupDetailAdap
 
             setMyRol();
             if(myRol != null){
-                if(myRol.equals(Roles.ADMIN.toString())){
+                if(myRol.equals(Roles.ADMIN.toString()) || iduser.equals(StaticFirebaseSettings.currentUserId)){
                     btnMenu.setVisibility(View.VISIBLE);
                 }
             }
@@ -269,6 +269,26 @@ public class RVGroupDetailAdapter extends RecyclerView.Adapter<RVGroupDetailAdap
 
                                         Toast.makeText(context, "Hacer admin", Toast.LENGTH_SHORT).show();
                                         break;
+                                    case R.id.delete:
+                                        //rejectRequest(iduser);
+                                        deleteUserFromGroup(iduser,getAdapterPosition(),false);
+                                        Toast.makeText(context, "Eliminar", Toast.LENGTH_SHORT).show();
+                                        break;
+                                }
+                                return true;
+                            }
+                        });
+                        popupMenu.show();
+                    } else{
+
+                        popupMenu.getMenuInflater().inflate(R.menu.activity_group_detail_item_admin_to_member_menu, menu);
+                        popupMenu.getMenu().getItem(0).setVisible(false);
+                        popupMenu.getMenu().getItem(1).setTitle("Abandonar grupo");
+                        popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+                            @Override
+                            public boolean onMenuItemClick(MenuItem menuItem) {
+                                int id = menuItem.getItemId();
+                                switch (id) {
                                     case R.id.delete:
                                         //rejectRequest(iduser);
                                         deleteUserFromGroup(iduser,getAdapterPosition(),false);

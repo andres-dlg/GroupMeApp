@@ -24,7 +24,7 @@
             android:fitsSystemWindows="true"
             app:expandedTitleTextAppearance="@style/TextAppearance.AppCompat.Headline">
 
-            <ImageView
+            <!--<ImageView
                 android:id="@+id/add_group_photo"
                 android:transitionName="photo"
                 android:layout_width="match_parent"
@@ -32,7 +32,15 @@
                 android:background="@color/bg_add_photo"
                 app:layout_collapseMode="parallax"
                 android:src="@drawable/ic_insert_photo_black_48dp"
-                />
+                />-->
+
+            <ImageView
+                android:id="@+id/add_group_photo"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/bg_add_photo"
+                app:layout_collapseMode="parallax"
+                android:src="@drawable/ic_insert_photo_black_48dp"/>
 
             <!--<android.support.design.widget.FloatingActionButton
                 android:id="@+id/fab"
@@ -223,7 +231,7 @@
         android:tint="#fff"
         app:fabSize="normal"
         android:src="@drawable/ic_menu_camera"
-        android:layout_marginRight="10dp"
+        android:layout_marginRight="16dp"
         android:layout_height="wrap_content"
         android:layout_width="wrap_content" />
 

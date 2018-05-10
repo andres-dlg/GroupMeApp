@@ -337,6 +337,7 @@ public class HeaderDialogFragment extends DialogFragment implements GroupAddMemb
         map.put("members", userIdsMap);
         map.put("subGroupKey", subGroupKey);
 
+        //GUARDO LOS GRUPOS EN EL NODO SUBGRUPOS DENTRO DEL GRUPO
         mGroupsDatabase.child(parentGroupKey).child("subgroups").child(subGroupKey).setValue(map).addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void aVoid) {
@@ -344,12 +345,13 @@ public class HeaderDialogFragment extends DialogFragment implements GroupAddMemb
             }
         });
 
-        //Notification
+        //GUARDO LAS NOTIFICACIONES EN EL NODO NOTIFICACIONES DENTRO DE CADA USUARIO MENOS EN EL QUE CREO EL GRUPO
         Map<String,Object> map2;
         if(!userIds.isEmpty()){
             map2 = new HashMap<>();
             map2.put("status", GroupStatus.ACCEPTED);
             for(final String id : userIds){
+
                 mUsersDatabase.child(id).child("groups").child(parentGroupKey).child("subgroups").child(subGroupKey).updateChildren(map2).addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
@@ -357,29 +359,32 @@ public class HeaderDialogFragment extends DialogFragment implements GroupAddMemb
                     }
                 });
 
-                DatabaseReference userToNotifications = mUsersDatabase.child(id).child("notifications");
-                String notificationKey = userToNotifications.push().getKey();
-                Map<String,Object> notification = new HashMap<>();
-                notification.put("notificationKey",notificationKey);
-                notification.put("title","Invitación a grupo");
-                notification.put("message","Te han añadido al subgrupo " + name);
-                notification.put("from", parentGroupKey);
-                notification.put("state", NotificationStatus.UNREAD);
-                notification.put("date", Calendar.getInstance().getTimeInMillis());
-                notification.put("type", NotificationTypes.GROUP_INVITATION);
+                if(!id.equals(StaticFirebaseSettings.currentUserId)){
+                    DatabaseReference userToNotifications = mUsersDatabase.child(id).child("notifications");
+                    String notificationKey = userToNotifications.push().getKey();
+                    Map<String,Object> notification = new HashMap<>();
+                    notification.put("notificationKey",notificationKey);
+                    notification.put("title","Invitación a grupo");
+                    notification.put("message","Te han añadido al subgrupo " + name);
+                    notification.put("from", parentGroupKey);
+                    notification.put("state", NotificationStatus.UNREAD);
+                    notification.put("date", Calendar.getInstance().getTimeInMillis());
+                    notification.put("type", NotificationTypes.SUBGROUP_INVITATION);
 
-                userToNotifications.child(notificationKey).setValue(notification).addOnSuccessListener(new OnSuccessListener<Void>() {
-                    @Override
-                    public void onSuccess(Void aVoid) {
-                        Toast.makeText(getContext(), "Noti de agregación a subgrupo enviada", Toast.LENGTH_SHORT).show();
-                    }
-                });
+                    userToNotifications.child(notificationKey).setValue(notification).addOnSuccessListener(new OnSuccessListener<Void>() {
+                        @Override
+                        public void onSuccess(Void aVoid) {
+                            Toast.makeText(getContext(), "Noti de agregación a subgrupo enviada", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                }
             }
         }
     }
 
     private void createGroupData(String groupKey, String name, String obj, Map<Object,Object> userIdsMaps) {
 
+        //GUARDO LOS GRUPOS EN EL NODO GRUPOS
         Map<Object,Object> map = new HashMap<>();
         map.put("name", name);
         map.put("objetive", obj);
@@ -395,6 +400,7 @@ public class HeaderDialogFragment extends DialogFragment implements GroupAddMemb
         });
 
 
+        //GUARDO LAS NOTIFICACIONES EN EL NODO NOTIFICACIONES DENTRO DE CADA USUARIO MENOS EN EL QUE CREO EL GRUPO
         Map<String,Object> map2;
         if(!userIds.isEmpty()){
             map2 = new HashMap<>();
@@ -408,23 +414,25 @@ public class HeaderDialogFragment extends DialogFragment implements GroupAddMemb
                     }
                 });
 
-                DatabaseReference userToNotifications = mUsersDatabase.child(id).child("notifications");
-                String notificationKey = userToNotifications.push().getKey();
-                Map<String,Object> notification = new HashMap<>();
-                notification.put("notificationKey",notificationKey);
-                notification.put("title","Invitación a grupo");
-                notification.put("message","Has recibido una invitación para unirte al grupo " + name);
-                notification.put("from", groupKey);
-                notification.put("state", NotificationStatus.UNREAD);
-                notification.put("date", Calendar.getInstance().getTimeInMillis());
-                notification.put("type", NotificationTypes.GROUP_INVITATION);
+                if(!id.equals(StaticFirebaseSettings.currentUserId)){
+                    DatabaseReference userToNotifications = mUsersDatabase.child(id).child("notifications");
+                    String notificationKey = userToNotifications.push().getKey();
+                    Map<String,Object> notification = new HashMap<>();
+                    notification.put("notificationKey",notificationKey);
+                    notification.put("title","Invitación a grupo");
+                    notification.put("message","Has recibido una invitación para unirte al grupo " + name);
+                    notification.put("from", groupKey);
+                    notification.put("state", NotificationStatus.UNREAD);
+                    notification.put("date", Calendar.getInstance().getTimeInMillis());
+                    notification.put("type", NotificationTypes.GROUP_INVITATION);
 
-                userToNotifications.child(notificationKey).setValue(notification).addOnSuccessListener(new OnSuccessListener<Void>() {
-                    @Override
-                    public void onSuccess(Void aVoid) {
-                        Toast.makeText(getContext(), "Invitación de grupo enviada", Toast.LENGTH_SHORT).show();
-                    }
-                });
+                    userToNotifications.child(notificationKey).setValue(notification).addOnSuccessListener(new OnSuccessListener<Void>() {
+                        @Override
+                        public void onSuccess(Void aVoid) {
+                            Toast.makeText(getContext(), "Invitación de grupo enviada", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                }
             }
         }
 
@@ -437,7 +445,6 @@ public class HeaderDialogFragment extends DialogFragment implements GroupAddMemb
             }
         });
     }
-
 
     private boolean validateFields() {
 
@@ -553,7 +560,6 @@ public class HeaderDialogFragment extends DialogFragment implements GroupAddMemb
         super.onDestroyView();
     }
 
-
     @Override
     public void onUserSelectionSet(List<String> userIds) {
         this.userIds = userIds;
@@ -563,7 +569,6 @@ public class HeaderDialogFragment extends DialogFragment implements GroupAddMemb
     public void onGroupImageSet(Uri imageUrl) {
         this.imageUrl = imageUrl;
     }
-
 
     public interface OnSaveGroupListener{
         public void onSavedGroup(boolean saved);
