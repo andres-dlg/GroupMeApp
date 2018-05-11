@@ -380,36 +380,14 @@ public class GroupActivity extends AppCompatActivity{
                             for(DataSnapshot taskRef: subgroupRef.child("tasks").getChildren()){
                                 Task task = taskRef.getValue(Task.class);
 
-                                if(!TextUtils.isEmpty(task.getStartDate()) && !TextUtils.isEmpty(task.getEndDate())){
+                                if(task.getStartDate() != 0 && task.getEndDate() != 0){
 
                                     Calendar taskStartDateTime = Calendar.getInstance();
-                                    SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy hh:mm");
-                                    try {
-                                        taskStartDateTime.setTime(dateFormat.parse(task.getStartDate()));
-                                    } catch (ParseException e) {
-                                        e.printStackTrace();
-                                    }
+                                    taskStartDateTime.setTimeInMillis(task.getStartDate());
 
                                     Calendar taskEndDateTime = Calendar.getInstance();
-                                    try {
-                                        taskEndDateTime.setTime(dateFormat.parse(task.getEndDate()));
-                                    } catch (ParseException e) {
-                                        e.printStackTrace();
-                                    }
+                                    taskEndDateTime.setTimeInMillis(task.getEndDate());
 
-                                /*Calendar startTime = Calendar.getInstance();
-                                startTime.set(Calendar.HOUR_OF_DAY, taskStartDateTime.get(Calendar.HOUR_OF_DAY));
-                                startTime.set(Calendar.MINUTE, taskStartDateTime.get(Calendar.MINUTE));
-                                startTime.set(Calendar.MONTH, taskStartDateTime.get(Calendar.MONTH));
-                                startTime.set(Calendar.YEAR, taskStartDateTime.get(Calendar.YEAR));
-
-                                Calendar endTime = Calendar.getInstance();
-                                endTime.set(Calendar.HOUR_OF_DAY, taskEndDateTime.get(Calendar.HOUR_OF_DAY));
-                                endTime.set(Calendar.MINUTE, taskEndDateTime.get(Calendar.MINUTE));
-                                endTime.set(Calendar.MONTH, taskEndDateTime.get(Calendar.MONTH));
-                                endTime.set(Calendar.YEAR, taskEndDateTime.get(Calendar.YEAR));*/
-
-                                    //WeekViewEvent event = new WeekViewEvent(i, task.getName(), startTime, endTime);
                                     WeekViewEvent event = new WeekViewEvent(i, task.getName(), taskStartDateTime, taskEndDateTime);
                                     event.setColor(getResources().getColor(R.color.colorPrimary));
                                     events.add(event);

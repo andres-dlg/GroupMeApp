@@ -13,11 +13,11 @@ public class Task implements Parcelable {
 
     private String taskKey;
     private String name;
-    private String startDate;
-    private String endDate;
+    private long startDate;
+    private long endDate;
     private Boolean finished;
 
-    public Task(String taskKey, String name,String startDate ,String endDate, Boolean finished){
+    public Task(String taskKey, String name,long startDate ,long endDate, Boolean finished){
         this.taskKey = taskKey;
         this.name = name;
         this.startDate = startDate;
@@ -53,19 +53,19 @@ public class Task implements Parcelable {
         this.name = name;
     }
 
-    public String getStartDate() {
+    public long getStartDate() {
         return startDate;
     }
 
-    public void setStartDate(String startDate) {
+    public void setStartDate(long startDate) {
         this.startDate = startDate;
     }
 
-    public String getEndDate() {
+    public long getEndDate() {
         return endDate;
     }
 
-    public void setEndDate(String endDate) {
+    public void setEndDate(long endDate) {
         this.endDate = endDate;
     }
 

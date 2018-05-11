@@ -191,12 +191,13 @@ public class SubGroupsFragment extends Fragment {
                         tasks.add(task);
                     }
                     sgf.setTasks(tasks);
-                    int i = findPosition(sgf.getSubGroupKey());
+                    rvSubGroupsAdapter.notifyDataSetChanged();
+                    /*int i = findPosition(sgf.getSubGroupKey());
                     if(i != -1){
                         subGroups.remove(i);
                         subGroups.add(i,sgf);
                         rvSubGroupsAdapter.notifyItemChanged(i);
-                    }
+                    }*/
                     swipeContainer.setRefreshing(false);
                 }
             }

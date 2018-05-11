@@ -16,6 +16,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.util.Pair;
+import android.support.v4.view.ViewCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
@@ -64,10 +65,14 @@ import com.bumptech.glide.request.transition.Transition;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Handler;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -149,6 +154,9 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
         ImageView subGroupBg;
         String imageUrl;
 
+        Calendar calendarStart;
+        Calendar calendarEnd;
+
 
 
         SubGroupViewHolder(final View itemView, final int position, ViewGroup parent) {
@@ -162,6 +170,7 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
             View.OnClickListener onClickListener = new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
+
                     Intent intent = new Intent(context, SubGroupDetailActivity.class);
                     // Pass data object in the bundle and populate details activity.
                     intent.putExtra("subGroupName", subGroups.get(position).getName());
@@ -173,6 +182,8 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
                     ActivityOptionsCompat options = ActivityOptionsCompat.
                             makeSceneTransitionAnimation((AppCompatActivity)contexto, p1);
                     context.startActivity(intent, options.toBundle());
+
+                    //context.startActivity(intent);
                 }
             };
 
@@ -301,18 +312,18 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
 
                     //Fecha de comienzo de la tarea
                     startDate = fl.findViewById(R.id.taskStartDateTv);
-                    final String startDateText = subGroups.get(position).getTasks().get(indexView).getStartDate();
-                    if(!TextUtils.isEmpty(startDateText)){
-                        startDate.setText(subGroups.get(position).getTasks().get(indexView).getStartDate());
+                    long startDateLong = subGroups.get(position).getTasks().get(indexView).getStartDate();
+                    if(startDateLong != 0){
+                        startDate.setText(formatDate(subGroups.get(position).getTasks().get(indexView).getStartDate()));
                     }else{
                         startDate.setText("No definida");
                     }
 
                     //Fecha de fin de la tarea
                     endDate = fl.findViewById(R.id.taskEndDateTv);
-                    final String endDateText = subGroups.get(position).getTasks().get(indexView).getEndDate();
-                    if(!TextUtils.isEmpty(endDateText)){
-                        endDate.setText(subGroups.get(position).getTasks().get(indexView).getEndDate());
+                    long endDateLong = subGroups.get(position).getTasks().get(indexView).getEndDate();
+                    if(endDateLong != 0){
+                        endDate.setText(formatDate(subGroups.get(position).getTasks().get(indexView).getEndDate()));
                     }else{
                         endDate.setText("No definida");
                     }
@@ -344,30 +355,27 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
                                     .child(subGroups.get(position).getSubGroupKey())
                                     .child("tasks").child(subGroups.get(position).getTasks().get(finalIndexView).getTaskKey());
 
-                            String hourString = hourOfDay < 10 ? "0"+hourOfDay : ""+hourOfDay;
-                            String minuteString = minute < 10 ? "0"+minute : ""+minute;
-                            String hourStringEnd = hourOfDayEnd < 10 ? "0"+hourOfDayEnd : ""+hourOfDayEnd;
-                            String minuteStringEnd = minuteEnd < 10 ? "0"+minuteEnd : ""+minuteEnd;
-                            String time = "You picked the following time: From - "+hourString+"h"+minuteString+" To - "+hourStringEnd+"h"+minuteStringEnd;
-
-                            String startTime = hourString+":"+minuteString;
-                            String endTime = hourStringEnd+":"+minuteStringEnd;
-
                             FrameLayout fl = (FrameLayout)linearLayout_childItems.getChildAt(finalIndexView);
                             TextView tvStartDate = fl.findViewById(R.id.taskStartDateTv);
                             TextView tvEndDate = fl.findViewById(R.id.taskEndDateTv);
 
-                            String startDate = tvStartDate.getText().toString();
-                            String endDate = tvEndDate.getText().toString();
+                            long timeStartInMillisWithoutHour = calendarStart.getTimeInMillis();
+                            long timeEndInMillisWithoutHour = calendarEnd.getTimeInMillis();
 
-                            String startDateTime = startDate+" "+startTime;
-                            String endDateTime = endDate+" "+endTime;
+                            long timeStartInMillis = hourOfDay*3600000+minute*60000;
+                            long timeEndInMillis = hourOfDayEnd*3600000+minuteEnd*60000;
 
-                            tvStartDate.setText(startDateTime);
-                            tvEndDate.setText(endDateTime);
+                            Calendar finalStartDate = Calendar.getInstance();
+                            finalStartDate.setTimeInMillis(timeStartInMillisWithoutHour+timeStartInMillis);
 
-                            taskRef.child("startDate").setValue(startDateTime);
-                            taskRef.child("endDate").setValue(endDateTime);
+                            Calendar finalEndDate = Calendar.getInstance();
+                            finalEndDate.setTimeInMillis(timeEndInMillisWithoutHour+timeEndInMillis);
+
+                            tvStartDate.setText(formatDate(finalStartDate.getTimeInMillis()));
+                            tvEndDate.setText(formatDate(finalEndDate.getTimeInMillis()));
+
+                            taskRef.child("startDate").setValue(finalStartDate.getTimeInMillis());
+                            taskRef.child("endDate").setValue(finalEndDate.getTimeInMillis());
 
                             Toast.makeText(context,"Horarios guardados",Toast.LENGTH_SHORT).show();
                         }
@@ -377,30 +385,13 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
                     final DatePickerDialog.OnDateSetListener dateListener =  new DatePickerDialog.OnDateSetListener() {
                         @Override
                         public void onDateSet(DatePickerDialog view, int year, int monthOfYear, int dayOfMonth, int yearEnd, int monthOfYearEnd, int dayOfMonthEnd) {
-                            DatabaseReference taskRef = FirebaseDatabase.getInstance().getReference("Groups")
-                                    .child(groupKey)
-                                    .child("subgroups")
-                                    .child(subGroups.get(position).getSubGroupKey())
-                                    .child("tasks").child(subGroups.get(position).getTasks().get(finalIndexView).getTaskKey());
+                            calendarStart = Calendar.getInstance();
+                            calendarStart.set(year,monthOfYear,dayOfMonth,0,0,0);
 
-                            String newDayOfMonth = String.valueOf(dayOfMonth).length() > 1 ? String.valueOf(dayOfMonth) : "0"+String.valueOf(dayOfMonth);
-                            String newMonthOfYear = String.valueOf(monthOfYear+1).length() > 1 ? String.valueOf(monthOfYear+1) : "0"+String.valueOf(monthOfYear+1);
-                            String newDayOfMonthEnd = String.valueOf(dayOfMonthEnd).length() > 1 ? String.valueOf(dayOfMonthEnd) : "0"+String.valueOf(dayOfMonthEnd);
-                            String newMonthOfYearEnd = String.valueOf(monthOfYearEnd+1).length() > 1 ? String.valueOf(monthOfYearEnd+1) : "0"+String.valueOf(monthOfYearEnd+1);
+                            calendarEnd = Calendar.getInstance();
+                            calendarEnd.set(yearEnd,monthOfYearEnd,dayOfMonthEnd,0,0,0);
 
-                            String startDateTxt = newDayOfMonth + "-" + newMonthOfYear +"-" + String.valueOf(year);
-                            String endDateTxt = newDayOfMonthEnd + "-" + newMonthOfYearEnd +"-" + String.valueOf(yearEnd);
-
-                            taskRef.child("startDate").setValue(startDateTxt);
-                            taskRef.child("endDate").setValue(endDateTxt);
-
-                            FrameLayout fl = (FrameLayout)linearLayout_childItems.getChildAt(finalIndexView);
-                            ((TextView)fl.findViewById(R.id.taskStartDateTv)).setText(startDateTxt);
-                            ((TextView)fl.findViewById(R.id.taskEndDateTv)).setText(endDateTxt);
-
-                            setTime(startDateTxt, endDateTxt, timeListener);
-
-                            Toast.makeText(context,"Fechas guardadas",Toast.LENGTH_SHORT).show();
+                            setTime2(timeListener);
                         }
                     };
 
@@ -419,11 +410,13 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
                             );
                             dpd.setStartTitle("DESDE");
                             dpd.setEndTitle("HASTA");
+                            dpd.setAutoHighlight(true);
                             dpd.setAccentColor(R.color.colorPrimary);
                             dpd.setCancelable(false);
                             dpd.show(((Activity)RVSubGroupAdapter.this.contexto).getFragmentManager(),"Datepickerdialog");
                         }
                     });
+
                     if(isSubGroupMember){
                         btnTaskCalendar.setEnabled(true);
                         btnTaskCalendar.setColorFilter(ContextCompat.getColor(context, R.color.black), android.graphics.PorterDuff.Mode.SRC_IN);
@@ -447,26 +440,20 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
                     fl.setBackgroundResource(backgroundResource);
                     linearLayout_childItems.addView(fl, layoutParams);
                 }
-                //textView_parentName.setOnClickListener(this);
             }
         }
 
-
-        private void setTime(String startDateText, String endDateText, TimePickerDialog.OnTimeSetListener timeListener) {
-            if(TextUtils.isEmpty(startDateText) || TextUtils.isEmpty(endDateText)){
-                Toast.makeText(context,"Primero defina las fechas de la tarea",Toast.LENGTH_SHORT).show();
-            }else{
-                Calendar now = Calendar.getInstance();
-                TimePickerDialog dpd = com.borax12.materialdaterangepicker.time.TimePickerDialog.newInstance(
-                        timeListener,
-                        now.get(Calendar.HOUR_OF_DAY),
-                        now.get(Calendar.MINUTE),
-                        false
-                );
-                dpd.setAccentColor(R.color.colorPrimary);
-                dpd.setTabIndicators("DESDE","HASTA");
-                dpd.show(((Activity)RVSubGroupAdapter.this.contexto).getFragmentManager(),"Timepickerdialog");
-            }
+        private void setTime2(TimePickerDialog.OnTimeSetListener timeListener) {
+            Calendar now = Calendar.getInstance();
+            TimePickerDialog dpd = com.borax12.materialdaterangepicker.time.TimePickerDialog.newInstance(
+                    timeListener,
+                    now.get(Calendar.HOUR_OF_DAY),
+                    now.get(Calendar.MINUTE),
+                    true
+            );
+            dpd.setAccentColor(R.color.colorPrimary);
+            dpd.setTabIndicators("DESDE","HASTA");
+            dpd.show(((Activity)RVSubGroupAdapter.this.contexto).getFragmentManager(),"Timepickerdialog");
         }
 
 
@@ -535,24 +522,7 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
                                 @Override
                                 public void onInput(@NonNull MaterialDialog dialog, CharSequence input) {
                                     if(!TextUtils.isEmpty(input)){
-                                        final Task task = new Task(null,input.toString(),null,null,false);
-
-                                        /*View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.list_item_sub_group_task, parent , false);
-                                        FrameLayout fl = v.findViewById(R.id.fltask);
-                                        fl.setOnClickListener(SubGroupViewHolder.this);
-                                        textView = fl.findViewById(R.id.tasktv);
-                                        textView.setText(task.getName());
-                                        checkBox = fl.findViewById(R.id.checkbox);
-                                        //checkBox.setOnClickListener(SubGroupViewHolder.this);
-                                        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-                                        CircleImageView btnMenu = fl.findViewById(R.id.btn_menu);
-                                        btnMenu.setOnClickListener(SubGroupViewHolder.this);
-                                        int[] attrs = new int[]{R.attr.selectableItemBackground};
-                                        TypedArray typedArray = context.obtainStyledAttributes(attrs);
-                                        int backgroundResource = typedArray.getResourceId(0, 0);
-                                        typedArray.recycle();
-                                        fl.setBackgroundResource(backgroundResource);
-                                        linearLayout_childItems.addView(fl, layoutParams);*/
+                                        final Task task = new Task(null,input.toString(),0,0,false);
 
                                         View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.list_item_sub_group_task, parent , false);
                                         FrameLayout fl = v.findViewById(R.id.fltask);
@@ -563,18 +533,18 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
 
                                         //Fecha de comienzo de la tarea
                                         startDate = fl.findViewById(R.id.taskStartDateTv);
-                                        final String startDateText = task.getStartDate();
-                                        if(!TextUtils.isEmpty(startDateText)){
-                                            startDate.setText(task.getStartDate());
+                                        long startDateLong = task.getStartDate();
+                                        if(startDateLong != 0){
+                                            startDate.setText(formatDate(startDateLong));
                                         }else{
                                             startDate.setText("No definida");
                                         }
 
                                         //Fecha de fin de la tarea
                                         endDate = fl.findViewById(R.id.taskEndDateTv);
-                                        final String endDateText = task.getEndDate();
-                                        if(!TextUtils.isEmpty(endDateText)){
-                                            endDate.setText(task.getEndDate());
+                                        long endDateLong = task.getEndDate();
+                                        if(endDateLong != 0){
+                                            endDate.setText(formatDate(task.getEndDate()));
                                         }else{
                                             endDate.setText("No definida");
                                         }
@@ -602,32 +572,27 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
                                                         .child(subGroups.get(position).getSubGroupKey())
                                                         .child("tasks").child(task.getTaskKey());
 
-                                                String hourString = hourOfDay < 10 ? "0"+hourOfDay : ""+hourOfDay;
-                                                String minuteString = minute < 10 ? "0"+minute : ""+minute;
-                                                String hourStringEnd = hourOfDayEnd < 10 ? "0"+hourOfDayEnd : ""+hourOfDayEnd;
-                                                String minuteStringEnd = minuteEnd < 10 ? "0"+minuteEnd : ""+minuteEnd;
-                                                String time = "You picked the following time: From - "+hourString+"h"+minuteString+" To - "+hourStringEnd+"h"+minuteStringEnd;
-
-                                                String startTime = hourString+":"+minuteString;
-                                                String endTime = hourStringEnd+":"+minuteStringEnd;
-
-
-
                                                 FrameLayout fl = (FrameLayout)linearLayout_childItems.getChildAt(linearLayout_childItems.getChildCount()-1);
                                                 TextView tvStartDate = fl.findViewById(R.id.taskStartDateTv);
                                                 TextView tvEndDate = fl.findViewById(R.id.taskEndDateTv);
 
-                                                String startDate = tvStartDate.getText().toString();
-                                                String endDate = tvEndDate.getText().toString();
+                                                long timeStartInMillisWithoutHour = calendarStart.getTimeInMillis();
+                                                long timeEndInMillisWithoutHour = calendarEnd.getTimeInMillis();
 
-                                                String startDateTime = startDate+" "+startTime;
-                                                String endDateTime = endDate+" "+endTime;
+                                                long timeStartInMillis = hourOfDay*3600000+minute*60000;
+                                                long timeEndInMillis = hourOfDayEnd*3600000+minuteEnd*60000;
 
-                                                tvStartDate.setText(startDateTime);
-                                                tvEndDate.setText(endDateTime);
+                                                Calendar finalStartDate = Calendar.getInstance();
+                                                finalStartDate.setTimeInMillis(timeStartInMillisWithoutHour+timeStartInMillis);
 
-                                                taskRef.child("startDate").setValue(startDateTime);
-                                                taskRef.child("endDate").setValue(endDateTime);
+                                                Calendar finalEndDate = Calendar.getInstance();
+                                                finalEndDate.setTimeInMillis(timeEndInMillisWithoutHour+timeEndInMillis);
+
+                                                tvStartDate.setText(formatDate(finalStartDate.getTimeInMillis()));
+                                                tvEndDate.setText(formatDate(finalEndDate.getTimeInMillis()));
+
+                                                taskRef.child("startDate").setValue(finalStartDate.getTimeInMillis());
+                                                taskRef.child("endDate").setValue(finalEndDate.getTimeInMillis());
 
                                                 Toast.makeText(context,"Horarios guardados",Toast.LENGTH_SHORT).show();
                                             }
@@ -637,28 +602,13 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
                                         final DatePickerDialog.OnDateSetListener dateListener =  new DatePickerDialog.OnDateSetListener() {
                                             @Override
                                             public void onDateSet(DatePickerDialog view, int year, int monthOfYear, int dayOfMonth, int yearEnd, int monthOfYearEnd, int dayOfMonthEnd) {
-                                                DatabaseReference taskRef = FirebaseDatabase.getInstance().getReference("Groups")
-                                                        .child(groupKey)
-                                                        .child("subgroups")
-                                                        .child(subGroups.get(position).getSubGroupKey())
-                                                        .child("tasks").child(task.getTaskKey());
+                                                calendarStart = Calendar.getInstance();
+                                                calendarStart.set(year,monthOfYear,dayOfMonth);
 
-                                                String newDayOfMonth = String.valueOf(dayOfMonth).length() > 1 ? String.valueOf(dayOfMonth) : "0"+String.valueOf(dayOfMonth);
-                                                String newMonthOfYear = String.valueOf(monthOfYear+1).length() > 1 ? String.valueOf(monthOfYear+1) : "0"+String.valueOf(monthOfYear+1);
-                                                String newDayOfMonthEnd = String.valueOf(dayOfMonthEnd).length() > 1 ? String.valueOf(dayOfMonthEnd) : "0"+String.valueOf(dayOfMonthEnd);
-                                                String newMonthOfYearEnd = String.valueOf(monthOfYearEnd+1).length() > 1 ? String.valueOf(monthOfYearEnd+1) : "0"+String.valueOf(monthOfYearEnd+1);
+                                                calendarEnd = Calendar.getInstance();
+                                                calendarEnd.set(yearEnd,monthOfYearEnd,dayOfMonthEnd);
 
-                                                String startDateTxt = newDayOfMonth + "-" + newMonthOfYear +"-" + String.valueOf(year);
-                                                String endDateTxt = newDayOfMonthEnd + "-" + newMonthOfYearEnd +"-" + String.valueOf(yearEnd);
-
-                                                taskRef.child("startDate").setValue(startDateTxt);
-                                                taskRef.child("endDate").setValue(endDateTxt);
-
-                                                FrameLayout fl = (FrameLayout)linearLayout_childItems.getChildAt(linearLayout_childItems.getChildCount()-1);
-                                                ((TextView)fl.findViewById(R.id.taskStartDateTv)).setText(startDateTxt);
-                                                ((TextView)fl.findViewById(R.id.taskEndDateTv)).setText(endDateTxt);
-
-                                                setTime(startDateTxt, endDateTxt, timeListener);
+                                                setTime2(timeListener);
 
                                                 Toast.makeText(context,"Fechas guardadas",Toast.LENGTH_SHORT).show();
                                             }
@@ -744,6 +694,8 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
         }
     }
 
+
+
     private void finishResumeTask(final CheckBox checkBox, Context context, String subGroupKey, String taskKey) {
 
         final DatabaseReference taskRef = FirebaseDatabase.getInstance().getReference("Groups").child(groupKey).child("subgroups").child(subGroupKey).child("tasks").child(taskKey).child("finished");
@@ -787,6 +739,12 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
                     .setCancelable(false)
                     .show();
         }
+    }
+
+    private String formatDate(long timeInMillis){
+        Date date = new Date(timeInMillis);
+        SimpleDateFormat simpleDateFormater = new SimpleDateFormat("dd-MM-yyyy HH:mm")  ;
+        return simpleDateFormater.format(date);
     }
 
     private void updateSubgroup(Task task, final String subGroupKey, CheckBox checkBox, final Context context) {
