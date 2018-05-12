@@ -7,10 +7,12 @@ import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.util.Pair;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
@@ -85,6 +87,7 @@ public class MainActivity extends AppCompatActivity
     DrawerLayout drawer;
 
     Toolbar toolbar;
+    CircleImageView nav_photo;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -214,7 +217,7 @@ public class MainActivity extends AppCompatActivity
         View hView =  navigationView.getHeaderView(0);
         TextView nav_user = hView.findViewById(R.id.nav_user);
         TextView nav_name = hView.findViewById(R.id.nav_name);
-        CircleImageView nav_photo = hView.findViewById(R.id.nav_photo);
+        nav_photo = hView.findViewById(R.id.nav_photo);
 
         Glide.with(MainActivity.this)
                 .load(users.getImageURL().trim())
@@ -246,7 +249,7 @@ public class MainActivity extends AppCompatActivity
                         finish();
                     }else{
                         DatabaseReference db = FirebaseDatabase.getInstance().getReference().child("Users").child(mAuth.getCurrentUser().getUid());
-                        db.addListenerForSingleValueEvent(new ValueEventListener() {
+                        db.addValueEventListener(new ValueEventListener() {
                             @Override
                             public void onDataChange(DataSnapshot dataSnapshot) {
                                 Users u = dataSnapshot.getValue(Users.class);
@@ -310,6 +313,16 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
 
         switch(id){
+            case R.id.config:
+
+                Intent userProfileIntent = new Intent(this, UserProfileSetupActivity.class);
+                userProfileIntent.putExtra("iduser",StaticFirebaseSettings.currentUserId);
+                Pair<View, String> p1 = Pair.create((View)nav_photo, "userPhoto");
+                ActivityOptionsCompat options = ActivityOptionsCompat.
+                        makeSceneTransitionAnimation(this, p1);
+                startActivity(userProfileIntent, options.toBundle());
+                break;
+
             case R.id.rate_review:
                 RatingDialog ratingDialog = new RatingDialog.Builder(MainActivity.this)
                         .title("¿Cómo fue su experiencia con GroupMeApp?")
@@ -518,5 +531,4 @@ public class MainActivity extends AppCompatActivity
         transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
         transaction.add(android.R.id.content, newFragment).addToBackStack(null).commit();
     }
-
 }

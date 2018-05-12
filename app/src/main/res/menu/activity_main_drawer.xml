@@ -5,6 +5,10 @@
         android:checkableBehavior="single"
         android:id="@+id/options">
         <item
+            android:id="@+id/config"
+            android:icon="@drawable/ic_settings"
+            android:title="Configurar perfil" />
+        <item
             android:id="@+id/rate_review"
             android:icon="@drawable/ic_rate_review"
             android:title="Puntúa y comenta" />

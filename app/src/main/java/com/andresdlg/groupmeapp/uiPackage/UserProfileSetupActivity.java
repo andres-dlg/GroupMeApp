@@ -28,6 +28,7 @@ import android.widget.Toast;
 
 import com.andresdlg.groupmeapp.Entities.Users;
 import com.andresdlg.groupmeapp.R;
+import com.andresdlg.groupmeapp.Utils.PhotoFullPopupWindow;
 import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.DataSource;
@@ -87,7 +88,9 @@ public class UserProfileSetupActivity extends AppCompatActivity {
     boolean exists = false;
     boolean imageSetted = false;
     boolean yaPasoPorAca = false;
+
     String iduser;
+    Users u;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -186,7 +189,7 @@ public class UserProfileSetupActivity extends AppCompatActivity {
         mUserDatabase.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                Users u = dataSnapshot.getValue(Users.class);
+                u = dataSnapshot.getValue(Users.class);
                 mName.setText(u.getName());
                 mAlias.setText(u.getAlias());
                 mJob.setText(u.getJob());
@@ -209,6 +212,13 @@ public class UserProfileSetupActivity extends AppCompatActivity {
                             }
                         })
                         .into(mCircleImageView);
+
+                mCircleImageView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        new PhotoFullPopupWindow(UserProfileSetupActivity.this, R.layout.popup_photo_full, mCircleImageView, u.getImageURL(), null);
+                    }
+                });
             }
 
             @Override
@@ -292,15 +302,29 @@ public class UserProfileSetupActivity extends AppCompatActivity {
 
         if(!pass){
             DatabaseReference usersReference = FirebaseDatabase.getInstance().getReference().child("Users");
-            usersReference.addValueEventListener(new ValueEventListener() {
+            usersReference.addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     yaPasoPorAca = true;
-                    for(DataSnapshot data : dataSnapshot.getChildren()){
-                        if(data.child("alias").exists()){
-                            if (data.child("alias").getValue().equals(alias)) {
-                                exists = true;
-                                break;
+                    exists = false;
+                    if(iduser.isEmpty()){
+                        for(DataSnapshot data : dataSnapshot.getChildren()){
+                            if(data.child("alias").exists()){
+                                if (data.child("alias").getValue().equals(alias)) {
+                                    exists = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }else{
+                        if(!u.getAlias().equals(alias)){
+                            for(DataSnapshot data : dataSnapshot.getChildren()){
+                                if(data.child("alias").exists()){
+                                    if (data.child("alias").getValue().equals(alias)) {
+                                        exists = true;
+                                        break;
+                                    }
+                                }
                             }
                         }
                     }
@@ -310,7 +334,12 @@ public class UserProfileSetupActivity extends AppCompatActivity {
                         mProgress.show();
 
                         if(imageSetted){
-                            mProgress.setMessage("Subiendo foto de perfil");
+
+                            if(iduser.isEmpty()){
+                                mProgress.setMessage("Subiendo foto de perfil");
+                            }else{
+                                mProgress.setMessage("Actualizando perfil");
+                            }
                             mProgress.show();
 
                             mChildStorage = mStorageReference.child("User_Profile").child(mAuth.getCurrentUser().getUid()).child(imageHoldUri.getLastPathSegment());
@@ -323,26 +352,19 @@ public class UserProfileSetupActivity extends AppCompatActivity {
                                 }
                             });
                         }else{
-                            imageHoldUri = Uri.parse("android.resource://com.andresdlg.groupmeapp/"+R.drawable.new_user);
+                            if(iduser.isEmpty()){
+                                imageHoldUri = Uri.parse("android.resource://com.andresdlg.groupmeapp/"+R.drawable.new_user);
+                            }else{
+                                imageHoldUri = Uri.parse(u.getImageURL());
+                            }
                             mProgress.dismiss();
                             createUserData(alias,userName,job);
-                            /*mStorageReference.child("new_user.png").getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-                                @Override
-                                public void onSuccess(Uri uri) {
-                                    imageHoldUri = uri;
-                                    mProgress.dismiss();
-                                    createUserData(alias,userName,job);
-                                }
-                            });*/
-
                         }
                     }else{
-                        if(!yaPasoPorAca){
-                            View focusView;
-                            mAlias.setError("Alias en uso");
-                            focusView = mAlias;
-                            focusView.requestFocus();
-                        }
+                        View focusView;
+                        mAlias.setError("Alias en uso");
+                        focusView = mAlias;
+                        focusView.requestFocus();
                     }
                 }
 
