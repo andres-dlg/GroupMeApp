@@ -59,8 +59,6 @@ public class NotificationFragment extends Fragment {
         rv.setAdapter(adapter);
 
         tvNoNotifications = v.findViewById(R.id.tvNoNotifications);
-        //checkNotificationsQuantity();
-
 
         firebaseNotifications = FirebaseDatabase.getInstance().getReference("Users").child(StaticFirebaseSettings.currentUserId).child("notifications");
         firebaseNotifications.addValueEventListener(new ValueEventListener() {
@@ -82,13 +80,6 @@ public class NotificationFragment extends Fragment {
             }
         });
 
-
         return v;
-    }
-
-    private void checkNotificationsQuantity() {
-        if(adapter.getItemCount() == 0){
-            tvNoNotifications.setVisibility(View.INVISIBLE);
-        }
     }
 }

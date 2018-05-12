@@ -174,6 +174,8 @@ public class SubGroupsFragment extends Fragment {
                 }
                 sgf.setTasks(tasks);
                 subGroups.add(sgf);
+                rvSubGroupsAdapter.setCantidadTasks(tasks.size());
+
                 rvSubGroupsAdapter.notifyDataSetChanged();
             }
 
@@ -191,13 +193,24 @@ public class SubGroupsFragment extends Fragment {
                         tasks.add(task);
                     }
                     sgf.setTasks(tasks);
-                    rvSubGroupsAdapter.notifyDataSetChanged();
-                    /*int i = findPosition(sgf.getSubGroupKey());
+                    int i = findPosition(sgf.getSubGroupKey());
                     if(i != -1){
                         subGroups.remove(i);
                         subGroups.add(i,sgf);
-                        rvSubGroupsAdapter.notifyItemChanged(i);
-                    }*/
+
+                    }
+
+                    RVSubGroupAdapter.taskTypes type = rvSubGroupsAdapter.checkTasksSize(tasks.size());
+
+                    if(type == RVSubGroupAdapter.taskTypes.NEW_TASK){
+                        rvSubGroupsAdapter.setNewTaskFlag();
+                    }else if(type == RVSubGroupAdapter.taskTypes.UPDATED_TASK){
+                        rvSubGroupsAdapter.setUpdatedTaskFlag();
+                    }else{
+                        rvSubGroupsAdapter.setDeletedTaskFlag();
+                    }
+
+                    rvSubGroupsAdapter.notifyDataSetChanged();
                     swipeContainer.setRefreshing(false);
                 }
             }

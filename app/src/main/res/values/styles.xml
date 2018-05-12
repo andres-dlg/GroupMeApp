@@ -65,6 +65,7 @@
         <item name="android:homeAsUpIndicator">@drawable/ic_action_navigation_arrow_back_inverted</item>
     </style>
 
+
     <style name="MaterialSearchViewStyle">
         <!-- Background for the search bar-->
         <item name="searchBackground">@color/colorPrimaryDark</item>

@@ -102,7 +102,7 @@
         <activity
             android:name=".uiPackage.GroupActivity"
             android:label="@string/title_activity_group"
-            android:theme="@style/AppTheme.NoActionBar"
+            android:theme="@style/MyDialogTheme2"
             android:windowSoftInputMode="adjustPan"
             android:screenOrientation="portrait"/>
         <activity
