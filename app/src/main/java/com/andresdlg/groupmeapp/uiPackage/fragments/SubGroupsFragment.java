@@ -116,7 +116,7 @@ public class SubGroupsFragment extends Fragment {
             }
         });
 
-        fillSubGroups(view);
+        fillSubGroups();
 
         swipeContainer = view.findViewById(R.id.swipeContainer);
         // Setup refresh listener which triggers new data loading
@@ -158,7 +158,7 @@ public class SubGroupsFragment extends Fragment {
         super.onActivityCreated(savedInstanceState);
     }
 
-    private void fillSubGroups(final View v) {
+    private void fillSubGroups() {
         subGroupsRef.addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(DataSnapshot data, String s) {

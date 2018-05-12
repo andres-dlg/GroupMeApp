@@ -1,7 +1,7 @@
 package com.andresdlg.groupmeapp.uiPackage.fragments;
 
-import android.content.DialogInterface;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.DialogFragment;
@@ -50,14 +50,14 @@ public class GroupsFragment extends Fragment implements View.OnClickListener, He
 
     @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_groups,container,false);
         setRetainInstance(true);
         return v;
     }
 
     @Override
-    public void onViewCreated(final View view, @Nullable Bundle savedInstanceState) {
+    public void onViewCreated(@NonNull final View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
         this.view = view;
@@ -78,8 +78,6 @@ public class GroupsFragment extends Fragment implements View.OnClickListener, He
 
         groupsRef = FirebaseDatabase.getInstance().getReference("Groups");
         mUserGroupsRef = FirebaseDatabase.getInstance().getReference("Users").child(StaticFirebaseSettings.currentUserId).child("groups");
-
-        //implementRecyclerViewClickListeners();
     }
 
     private void getAllGroups(){
@@ -89,24 +87,6 @@ public class GroupsFragment extends Fragment implements View.OnClickListener, He
                 for(DataSnapshot data : dataSnapshot.getChildren()){
                     if(data.child("status").getValue().toString().equals(GroupStatus.ACCEPTED.toString())){
                         getGroup(data.getKey());
-                        boolean contains = false;
-                        //Group u = dataSnapshot.getValue(Group.class);
-
-                        /*int j = 0;
-                        for(int i = 0 ; i<groups.size(); i++){
-                            if(groups.get(i).getGroupKey().equals(u.getGroupKey())){
-                                contains = true;
-                                j = i;
-                            }
-                        }
-                        if(!contains){
-                            groups.add(u);
-                            adapter.notifyDataSetChanged();
-                        }else{
-                            groups.remove(j);
-                            groups.add(j,u);
-                            adapter.notifyDataSetChanged();
-                        }*/
                     }
                 }
 
@@ -134,25 +114,10 @@ public class GroupsFragment extends Fragment implements View.OnClickListener, He
         groupRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                boolean contains = false;
                 Group u = dataSnapshot.getValue(Group.class);
-                updateGroups(u);
-
-                /*int j = 0;
-                for(int i = 0 ; i<groups.size(); i++){
-                    if(groups.get(i).getGroupKey().equals(u.getGroupKey())){
-                        contains = true;
-                        j = i;
-                    }
+                if(u != null){
+                    updateGroups(u);
                 }
-                if(!contains){
-                    groups.add(u);
-                    adapter.notifyDataSetChanged();
-                }else{
-                    groups.remove(j);
-                    groups.add(j,u);
-                    adapter.notifyDataSetChanged();
-                }*/
             }
 
             @Override
@@ -224,9 +189,6 @@ public class GroupsFragment extends Fragment implements View.OnClickListener, He
         if(!exists){
             groups.add(group);
             adapter.notifyDataSetChanged();
-            /*int position = groups.size();
-            groups.add(position,group);
-            adapter.notifyItemInserted(position);*/
         }
     }
 }

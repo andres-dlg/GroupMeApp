@@ -4,10 +4,21 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-        <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="10dp">
+    <RelativeLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="10dp">
+
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/back"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:layout_marginLeft="16dp"
+            android:elevation="10dp"
+            android:visibility="gone"
+            android:foreground="?android:attr/selectableItemBackground"
+            android:src="@drawable/ic_arrow_left_white_24dp" />
 
         <ImageView
             android:id="@+id/header_cover_image"
@@ -26,6 +37,7 @@
             android:background="@drawable/profile_circular_border_imageview"
             android:elevation="10dp"
             android:scaleType="centerCrop"
+            android:transitionName="userPhoto"
             android:src="@drawable/new_user" />
 
         <android.support.design.widget.FloatingActionButton
@@ -35,11 +47,12 @@
             android:layout_alignRight="@id/user_profile_photo"
             android:layout_alignBottom="@id/user_profile_photo"
             app:backgroundTint="@color/colorAccent"
+            android:tint="@color/colorPrimary"
             android:clickable="true"
             app:layout_anchorGravity="bottom|right|end"
             android:layout_above="@id/user_profile_photo"
             app:elevation="10dp"
-            android:src="@android:drawable/ic_input_add"
+            android:src="@drawable/ic_menu_camera"
             android:scaleType="center"/>
 
         <RelativeLayout
@@ -80,23 +93,27 @@
             <android.support.design.widget.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textColorHint="#757575">
+                android:textColorHint="#757575"
+                android:id="@+id/til">
                 <AutoCompleteTextView
                     android:id="@+id/alias"
                     android:layout_width="fill_parent"
                     android:singleLine="true"
                     android:layout_height="wrap_content"
+                    android:textColor="@drawable/edit_text_selector"
                     android:hint="Alias"/>
             </android.support.design.widget.TextInputLayout>
 
             <android.support.design.widget.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textColorHint="#757575">
+                android:textColorHint="#757575"
+                android:id="@+id/til2">
                 <AutoCompleteTextView
                     android:id="@+id/job"
                     android:layout_width="fill_parent"
                     android:singleLine="true"
+                    android:textColor="@drawable/edit_text_selector"
                     android:layout_height="wrap_content"
                     android:hint="Profesión" />
             </android.support.design.widget.TextInputLayout>

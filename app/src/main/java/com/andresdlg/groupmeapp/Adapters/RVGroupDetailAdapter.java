@@ -20,6 +20,7 @@ import android.widget.Toast;
 
 import com.andresdlg.groupmeapp.Entities.Users;
 import com.andresdlg.groupmeapp.R;
+import com.andresdlg.groupmeapp.Utils.NotificationTypes;
 import com.andresdlg.groupmeapp.Utils.Roles;
 import com.andresdlg.groupmeapp.firebasePackage.FireApp;
 import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
@@ -116,7 +117,6 @@ public class RVGroupDetailAdapter extends RecyclerView.Adapter<RVGroupDetailAdap
     class GroupDetailViewHolder extends RecyclerView.ViewHolder{
 
         ValueEventListener groupEventListener;
-        ValueEventListener valueEventListener;
 
         DatabaseReference ref;
 
@@ -127,6 +127,7 @@ public class RVGroupDetailAdapter extends RecyclerView.Adapter<RVGroupDetailAdap
             mView = itemView;
         }
 
+        @SuppressLint("SetTextI18n")
         void setDetails(final Context context, String contactName, final String contactAlias, final String rol, final String contactPhoto, final String iduser){
             final CircleImageView mContactPhoto = mView.findViewById(R.id.contact_photo);
             TextView mContactName = mView.findViewById(R.id.tvUserName);
@@ -357,6 +358,48 @@ public class RVGroupDetailAdapter extends RecyclerView.Adapter<RVGroupDetailAdap
 
             //ELIMINAR DEL MAPA DE ROLES
             usersRoles.remove(userId);
+
+            //BORRO EL GRUPO Y TODAS LAS INVITACIONES PENDIENTES SI SOY EL UNICO MIEMBRO QUE QUEDABA
+            if(deleteAllContent){
+                groupRef.removeValue().addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Toast.makeText(context, "El grupo ha sido eliminado", Toast.LENGTH_SHORT).show();
+                    }
+                });
+
+                final DatabaseReference usersNotifications = FirebaseDatabase
+                        .getInstance()
+                        .getReference("Users");
+                usersNotifications.addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        for(DataSnapshot firebaseUser : dataSnapshot.getChildren()){
+                            for(DataSnapshot noti : firebaseUser.child("notifications").getChildren()){
+                                if(noti.child("type").getValue().toString().equals(NotificationTypes.GROUP_INVITATION.toString())
+                                        && noti.child("from").getValue().toString().equals(groupKey)){
+                                    usersNotifications
+                                            .child(firebaseUser.getKey())
+                                            .child("notifications")
+                                            .child(noti.getKey())
+                                            .removeValue();
+
+                                    usersNotifications
+                                            .child(firebaseUser.getKey())
+                                            .child("groups")
+                                            .child(groupKey)
+                                            .removeValue();
+                                }
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
+            }
 
 
             //BORRO ALL EL CONTENIDO DEL GRUPO QUE ESTA EN EL STORAGE SI CORRESPONDE

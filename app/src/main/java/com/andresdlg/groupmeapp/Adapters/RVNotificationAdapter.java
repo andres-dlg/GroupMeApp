@@ -24,7 +24,6 @@ import com.andresdlg.groupmeapp.Entities.Notification;
 import com.andresdlg.groupmeapp.Entities.Users;
 import com.andresdlg.groupmeapp.R;
 import com.andresdlg.groupmeapp.Utils.GroupStatus;
-import com.andresdlg.groupmeapp.Utils.Roles;
 import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.DataSource;
@@ -269,24 +268,6 @@ public class RVNotificationAdapter extends RecyclerView.Adapter<RVNotificationAd
             notifyItemRemoved(position);
             notifyItemRangeChanged(position, notifications.size());
 
-
-            //ESTO ES POR SI CUANDO ACEPTO LA INVITACION, NO HAY MIEMBROS EN EL GRUPO. EL QUE ACEPTA SE GUARDA COMO ADMINISTRADOR
-            groupRef.child("members").addListenerForSingleValueEvent(new ValueEventListener() {
-                @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
-                    if(dataSnapshot.getChildrenCount() == 1){
-                        if(dataSnapshot.getKey().equals(StaticFirebaseSettings.currentUserId)){
-                            setMeAsAdmin(groupRef);
-                        }
-                    }
-                }
-
-                @Override
-                public void onCancelled(DatabaseError databaseError) {
-
-                }
-            });
-
             mOnSaveGroupListener.onSavedGroup(true);
         }
 
@@ -311,9 +292,6 @@ public class RVNotificationAdapter extends RecyclerView.Adapter<RVNotificationAd
         }
     }
 
-    private void setMeAsAdmin(DatabaseReference groupRef) {
-        groupRef.child("members").child(StaticFirebaseSettings.currentUserId).setValue(Roles.ADMIN);
-    }
 
     public interface OnSaveGroupListener{
         void onSavedGroup(boolean saved);

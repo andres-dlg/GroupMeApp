@@ -42,8 +42,6 @@ import com.google.firebase.database.ValueEventListener;
 import com.ogaclejapan.smarttablayout.utils.v4.FragmentPagerItemAdapter;
 import com.ogaclejapan.smarttablayout.utils.v4.FragmentPagerItems;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -212,7 +210,7 @@ public class GroupActivity extends AppCompatActivity{
 
                     if(viewPagerWasInChatPage){
 
-                        ((View)navigationTabBar).animate().translationY(0);
+                        navigationTabBar.animate().translationY(0);
                         dummyView.animate().translationY(0);
 
                         int newMarginDp = 50;
@@ -255,7 +253,6 @@ public class GroupActivity extends AppCompatActivity{
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 for(DataSnapshot data : dataSnapshot.getChildren()){
-                    String s = data.getValue().toString();
                     getUser(data.getKey());
                 }
                 //((FireApp) getApplicationContext()).setGroupUsers(groupUsers);

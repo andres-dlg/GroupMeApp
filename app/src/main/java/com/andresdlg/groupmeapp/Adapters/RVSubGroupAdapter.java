@@ -217,7 +217,6 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
             View.OnClickListener onClickListener = new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-
                     Intent intent = new Intent(context, SubGroupDetailActivity.class);
                     // Pass data object in the bundle and populate details activity.
                     intent.putExtra("subGroupName", subGroups.get(position).getName());
@@ -228,7 +227,6 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
                     ActivityOptionsCompat options = ActivityOptionsCompat.
                             makeSceneTransitionAnimation((AppCompatActivity)contexto, p1);
                     context.startActivity(intent, options.toBundle());
-
                 }
             };
 
