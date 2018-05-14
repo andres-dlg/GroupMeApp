@@ -24,6 +24,7 @@ import com.andresdlg.groupmeapp.Entities.Notification;
 import com.andresdlg.groupmeapp.Entities.Users;
 import com.andresdlg.groupmeapp.R;
 import com.andresdlg.groupmeapp.Utils.GroupStatus;
+import com.andresdlg.groupmeapp.Utils.NotificationStatus;
 import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.DataSource;
@@ -97,6 +98,7 @@ public class RVNotificationAdapter extends RecyclerView.Adapter<RVNotificationAd
                     notificationViewHolder.setImage(context,u.getImageURL());
                     notificationViewHolder.hideBtn(context,notifications.get(position).getType());
                     notificationViewHolder.notificationMessage.setText(notifications.get(position).getMessage());
+                    notificationViewHolder.setNewNotification(notifications.get(position).getState());
 
                     //String date = dateDifference(notifications.get(position).getDate());
                     Calendar calendar = Calendar.getInstance();
@@ -112,7 +114,6 @@ public class RVNotificationAdapter extends RecyclerView.Adapter<RVNotificationAd
                 @Override
                 public void onCancelled(DatabaseError databaseError) {
 
-
                 }
             };
             userRef.addValueEventListener(usersEventListener);
@@ -126,6 +127,7 @@ public class RVNotificationAdapter extends RecyclerView.Adapter<RVNotificationAd
                     notificationViewHolder.hideBtn(context,notifications.get(position).getType());
                     notificationViewHolder.setImage(context,g.getImageUrl());
                     notificationViewHolder.notificationMessage.setText(notifications.get(position).getMessage());
+                    notificationViewHolder.setNewNotification(notifications.get(position).getState());
                     //String date = dateDifference(notifications.get(position).getDate());
 
                     Calendar calendar = Calendar.getInstance();
@@ -166,10 +168,19 @@ public class RVNotificationAdapter extends RecyclerView.Adapter<RVNotificationAd
         super.onAttachedToRecyclerView(recyclerView);
     }
 
+    public void updateNotificationStates() {
+        for(int i = 0; i<notifications.size() ; i++){
+            if(notifications.get(i).getState().equals(NotificationStatus.READ.toString())){
+                notifyItemChanged(i);
+            }
+        }
+    }
+
     class NotificationViewHolder extends RecyclerView.ViewHolder {
         ImageButton menuBtn;
         TextView userAlias;
         ImageView userPhoto;
+        ImageView newNotificationIndicator;
         TextView notificationMessage;
         TextView notificationDate;
         private String groupKey;
@@ -183,6 +194,7 @@ public class RVNotificationAdapter extends RecyclerView.Adapter<RVNotificationAd
             userAlias = itemView.findViewById(R.id.userAlias);
             userAlias.setSelected(true);
             userPhoto = itemView.findViewById(R.id.contact_photo);
+            newNotificationIndicator = itemView.findViewById(R.id.newNotificationIndicator);
             notificationMessage = itemView.findViewById(R.id.notificationText);
             notificationMessage.setSelected(true);
             notificationDate = itemView.findViewById(R.id.date);
@@ -290,8 +302,15 @@ public class RVNotificationAdapter extends RecyclerView.Adapter<RVNotificationAd
         void setNotificationKey(String notificationKey) {
             this.notificationKey = notificationKey;
         }
-    }
 
+        public void setNewNotification(String state) {
+            if(state.equals(NotificationStatus.UNREAD.toString())){
+                newNotificationIndicator.setVisibility(View.VISIBLE);
+            }else {
+                newNotificationIndicator.setVisibility(View.GONE);
+            }
+        }
+    }
 
     public interface OnSaveGroupListener{
         void onSavedGroup(boolean saved);

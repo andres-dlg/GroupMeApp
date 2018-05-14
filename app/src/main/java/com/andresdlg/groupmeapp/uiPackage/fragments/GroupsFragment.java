@@ -81,7 +81,7 @@ public class GroupsFragment extends Fragment implements View.OnClickListener, He
     }
 
     private void getAllGroups(){
-        mUserGroupsRef.addListenerForSingleValueEvent(new ValueEventListener() {
+        mUserGroupsRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 for(DataSnapshot data : dataSnapshot.getChildren()){
@@ -111,11 +111,11 @@ public class GroupsFragment extends Fragment implements View.OnClickListener, He
 
     private void getGroup(String key) {
         DatabaseReference groupRef = groupsRef.child(key);
-        groupRef.addValueEventListener(new ValueEventListener() {
+        groupRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                Group u = dataSnapshot.getValue(Group.class);
-                if(u != null){
+                if(dataSnapshot.getValue()!=null){
+                    Group u = dataSnapshot.getValue(Group.class);
                     updateGroups(u);
                 }
             }

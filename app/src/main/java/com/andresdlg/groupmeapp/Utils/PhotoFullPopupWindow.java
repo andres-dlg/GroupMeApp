@@ -4,7 +4,6 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
-import android.os.Build;
 import android.support.annotation.Nullable;
 import android.support.v7.graphics.Palette;
 import android.view.Gravity;

@@ -73,7 +73,6 @@ public class HeaderDialogFragment extends DialogFragment implements GroupAddMemb
 
     GroupType type;
     String parentGroupKey;
-    private boolean saved;
     private OnSaveGroupListener mOnSaveGroupListener;
 
     public HeaderDialogFragment(GroupType type){
@@ -104,7 +103,7 @@ public class HeaderDialogFragment extends DialogFragment implements GroupAddMemb
 
         Toolbar toolbar = view.findViewById(R.id.toolbar);
 
-        TextView tv = ((TextView)toolbar.findViewById(R.id.dialogTitle));
+        TextView tv = (toolbar.findViewById(R.id.dialogTitle));
         if(type == GroupType.GROUP){
             tv.setText("Nuevo grupo");
         }else{

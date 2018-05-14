@@ -16,7 +16,6 @@ import android.support.annotation.RequiresApi;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.TextInputLayout;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.WindowManager;
@@ -75,8 +74,8 @@ public class UserProfileSetupActivity extends AppCompatActivity {
     //FIREBASE STORAGE FIELDS
     StorageReference mChildStorage;
 
-    private static final int REQUEST_CAMERA = 3;
-    private static final int SELECT_FILE = 2;
+    //private static final int REQUEST_CAMERA = 3;
+    //private static final int SELECT_FILE = 2;
 
     //IMAGE HOLD URI
     Uri imageHoldUri;
@@ -383,10 +382,16 @@ public class UserProfileSetupActivity extends AppCompatActivity {
         mUserDatabase.child("userid").setValue(mAuth.getCurrentUser().getUid());
         mUserDatabase.child("imageUrl").setValue(imageHoldUri.toString());
 
-        Intent intent = new Intent(UserProfileSetupActivity.this, MainActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        startActivity(intent);
-        finish();
+        //ESTO LO HAGO PORQUE SI VENGO DE EDITAR MI PERFIL (ELSE) ME DA ERROR EL CONTEXT DE GLIDE
+        if(iduser.isEmpty()){
+            Intent intent = new Intent(UserProfileSetupActivity.this, MainActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivity(intent);
+            finish();
+        }else{
+            onBackPressed();
+        }
+
     }
 
     public void onRequestPermissionsResult(int requestCode, @NonNull String permissions[], @NonNull int[] grantResults) {

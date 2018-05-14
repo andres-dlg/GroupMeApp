@@ -1,7 +1,6 @@
 package com.andresdlg.groupmeapp.uiPackage;
 
 import android.content.Intent;
-import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
@@ -42,7 +41,6 @@ import com.andresdlg.groupmeapp.uiPackage.login.LoginActivity;
 import com.bumptech.glide.Glide;
 import com.codemybrainsout.ratingdialog.RatingDialog;
 import com.getkeepsafe.taptargetview.TapTarget;
-import com.getkeepsafe.taptargetview.TapTargetSequence;
 import com.getkeepsafe.taptargetview.TapTargetView;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -59,15 +57,13 @@ import com.ogaclejapan.smarttablayout.utils.v4.FragmentPagerItemAdapter;
 import com.ogaclejapan.smarttablayout.utils.v4.FragmentPagerItems;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 import devlight.io.library.ntb.NavigationTabBar;
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener {
+        implements NavigationView.OnNavigationItemSelectedListener, NotificationFragment.OnNewNotificationSetListener {
 
     //FIREBASE AUTHENTICATION FIELDS
     FirebaseAuth mAuth;
@@ -88,6 +84,8 @@ public class MainActivity extends AppCompatActivity
 
     Toolbar toolbar;
     CircleImageView nav_photo;
+
+    ArrayList<NavigationTabBar.Model> models;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -136,7 +134,7 @@ public class MainActivity extends AppCompatActivity
         viewPager.setOffscreenPageLimit(3);
 
         final NavigationTabBar navigationTabBar = (NavigationTabBar) findViewById(R.id.ntb);
-        final ArrayList<NavigationTabBar.Model> models = new ArrayList<>();
+        models = new ArrayList<>();
         models.add(
                 new NavigationTabBar.Model.Builder(
                         getResources().getDrawable(R.drawable.newspaper),
@@ -158,7 +156,6 @@ public class MainActivity extends AppCompatActivity
                         getResources().getDrawable(R.drawable.bell),
                         Color.parseColor(colors[2])
                 ).title("Notificaciones")
-                        .badgeTitle("state")
                         .build()
         );
         models.add(
@@ -179,6 +176,12 @@ public class MainActivity extends AppCompatActivity
         navigationTabBar.setTypeface(customFont);
         navigationTabBar.setTitleSize(30);
         navigationTabBar.setIconSizeFraction((float) 0.5);
+
+        navigationTabBar.setBadgePosition(NavigationTabBar.BadgePosition.RIGHT);
+        navigationTabBar.setIsBadged(true);
+        navigationTabBar.setBadgeBgColor(Color.RED);
+        navigationTabBar.setBadgeTitleColor(Color.WHITE);
+        navigationTabBar.setBadgeSize(40);
 
         //Posiciono mi activity en el fragment
         String fragment = getIntent().getStringExtra("fragment");
@@ -219,9 +222,11 @@ public class MainActivity extends AppCompatActivity
         TextView nav_name = hView.findViewById(R.id.nav_name);
         nav_photo = hView.findViewById(R.id.nav_photo);
 
-        Glide.with(MainActivity.this)
-                .load(users.getImageURL().trim())
-                .into(nav_photo);
+        if(!this.isDestroyed()){
+            Glide.with(MainActivity.this)
+                    .load(users.getImageURL().trim())
+                    .into(nav_photo);
+        }
 
         if(users !=null){
             nav_user.setText(String.format("@%s", users.getAlias()));
@@ -371,7 +376,7 @@ public class MainActivity extends AppCompatActivity
                         .titleGravity(GravityEnum.CENTER)
                         .icon(getResources().getDrawable(R.drawable.ic_launcher))
                         .limitIconToDefaultSize()
-                        .content("GroupMeApp para Android\n2018")
+                        .content("GroupMeApp para Android\n2018\n\nVersión 1.0")
                         .contentGravity(GravityEnum.CENTER)
                         .positiveText("OK")
                         .show();
@@ -531,4 +536,16 @@ public class MainActivity extends AppCompatActivity
         transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
         transaction.add(android.R.id.content, newFragment).addToBackStack(null).commit();
     }
+
+    @Override
+    public void onNewNotificationSet(int notificationQuantity) {
+        NavigationTabBar.Model model = models.get(2);
+        if(notificationQuantity > 0){
+            model.showBadge();
+            model.setBadgeTitle(String.valueOf(notificationQuantity));
+        }else{
+            model.hideBadge();
+        }
+    }
+
 }
