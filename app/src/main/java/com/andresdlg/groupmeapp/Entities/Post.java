@@ -1,5 +1,8 @@
 package com.andresdlg.groupmeapp.Entities;
 
+import java.util.List;
+import java.util.Map;
+
 public class Post {
 
     private String postId;
@@ -7,13 +10,15 @@ public class Post {
     private long time;
     private String userId;
     private String groupName;
+    private List<String> seenBy;
 
-    public Post(String postId, String text, long time, String userId, String groupName){
+    public Post(String postId, String text, long time, String userId, String groupName, List<String> seenBy){
         this.postId = postId;
         this.text = text;
         this.time = time;
         this.userId = userId;
         this.groupName = groupName;
+        this.seenBy = seenBy;
     }
 
     public Post(){ }
@@ -56,5 +61,13 @@ public class Post {
 
     public void setGroupName(String groupName) {
         this.groupName = groupName;
+    }
+
+    public List<String> getSeenBy() {
+        return seenBy;
+    }
+
+    public void setSeenBy(List<String> seenBy) {
+        this.seenBy = seenBy;
     }
 }

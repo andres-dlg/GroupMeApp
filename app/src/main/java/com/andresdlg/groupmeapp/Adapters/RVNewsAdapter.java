@@ -43,7 +43,9 @@ import com.google.firebase.database.ValueEventListener;
 
 import org.ocpsoft.prettytime.PrettyTime;
 
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -85,7 +87,7 @@ public class RVNewsAdapter extends RecyclerView.Adapter<RVNewsAdapter.NewsViewHo
     @Override
     public void onBindViewHolder(@NonNull NewsViewHolder groupViewHolder, int position) {
         Post post = posts.get(position);
-        groupViewHolder.setDetails(context,post.getPostId(),post.getText(),post.getTime(),post.getUserId(),post.getGroupName(), prettyTime, isInGroup, groupKey);
+        groupViewHolder.setDetails(context,post.getPostId(),post.getText(),post.getTime(),post.getUserId(),post.getGroupName(),post.getSeenBy(), prettyTime, isInGroup, groupKey);
     }
 
     @Override
@@ -112,6 +114,7 @@ public class RVNewsAdapter extends RecyclerView.Adapter<RVNewsAdapter.NewsViewHo
         TextView postText;
         TextView groupText;
         ImageButton btnMenu;
+        ImageView newPostIndicator;
 
         DatabaseReference groupRolRef;
 
@@ -125,10 +128,11 @@ public class RVNewsAdapter extends RecyclerView.Adapter<RVNewsAdapter.NewsViewHo
             postText = itemView.findViewById(R.id.postText);
             groupText = itemView.findViewById(R.id.group);
             btnMenu = itemView.findViewById(R.id.btnMenu);
+            newPostIndicator = itemView.findViewById(R.id.newPostIndicator);
             this.groupRolRef = groupRolRef;
         }
 
-        void setDetails(final Context context, final String postId, final String text, final long time, String userId, final String groupName, final PrettyTime prettyTime, final boolean isInGroup, final String groupKey) {
+        void setDetails(final Context context, final String postId, final String text, final long time, String userId, final String groupName, final List<String> seenBy, final PrettyTime prettyTime, final boolean isInGroup, final String groupKey) {
 
             FirebaseDatabase.getInstance().getReference("Users").child(userId).addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
@@ -157,6 +161,23 @@ public class RVNewsAdapter extends RecyclerView.Adapter<RVNewsAdapter.NewsViewHo
                         groupText.setVisibility(View.GONE);
                     }else{
                         groupText.setText(groupName);
+                    }
+
+                    //ESCONDO O MUESTRO EL PUNTO ROJO DE NOTICIA NUEVA
+                    if(seenBy!=null){
+                        boolean iHaveSeenThisPost = false;
+                        for(String entry: seenBy) {
+                            if(entry.equals(StaticFirebaseSettings.currentUserId)){
+                                iHaveSeenThisPost = true;
+                            }
+                        }
+                        if(iHaveSeenThisPost){
+                            newPostIndicator.setVisibility(View.GONE);
+                        }else{
+                            newPostIndicator.setVisibility(View.VISIBLE);
+                        }
+                    }else{
+                        newPostIndicator.setVisibility(View.VISIBLE);
                     }
 
                     //SETEO EL BOTON DE MENU SI EL POST ES MIO O SI SOY ADMINISTRADOR DEL GRUPO
@@ -212,6 +233,14 @@ public class RVNewsAdapter extends RecyclerView.Adapter<RVNewsAdapter.NewsViewHo
 
                 }
             });
+        }
+
+        public void setPostSeen(Post post) {
+            if(post.getSeenBy()!=null){
+
+
+
+            }
         }
     }
 

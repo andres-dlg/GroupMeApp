@@ -63,7 +63,10 @@ import de.hdodenhof.circleimageview.CircleImageView;
 import devlight.io.library.ntb.NavigationTabBar;
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener, NotificationFragment.OnNewNotificationSetListener {
+        implements
+        NavigationView.OnNavigationItemSelectedListener,
+        NotificationFragment.OnNewNotificationSetListener,
+        NewsFragment.OnNewPostSetListener{
 
     //FIREBASE AUTHENTICATION FIELDS
     FirebaseAuth mAuth;
@@ -548,4 +551,14 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+    @Override
+    public void onNewPostSet(int postQuantity) {
+        NavigationTabBar.Model model = models.get(0);
+        if(postQuantity > 0){
+            model.showBadge();
+            model.setBadgeTitle(String.valueOf(postQuantity));
+        }else{
+            model.hideBadge();
+        }
+    }
 }

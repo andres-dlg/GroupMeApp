@@ -74,7 +74,7 @@
             android:textColor="@color/gray_edit_text"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/newPostIndicator"
             app:layout_constraintTop_toBottomOf="@+id/divider" />
 
         <TextView
@@ -98,6 +98,18 @@
             card_view:srcCompat="@drawable/ic_dots_vertical_black_24dp"
             android:visibility="gone"/>
 
+        <ImageView
+            android:id="@+id/newPostIndicator"
+            android:layout_width="8dp"
+            android:layout_height="8dp"
+            android:layout_marginBottom="8dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/divider"
+            android:src="@drawable/newnotindicator"
+            android:visibility="gone"/>
 
     </android.support.constraint.ConstraintLayout>
 

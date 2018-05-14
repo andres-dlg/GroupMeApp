@@ -1,11 +1,11 @@
 package com.andresdlg.groupmeapp.uiPackage.fragments;
 
 import android.os.Bundle;
-import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -60,12 +60,16 @@ public class NewsFragment extends Fragment {
 
     Integer selectedItems[] = {};
 
+    OnNewPostSetListener mOnNewPostSetListener;
+
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         posts = new ArrayList<>();
         groupKeys = new ArrayList<>();
         groupNames = new ArrayList<>();
+
+        onAttachToParentFragment(getActivity());
     }
 
     @Nullable
@@ -98,7 +102,6 @@ public class NewsFragment extends Fragment {
                             @Override
                             public boolean onSelection(MaterialDialog dialog, Integer[] which, CharSequence[] text) {
                                 List<String> groupKeysFiltered = new ArrayList<>();
-
                                 for(int i : which){
                                     groupKeysFiltered.add(groupKeys.get(i));
                                 }
@@ -217,6 +220,7 @@ public class NewsFragment extends Fragment {
 
     private void fetchPosts(final List<String> groupKeys) {
         cantidadDeGrupos = groupKeys.size();
+        final int[] postQuantity = {0};
         for(int i = 0; i< cantidadDeGrupos ; i++){
             postsRef = FirebaseDatabase.getInstance().getReference("Groups").child(groupKeys.get(i)).child("posts");
             postsRef.addChildEventListener(new ChildEventListener() {
@@ -224,6 +228,27 @@ public class NewsFragment extends Fragment {
                 public void onChildAdded(DataSnapshot dataSnapshot, String s) {
                     Post post = dataSnapshot.getValue(Post.class);
                     updatePosts(post,0);
+                    if(post.getSeenBy()!=null){
+                        boolean iHaveSeenPost = false;
+                        for(String id : post.getSeenBy()){
+                            if(id.equals(StaticFirebaseSettings.currentUserId)){
+                                iHaveSeenPost = true;
+                                break;
+                            }
+                        }
+                        if(!iHaveSeenPost){
+                            postQuantity[0] += 1;
+                            List<String> ids = post.getSeenBy();
+                            ids.add(StaticFirebaseSettings.currentUserId);
+                            dataSnapshot.child("seenBy").getRef().setValue(ids);
+                        }
+                    }else{
+                        postQuantity[0] += 1;
+                        List<String> ids = new ArrayList<>();
+                        ids.add(StaticFirebaseSettings.currentUserId);
+                        dataSnapshot.child("seenBy").getRef().setValue(ids);
+                    }
+                    mOnNewPostSetListener.onNewPostSet(postQuantity[0]);
 
                     //SI HAY ALGUN POST SE VA A MOSTRAR LA LISTA Y EL TEXTVIEW
                     rvPosts.setVisibility(View.VISIBLE);
@@ -308,7 +333,23 @@ public class NewsFragment extends Fragment {
                 filterPosts(groupKeys);
                 fabClear.hide();
                 fabFilter.hide();
+                mOnNewPostSetListener.onNewPostSet(0);
+                rvNewsAdapter.notifyDataSetChanged();
             }
+        }
+    }
+
+
+    public interface OnNewPostSetListener{
+        void onNewPostSet(int postQuantity);
+    }
+
+    public void onAttachToParentFragment(FragmentActivity activity){
+        try {
+            mOnNewPostSetListener = (OnNewPostSetListener) activity;
+        }
+        catch (ClassCastException e){
+            throw new ClassCastException(activity.toString() + " must implement OnUserSelectionSetListener");
         }
     }
 }
