@@ -469,9 +469,11 @@ public class GroupDetailActivity extends AppCompatActivity {
         statusRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                if(dataSnapshot.getValue().toString().equals(GroupStatus.ACCEPTED.toString())){
-                    usersList.add(u);
-                    adapter.notifyDataSetChanged();
+                if(dataSnapshot.getValue()!=null){
+                    if(dataSnapshot.getValue().toString().equals(GroupStatus.ACCEPTED.toString())){
+                        usersList.add(u);
+                        adapter.notifyDataSetChanged();
+                    }
                 }
             }
 
