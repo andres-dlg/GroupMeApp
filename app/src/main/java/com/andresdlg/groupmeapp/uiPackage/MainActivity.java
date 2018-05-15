@@ -183,8 +183,8 @@ public class MainActivity extends AppCompatActivity
         navigationTabBar.setBadgePosition(NavigationTabBar.BadgePosition.RIGHT);
         navigationTabBar.setIsBadged(true);
         navigationTabBar.setBadgeBgColor(Color.RED);
-        navigationTabBar.setBadgeTitleColor(Color.WHITE);
-        navigationTabBar.setBadgeSize(40);
+        navigationTabBar.setBadgeTitleColor(Color.RED);
+        navigationTabBar.setBadgeSize(20);
 
         //Posiciono mi activity en el fragment
         String fragment = getIntent().getStringExtra("fragment");

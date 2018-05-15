@@ -262,7 +262,10 @@ public class NewsFragment extends Fragment {
                         postRevised.add(post.getPostId());
                         postQuantity += 1;
                     }
-                    mOnNewPostSetListener.onNewPostSet(postQuantity);
+
+                    if(cantidadDeGrupos == groupKeys.size()){
+                        mOnNewPostSetListener.onNewPostSet(postQuantity);
+                    }
 
                     //SI HAY ALGUN POST SE VA A MOSTRAR LA LISTA Y EL TEXTVIEW
                     rvPosts.setVisibility(View.VISIBLE);
