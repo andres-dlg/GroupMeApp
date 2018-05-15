@@ -43,7 +43,7 @@ public class NewPostActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        String groupKey = ((FireApp) getApplication()).getGroupKey();
+        final String groupKey = ((FireApp) getApplication()).getGroupKey();
         final String groupName = ((FireApp) getApplication()).getGroupName();
 
         postsRef = FirebaseDatabase
@@ -75,6 +75,7 @@ public class NewPostActivity extends AppCompatActivity {
                     newPost.put("seenBy",seenBy);
                     newPost.put("time",timeNow.getTimeInMillis());
                     newPost.put("text",postText.getText().toString());
+                    newPost.put("groupKey",groupKey);
                     newPost.put("groupName", groupName);
 
                     postsRef.child(postId).setValue(newPost).addOnCompleteListener(new OnCompleteListener<Void>() {

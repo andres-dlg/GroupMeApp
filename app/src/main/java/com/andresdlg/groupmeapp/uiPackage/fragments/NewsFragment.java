@@ -20,6 +20,7 @@ import com.andresdlg.groupmeapp.Entities.Post;
 import com.andresdlg.groupmeapp.R;
 import com.andresdlg.groupmeapp.Utils.GroupStatus;
 import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -56,11 +57,15 @@ public class NewsFragment extends Fragment {
 
     List<String> groupNames;
 
+    List<String> postRevised;
+
     int cantidadDeGrupos;
 
     Integer selectedItems[] = {};
 
     OnNewPostSetListener mOnNewPostSetListener;
+
+    int postQuantity ;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -68,6 +73,9 @@ public class NewsFragment extends Fragment {
         posts = new ArrayList<>();
         groupKeys = new ArrayList<>();
         groupNames = new ArrayList<>();
+        postRevised = new ArrayList<>();
+
+        postQuantity = 0;
 
         onAttachToParentFragment(getActivity());
     }
@@ -220,7 +228,7 @@ public class NewsFragment extends Fragment {
 
     private void fetchPosts(final List<String> groupKeys) {
         cantidadDeGrupos = groupKeys.size();
-        final int[] postQuantity = {0};
+
         for(int i = 0; i< cantidadDeGrupos ; i++){
             postsRef = FirebaseDatabase.getInstance().getReference("Groups").child(groupKeys.get(i)).child("posts");
             postsRef.addChildEventListener(new ChildEventListener() {
@@ -228,27 +236,33 @@ public class NewsFragment extends Fragment {
                 public void onChildAdded(DataSnapshot dataSnapshot, String s) {
                     Post post = dataSnapshot.getValue(Post.class);
                     updatePosts(post,0);
+
                     if(post.getSeenBy()!=null){
-                        boolean iHaveSeenPost = false;
-                        for(String id : post.getSeenBy()){
-                            if(id.equals(StaticFirebaseSettings.currentUserId)){
-                                iHaveSeenPost = true;
+                        boolean wasRevised = false;
+                        for(String p : postRevised){
+                            if(p.equals(post.getPostId())){
+                                wasRevised = true;
                                 break;
                             }
                         }
-                        if(!iHaveSeenPost){
-                            postQuantity[0] += 1;
-                            List<String> ids = post.getSeenBy();
-                            ids.add(StaticFirebaseSettings.currentUserId);
-                            dataSnapshot.child("seenBy").getRef().setValue(ids);
+                        if(!wasRevised){
+                            boolean iHaveSeenPost = false;
+                            for(String id : post.getSeenBy()){
+                                if(id.equals(StaticFirebaseSettings.currentUserId)){
+                                    iHaveSeenPost = true;
+                                    break;
+                                }
+                            }
+                            if(!iHaveSeenPost){
+                                postQuantity += 1;
+                            }
+                            postRevised.add(post.getPostId());
                         }
                     }else{
-                        postQuantity[0] += 1;
-                        List<String> ids = new ArrayList<>();
-                        ids.add(StaticFirebaseSettings.currentUserId);
-                        dataSnapshot.child("seenBy").getRef().setValue(ids);
+                        postRevised.add(post.getPostId());
+                        postQuantity += 1;
                     }
-                    mOnNewPostSetListener.onNewPostSet(postQuantity[0]);
+                    mOnNewPostSetListener.onNewPostSet(postQuantity);
 
                     //SI HAY ALGUN POST SE VA A MOSTRAR LA LISTA Y EL TEXTVIEW
                     rvPosts.setVisibility(View.VISIBLE);
@@ -299,12 +313,7 @@ public class NewsFragment extends Fragment {
             }
         }
         if(!exists && mode == 0){
-            //int position = posts.size();
-            //posts.add(position,post);
-            //rvNewsAdapter.notifyDataSetChanged();
-            //rvNewsAdapter.notifyItemInserted(position);
-            //rvNewsAdapter.notifyItemRangeChanged(position,posts.size());
-            posts.add(post);
+            posts.add(0,post);
             rvNewsAdapter.notifyDataSetChanged();
         }
         Collections.sort(posts, new Comparator<Post>() {
@@ -329,12 +338,18 @@ public class NewsFragment extends Fragment {
             if(isVisibleToUser){
                 fabFilter.show();
             }else{
+                rvNewsAdapter.setPostsAsSeen();
+                for(Post p : posts){
+                    List<String> seenBy = p.getSeenBy();
+                    seenBy.add(StaticFirebaseSettings.currentUserId);
+                    FirebaseDatabase.getInstance().getReference("Groups").child(p.getGroupKey()).child("posts").child(p.getPostId()).child("seenBy").setValue(seenBy);
+                }
+                mOnNewPostSetListener.onNewPostSet(0);
+
                 selectedItems = new Integer[]{};
                 filterPosts(groupKeys);
                 fabClear.hide();
                 fabFilter.hide();
-                mOnNewPostSetListener.onNewPostSet(0);
-                rvNewsAdapter.notifyDataSetChanged();
             }
         }
     }

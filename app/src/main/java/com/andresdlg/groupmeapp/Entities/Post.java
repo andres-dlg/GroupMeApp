@@ -10,14 +10,16 @@ public class Post {
     private long time;
     private String userId;
     private String groupName;
+    private String groupKey;
     private List<String> seenBy;
 
-    public Post(String postId, String text, long time, String userId, String groupName, List<String> seenBy){
+    public Post(String postId, String text, long time, String userId, String groupName,String groupKey, List<String> seenBy){
         this.postId = postId;
         this.text = text;
         this.time = time;
         this.userId = userId;
         this.groupName = groupName;
+        this.groupKey = groupKey;
         this.seenBy = seenBy;
     }
 
@@ -69,5 +71,13 @@ public class Post {
 
     public void setSeenBy(List<String> seenBy) {
         this.seenBy = seenBy;
+    }
+
+    public String getGroupKey() {
+        return groupKey;
+    }
+
+    public void setGroupKey(String groupKey) {
+        this.groupKey = groupKey;
     }
 }

@@ -105,6 +105,13 @@ public class RVNewsAdapter extends RecyclerView.Adapter<RVNewsAdapter.NewsViewHo
         notifyDataSetChanged();
     }
 
+    public void setPostsAsSeen() {
+        for(int i = 0; i<posts.size(); i++){
+            posts.get(i).getSeenBy().add(StaticFirebaseSettings.currentUserId);
+            notifyItemChanged(i);
+        }
+    }
+
     class NewsViewHolder extends RecyclerView.ViewHolder {
 
         CardView cv;
