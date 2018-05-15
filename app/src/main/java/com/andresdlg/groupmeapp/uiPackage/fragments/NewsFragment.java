@@ -338,14 +338,23 @@ public class NewsFragment extends Fragment {
             if(isVisibleToUser){
                 fabFilter.show();
             }else{
-                rvNewsAdapter.setPostsAsSeen();
                 for(Post p : posts){
                     List<String> seenBy = p.getSeenBy();
-                    seenBy.add(StaticFirebaseSettings.currentUserId);
-                    FirebaseDatabase.getInstance().getReference("Groups").child(p.getGroupKey()).child("posts").child(p.getPostId()).child("seenBy").setValue(seenBy);
+                    boolean existo = false;
+                    for(String u : seenBy){
+                        if(u.equals(StaticFirebaseSettings.currentUserId)){
+                            existo = true;
+                        }
+                    }
+                    if(!existo){
+                        seenBy.add(StaticFirebaseSettings.currentUserId);
+                        FirebaseDatabase.getInstance().getReference("Groups").child(p.getGroupKey()).child("posts").child(p.getPostId()).child("seenBy").setValue(seenBy);
+                    }
                 }
+                rvNewsAdapter.setPostsAsSeen();
                 mOnNewPostSetListener.onNewPostSet(0);
 
+                postQuantity = 0;
                 selectedItems = new Integer[]{};
                 filterPosts(groupKeys);
                 fabClear.hide();
