@@ -49,7 +49,7 @@ import java.util.List;
 import de.hdodenhof.circleimageview.CircleImageView;
 import devlight.io.library.ntb.NavigationTabBar;
 
-public class GroupActivity extends AppCompatActivity{
+public class GroupActivity extends AppCompatActivity implements GroupChatFragment.OnNewMessageListener{
 
     DatabaseReference groupRef;
     DatabaseReference userRef;
@@ -66,6 +66,7 @@ public class GroupActivity extends AppCompatActivity{
     View dummyView;
     TextView tv;
     CircleImageView civ;
+    ArrayList<NavigationTabBar.Model> models;
 
     String groupName;
 
@@ -140,7 +141,7 @@ public class GroupActivity extends AppCompatActivity{
         viewPager.setOffscreenPageLimit(3);
 
         navigationTabBar = findViewById(R.id.ntb);
-        final ArrayList<NavigationTabBar.Model> models = new ArrayList<>();
+        models = new ArrayList<>();
         models.add(
                 new NavigationTabBar.Model.Builder(
                         getResources().getDrawable(R.drawable.newspaper),
@@ -176,6 +177,11 @@ public class GroupActivity extends AppCompatActivity{
         navigationTabBar.setTitleSize(35);
         navigationTabBar.setIconSizeFraction((float) 0.5);
 
+        navigationTabBar.setBadgePosition(NavigationTabBar.BadgePosition.RIGHT);
+        navigationTabBar.setIsBadged(true);
+        navigationTabBar.setBadgeBgColor(Color.RED);
+        navigationTabBar.setBadgeTitleColor(Color.RED);
+        navigationTabBar.setBadgeSize(20);
 
         viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
@@ -423,4 +429,14 @@ public class GroupActivity extends AppCompatActivity{
         return true;
     }
 
+    @Override
+    public void onNewMessage(int messageQuantity) {
+        NavigationTabBar.Model model = models.get(2);
+        if(messageQuantity > 0){
+            model.showBadge();
+            model.setBadgeTitle(String.valueOf(messageQuantity));
+        }else{
+            model.hideBadge();
+        }
+    }
 }

@@ -123,7 +123,7 @@ public class SubGroupChatDialogFragment extends DialogFragment {
         linearLayoutManager = new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false);
         RecyclerView recyclerChat = (RecyclerView) v.findViewById(R.id.recyclerChat);
         recyclerChat.setLayoutManager(linearLayoutManager);
-        adapter = new ListMessageAdapter(getContext(), conversation, null, null,"Group");
+        adapter = new ListMessageAdapter(getContext(), conversation, null, null,"Group", conversationKey);
 
         FirebaseDatabase.getInstance().getReference().child("Conversations").child(conversationKey).child("messages").addChildEventListener(new ChildEventListener() {
             @Override

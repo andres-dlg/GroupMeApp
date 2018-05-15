@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
@@ -47,6 +48,12 @@ public class GroupChatFragment extends Fragment {
 
     static List<Users> groupUsers;
 
+    boolean isVisibleToUser;
+
+    OnNewMessageListener mOnNewMessageListener;
+
+    int cantidadDeMensajesNoVistos;
+
     public static void setGroupUsers(List<Users> users){
         groupUsers = new ArrayList<>();
         //groupUsers.clear();
@@ -62,6 +69,9 @@ public class GroupChatFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        onAttachToParentFragment(getActivity());
+        cantidadDeMensajesNoVistos = 0;
+        isVisibleToUser = false;
     }
 
     @Override
@@ -83,10 +93,13 @@ public class GroupChatFragment extends Fragment {
                 if (view.getId() == R.id.btnSend) {
                     String content = editWriteMessage.getText().toString().trim();
                     if (content.length() > 0) {
+                        List<String> seenBy = new ArrayList<>();
+                        seenBy.add(StaticFirebaseSettings.currentUserId);
                         editWriteMessage.setText("");
                         DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference("Conversations").child(conversationKey).child("messages").push();
                         Message newMessage = new Message();
                         newMessage.setText(content);
+                        newMessage.setSeenBy(seenBy);
                         newMessage.setIdSender(StaticFirebaseSettings.currentUserId);
                         //Tocar esto cuando la conversación sea grupal
                         newMessage.setIdReceiver(null);
@@ -107,7 +120,7 @@ public class GroupChatFragment extends Fragment {
         int newMarginDp = 20;
         params.topMargin = (int) (TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, newMarginDp, metrics));
 
-        adapter = new ListMessageAdapter(getContext(), conversation, null, null,"Group");
+        adapter = new ListMessageAdapter(getContext(), conversation, null, null,"Group",conversationKey);
 
         FirebaseDatabase.getInstance().getReference().child("Conversations").child(conversationKey).child("messages").addChildEventListener(new ChildEventListener() {
             @Override
@@ -118,11 +131,18 @@ public class GroupChatFragment extends Fragment {
                     newMessage.setIdSender((String) mapMessage.get("idSender"));
                     newMessage.setIdReceiver((String) mapMessage.get("idReceiver"));
                     newMessage.setText((String) mapMessage.get("text"));
+                    newMessage.setSeenBy((List<String>) mapMessage.get("seenBy"));
                     newMessage.setTimestamp((long) mapMessage.get("timestamp"));
                     newMessage.setId((String) mapMessage.get("id"));
                     conversation.getListMessageData().add(newMessage);
                     adapter.notifyDataSetChanged();
                     linearLayoutManager.scrollToPosition(conversation.getListMessageData().size() - 1);
+
+                    if(!checkIfIHaveSeenThisMessage(newMessage.getSeenBy())&& !isVisibleToUser){
+                        cantidadDeMensajesNoVistos += 1;
+                    }
+
+                    mOnNewMessageListener.onNewMessage(cantidadDeMensajesNoVistos);
                 }
             }
 
@@ -150,4 +170,41 @@ public class GroupChatFragment extends Fragment {
 
         editWriteMessage = view.findViewById(R.id.editWriteMessage);
     }
+
+
+    private boolean checkIfIHaveSeenThisMessage(List<String> seenBy) {
+        for(String s : seenBy){
+            if(s.equals(StaticFirebaseSettings.currentUserId)){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public interface OnNewMessageListener{
+        void onNewMessage(int messageQuantity);
+    }
+
+    public void onAttachToParentFragment(FragmentActivity activity){
+        try {
+            mOnNewMessageListener = (OnNewMessageListener) activity;
+        }
+        catch (ClassCastException e){
+            throw new ClassCastException(activity.toString() + " must implement OnUserSelectionSetListener");
+        }
+    }
+
+    public void setUserVisibleHint(boolean isVisibleToUser) {
+        super.setUserVisibleHint(isVisibleToUser);
+        if(isAdded()){
+            this.isVisibleToUser = isVisibleToUser;
+            if(isVisibleToUser){
+                mOnNewMessageListener.onNewMessage(0);
+            }else {
+                adapter.updateAllMessagesToSeen();
+                cantidadDeMensajesNoVistos = 0;
+            }
+        }
+    }
+
 }

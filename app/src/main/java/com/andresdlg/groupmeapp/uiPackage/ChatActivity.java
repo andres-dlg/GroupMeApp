@@ -132,7 +132,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
                             linearLayoutManager = new LinearLayoutManager(getBaseContext(), LinearLayoutManager.VERTICAL, false);
                             recyclerChat = findViewById(R.id.recyclerChat);
                             recyclerChat.setLayoutManager(linearLayoutManager);
-                            adapter = new ListMessageAdapter(getBaseContext(), conversation, userTo.getImageURL(), currentUser.getImageURL(),"User");
+                            adapter = new ListMessageAdapter(getBaseContext(), conversation, userTo.getImageURL(), currentUser.getImageURL(),"User", conversationKey);
                             FirebaseDatabase.getInstance().getReference().child("Conversations").child(conversationKey).child("messages").addChildEventListener(new ChildEventListener() {
                                 @Override
                                 public void onChildAdded(DataSnapshot dataSnapshot, String s) {

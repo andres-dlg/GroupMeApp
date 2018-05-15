@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.andresdlg.groupmeapp.Entities.Conversation;
+import com.andresdlg.groupmeapp.Entities.Message;
 import com.andresdlg.groupmeapp.Entities.Users;
 import com.andresdlg.groupmeapp.R;
 import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
@@ -19,6 +20,8 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+
+import java.util.List;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -36,14 +39,16 @@ public class ListMessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
     private String userToUrl;
     private String currentUserUrl;
     private String chatType;
+    private String conversationKey;
 
 
-    public ListMessageAdapter(Context context, Conversation conversation, String userToUrl, String currentUserUrl, String chatType) {
+    public ListMessageAdapter(Context context, Conversation conversation, String userToUrl, String currentUserUrl, String chatType, String conversationKey) {
         this.context = context;
         this.conversation = conversation;
         this.userToUrl = userToUrl;
         this.currentUserUrl = currentUserUrl;
         this.chatType = chatType;
+        this.conversationKey = conversationKey;
     }
 
     @NonNull
@@ -107,6 +112,25 @@ public class ListMessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
     @Override
     public int getItemCount() {
         return conversation.getListMessageData().size();
+    }
+
+
+    public void updateAllMessagesToSeen() {
+        for(Message m : conversation.getListMessageData()){
+            List<String> seenBy = m.getSeenBy();
+
+            boolean existo = false;
+            for(String s : seenBy){
+                if(s.equals(StaticFirebaseSettings.currentUserId)){
+                    existo = true;
+                }
+            }
+            if(!existo){
+                seenBy.add(StaticFirebaseSettings.currentUserId);
+                FirebaseDatabase.getInstance().getReference("Conversations").child(conversationKey).child("messages").child(m.getId()).child("seenBy").setValue(seenBy);
+            }
+        }
+        notifyDataSetChanged();
     }
 
 
