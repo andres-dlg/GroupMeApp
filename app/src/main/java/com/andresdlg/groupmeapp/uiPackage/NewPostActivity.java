@@ -21,8 +21,10 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class NewPostActivity extends AppCompatActivity {
@@ -65,9 +67,12 @@ public class NewPostActivity extends AppCompatActivity {
 
                     String postId = postsRef.push().getKey();
 
+                    List<String> seenBy = new ArrayList<>();
+                    seenBy.add(StaticFirebaseSettings.currentUserId);
                     Map<String,Object> newPost = new HashMap<>();
                     newPost.put("postId",postId);
                     newPost.put("userId", StaticFirebaseSettings.currentUserId);
+                    newPost.put("seenBy",seenBy);
                     newPost.put("time",timeNow.getTimeInMillis());
                     newPost.put("text",postText.getText().toString());
                     newPost.put("groupName", groupName);
