@@ -74,7 +74,7 @@
             android:textColor="@color/gray_edit_text"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/newPostIndicator"
+            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/divider" />
 
         <TextView
@@ -103,12 +103,10 @@
             android:layout_width="8dp"
             android:layout_height="8dp"
             android:layout_marginBottom="8dp"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="8dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/divider"
+            android:layout_marginEnd="8dp"
             android:src="@drawable/newnotindicator"
+            app:layout_constraintBottom_toTopOf="@+id/divider"
+            app:layout_constraintEnd_toEndOf="parent"
             android:visibility="gone"/>
 
     </android.support.constraint.ConstraintLayout>

@@ -40,6 +40,7 @@ import com.andresdlg.groupmeapp.Entities.Group;
 import com.andresdlg.groupmeapp.Entities.Users;
 import com.andresdlg.groupmeapp.R;
 import com.andresdlg.groupmeapp.Utils.GroupStatus;
+import com.andresdlg.groupmeapp.Utils.PhotoFullPopupWindow;
 import com.andresdlg.groupmeapp.Utils.Roles;
 import com.andresdlg.groupmeapp.firebasePackage.FireApp;
 import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
@@ -118,7 +119,14 @@ public class GroupDetailActivity extends AppCompatActivity {
         editObjetiveBtn.startAnimation(myFadeInAnimation);
 
         objetive = findViewById(R.id.objetive);
+
         iv = findViewById(R.id.add_group_photo);
+        iv.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                new PhotoFullPopupWindow(GroupDetailActivity.this, R.layout.popup_photo_full, iv, groupPhotoUrl, null);
+            }
+        });
 
         final ImageButton addContact = findViewById(R.id.addContact);
         addContact.startAnimation(myFadeInAnimation);

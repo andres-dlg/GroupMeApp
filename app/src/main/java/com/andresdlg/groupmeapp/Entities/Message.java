@@ -1,6 +1,7 @@
 package com.andresdlg.groupmeapp.Entities;
 
 
+import java.util.List;
 
 public class Message {
     private String idSender;
@@ -8,13 +9,15 @@ public class Message {
     private String text;
     private long timestamp;
     private String id;
+    private List<String> seenBy;
 
-    public Message(String idSender, String idReceiver, String text, long timestamp, String id){
+    public Message(String idSender, String idReceiver, String text, long timestamp, String id, List<String> seenBy){
         this.idSender = idSender;
         this.idReceiver = idReceiver;
         this.text = text;
         this.timestamp = timestamp;
         this.id = id;
+        this.seenBy = seenBy;
     }
 
     public Message(){
@@ -59,5 +62,13 @@ public class Message {
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public List<String> getSeenBy() {
+        return seenBy;
+    }
+
+    public void setSeenBy(List<String> seenBy) {
+        this.seenBy = seenBy;
     }
 }

@@ -94,6 +94,16 @@
             android:layout_marginLeft="15dp"
             android:layout_marginRight="15dp"
             android:background="@color/bg_add_photo" />
+
+        <ImageView
+            android:id="@+id/newMessageIndicator"
+            android:layout_width="8dp"
+            android:layout_height="8dp"
+            android:layout_alignBottom="@+id/flo"
+            android:layout_alignEnd="@+id/userAlias"
+            android:src="@drawable/newnotindicator"
+            android:visibility="gone"/>
+
     </RelativeLayout>
 
 </LinearLayout>

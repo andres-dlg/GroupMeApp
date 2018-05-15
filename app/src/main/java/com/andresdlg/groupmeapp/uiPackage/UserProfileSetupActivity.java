@@ -184,7 +184,7 @@ public class UserProfileSetupActivity extends AppCompatActivity {
     }
 
     private void setUserData() {
-        supportPostponeEnterTransition();
+
         mUserDatabase.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -192,7 +192,7 @@ public class UserProfileSetupActivity extends AppCompatActivity {
                 mName.setText(u.getName());
                 mAlias.setText(u.getAlias());
                 mJob.setText(u.getJob());
-
+                supportPostponeEnterTransition();
                 RequestOptions requestOptions = new RequestOptions().dontAnimate();
                 Glide.with(UserProfileSetupActivity.this)
                         .load(u.getImageURL())

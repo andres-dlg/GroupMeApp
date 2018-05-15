@@ -46,6 +46,7 @@ import com.andresdlg.groupmeapp.Entities.Task;
 import com.andresdlg.groupmeapp.Entities.Users;
 import com.andresdlg.groupmeapp.R;
 import com.andresdlg.groupmeapp.Utils.GroupStatus;
+import com.andresdlg.groupmeapp.Utils.PhotoFullPopupWindow;
 import com.andresdlg.groupmeapp.Utils.Roles;
 import com.andresdlg.groupmeapp.firebasePackage.FireApp;
 import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
@@ -122,7 +123,7 @@ public class SubGroupDetailActivity extends AppCompatActivity {
         subGroupKey = getIntent().getStringExtra("subGroupKey");
         subGroupName = getIntent().getStringExtra("subGroupName");
         String groupName = ((FireApp) this.getApplication()).getGroupName();
-        String subGroupPhotoUrl = getIntent().getStringExtra("subGroupPhotoUrl");
+        final String subGroupPhotoUrl = getIntent().getStringExtra("subGroupPhotoUrl");
 
         setToolbar(subGroupName,myFadeInAnimation);
 
@@ -130,7 +131,14 @@ public class SubGroupDetailActivity extends AppCompatActivity {
         editObjetiveBtn.startAnimation(myFadeInAnimation);
 
         objetive = findViewById(R.id.objetive);
+
         iv = findViewById(R.id.add_group_photo);
+        iv.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                new PhotoFullPopupWindow(SubGroupDetailActivity.this, R.layout.popup_photo_full, iv, subGroupPhotoUrl, null);
+            }
+        });
 
         final ImageButton addContact = findViewById(R.id.addContact);
         addContact.startAnimation(myFadeInAnimation);

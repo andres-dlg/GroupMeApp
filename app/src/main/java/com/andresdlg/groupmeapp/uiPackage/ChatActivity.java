@@ -29,6 +29,7 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -45,6 +46,9 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
     private LinearLayoutManager linearLayoutManager;
     private Users userTo;
     private Users currentUser;
+
+    DatabaseReference conversationRef;
+    ValueEventListener valueEventListener;
 
 
     @Override
@@ -66,6 +70,44 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         final CircleImageView civ = toolbar.findViewById(R.id.conversation_contact_photo);
         contactIds = getIntent().getStringArrayListExtra("contactIds");
         conversationKey = getIntent().getStringExtra("conversationKey");
+
+        conversationRef = FirebaseDatabase.getInstance().getReference("Conversations").child(conversationKey);
+        valueEventListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if(dataSnapshot.getValue()!=null){
+                    for(DataSnapshot messageRef : dataSnapshot.getChildren()){
+                        Message m = messageRef.getValue(Message.class);
+                        boolean existo = false;
+                        for(String s : m.getSeenBy()){
+                            if(s.equals(StaticFirebaseSettings.currentUserId)){
+                                existo = true;
+                                break;
+                            }
+                        }
+                        if(!existo){
+                            List<String> seenBy = m.getSeenBy();
+                            seenBy.add(StaticFirebaseSettings.currentUserId);
+                            FirebaseDatabase
+                                    .getInstance()
+                                    .getReference("Conversations")
+                                    .child(conversationKey)
+                                    .child("messages")
+                                    .child(m.getId())
+                                    .child("seenBy")
+                                    .setValue(seenBy);
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        };
+
+        conversationRef.child("messages").addValueEventListener(valueEventListener);
 
         conversation = new Conversation();
         ImageButton btnSend = findViewById(R.id.btnSend);
@@ -168,15 +210,24 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        conversationRef.removeEventListener(valueEventListener);
+    }
+
+    @Override
     public void onClick(View view) {
         if (view.getId() == R.id.btnSend) {
             String content = editWriteMessage.getText().toString().trim();
             if (content.length() > 0) {
+                List<String> seenBy = new ArrayList<>();
+                seenBy.add(StaticFirebaseSettings.currentUserId);
                 editWriteMessage.setText("");
-                DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference("Conversations").child(conversationKey).child("messages").push();
+                DatabaseReference dbRef = conversationRef.child("messages").push();
                 Message newMessage = new Message();
                 newMessage.setText(content);
                 newMessage.setIdSender(StaticFirebaseSettings.currentUserId);
+                newMessage.setSeenBy(seenBy);
                 //Tocar esto cuando la conversación sea grupal
                 newMessage.setIdReceiver(contactIds.get(0));
                 newMessage.setTimestamp(System.currentTimeMillis());

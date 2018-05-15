@@ -15,6 +15,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.andresdlg.groupmeapp.Entities.ConversationFirebase;
+import com.andresdlg.groupmeapp.Entities.Message;
 import com.andresdlg.groupmeapp.Entities.Users;
 import com.andresdlg.groupmeapp.R;
 import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
@@ -30,11 +31,14 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import org.ocpsoft.prettytime.PrettyTime;
+
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Created by andresdlg on 21/01/18.
@@ -50,9 +54,12 @@ public class RVMessageAdapter extends RecyclerView.Adapter<RVMessageAdapter.Mess
     private List<ConversationFirebase> conversations;
     private Context context;
 
+    private PrettyTime prettyTime;
+
     public RVMessageAdapter(List<ConversationFirebase> conversations, Context context){
         this.conversations = conversations;
         this.context = context;
+        this.prettyTime = new PrettyTime(new Locale("es"));
     }
 
     @NonNull
@@ -112,7 +119,13 @@ public class RVMessageAdapter extends RecyclerView.Adapter<RVMessageAdapter.Mess
                         messageViewHolder.userAlias.setText(String.format("@%s", u.getAlias()));
                         messageViewHolder.setPhoto(context, u.getImageURL());//Picasso.with(context).load(u.getImageURL()).into(messageViewHolder.userPhoto);
                         messageViewHolder.messageText.setText(conversations.get(position).getMessage().getText());
-                        messageViewHolder.messageDate.setText(dateDifference(conversations.get(position).getMessage().getTimestamp()));
+
+                        Calendar calendar = Calendar.getInstance();
+                        calendar.setTimeInMillis(conversations.get(position).getMessage().getTimestamp());
+                        String date = prettyTime.format(calendar);
+                        messageViewHolder.messageDate.setText(date);
+
+                        messageViewHolder.setNewMessageIndicator(conversations.get(position));
 
                         //removeUsersListener();
                         //removeConversationListener();
@@ -150,26 +163,11 @@ public class RVMessageAdapter extends RecyclerView.Adapter<RVMessageAdapter.Mess
         super.onAttachedToRecyclerView(recyclerView);
     }
 
-    private String dateDifference(Long d) {
-
-        Calendar today = Calendar.getInstance();
-        long diff = today.getTimeInMillis() - d;
-
-        if(diff/1000 <= 60){
-            return ("Hace "+ Math.round(diff/1000)+ " segundos");
-        }else if(diff/1000/60 < 60){
-            return ("Hace "+ Math.round(diff/1000/60)+ " minutos");
-        }else if(diff/1000/60/60 < 24){
-            return ("Hace "+ Math.round(diff/1000/60/60)+ " horas");
-        }else{
-            return ("Hace "+ Math.round(diff/1000/60/60/24)+ " dias");
-        }
-    }
-
 
     static class MessageViewHolder extends RecyclerView.ViewHolder {
         TextView userAlias;
         ImageView userPhoto;
+        ImageView newMessagesIndicator;
         TextView messageText;
         TextView messageDate;
         View mView;
@@ -182,6 +180,7 @@ public class RVMessageAdapter extends RecyclerView.Adapter<RVMessageAdapter.Mess
             userPhoto = itemView.findViewById(R.id.contact_photo);
             messageText = itemView.findViewById(R.id.messageText);
             messageDate = itemView.findViewById(R.id.date);
+            newMessagesIndicator = itemView.findViewById(R.id.newMessageIndicator);
         }
 
         public void setPhoto(final Context context, final String imageURL) {
@@ -200,6 +199,30 @@ public class RVMessageAdapter extends RecyclerView.Adapter<RVMessageAdapter.Mess
                         }
                     })
                     .into(userPhoto);
+        }
+
+        public void setNewMessageIndicator(ConversationFirebase conversation) {
+            boolean areThereNewMessages = false;
+            for(Message m : conversation.getMessages()){
+                boolean existo = false;
+                for(String s : m.getSeenBy()){
+                    if(s.equals(StaticFirebaseSettings.currentUserId)){
+                        existo = true;
+                        break;
+                    }
+                }
+                if(!existo){
+                    areThereNewMessages = true;
+                    break;
+                }
+            }
+
+            if(areThereNewMessages){
+                newMessagesIndicator.setVisibility(View.VISIBLE);
+            }else{
+                newMessagesIndicator.setVisibility(View.GONE);
+            }
+
         }
     }
 }

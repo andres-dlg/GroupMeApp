@@ -66,7 +66,8 @@ public class MainActivity extends AppCompatActivity
         implements
         NavigationView.OnNavigationItemSelectedListener,
         NotificationFragment.OnNewNotificationSetListener,
-        NewsFragment.OnNewPostSetListener{
+        NewsFragment.OnNewPostSetListener,
+        MessagesFragment.OnNewMessageListener{
 
     //FIREBASE AUTHENTICATION FIELDS
     FirebaseAuth mAuth;
@@ -557,6 +558,17 @@ public class MainActivity extends AppCompatActivity
         if(postQuantity > 0){
             model.showBadge();
             model.setBadgeTitle(String.valueOf(postQuantity));
+        }else{
+            model.hideBadge();
+        }
+    }
+
+    @Override
+    public void onNewMessage(int messageQuantity) {
+        NavigationTabBar.Model model = models.get(3);
+        if(messageQuantity > 0){
+            model.showBadge();
+            model.setBadgeTitle(String.valueOf(messageQuantity));
         }else{
             model.hideBadge();
         }
