@@ -45,6 +45,9 @@ import com.andresdlg.groupmeapp.DialogFragments.SubGroupNewTaskDialogFragment;
 import com.andresdlg.groupmeapp.Entities.SubGroup;
 import com.andresdlg.groupmeapp.Entities.Task;
 import com.andresdlg.groupmeapp.R;
+import com.andresdlg.groupmeapp.Utils.NotificationStatus;
+import com.andresdlg.groupmeapp.Utils.NotificationTypes;
+import com.andresdlg.groupmeapp.Utils.Roles;
 import com.andresdlg.groupmeapp.firebasePackage.FireApp;
 import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
 import com.andresdlg.groupmeapp.uiPackage.GroupActivity;
@@ -62,7 +65,9 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -401,7 +406,7 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
             checkBox.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    finishResumeTask((CheckBox)view,context,subGroups.get(position).getSubGroupKey(),task.getTaskKey());
+                    finishResumeTask((CheckBox)view,context,subGroups.get(position).getSubGroupKey(),task.getTaskKey(),task.getName(),subGroups.get(position).getName(),position);
                 }
             });
             if(isSubGroupMember){
@@ -524,8 +529,8 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
                         public boolean onMenuItemClick(MenuItem menuItem) {
                             int id = menuItem.getItemId();
                             switch (id){
-                                case R.id.comment:
-                                    break;
+                                /*case R.id.comment:
+                                    break;*/
                                 case R.id.delete:
                                     deleteTask(task.getTaskKey(),subGroups.get(position).getSubGroupKey(),groupKey);
                                     break;
@@ -680,7 +685,7 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
     }
 
 
-    private void finishResumeTask(final CheckBox checkBox, Context context, String subGroupKey, String taskKey) {
+    private void finishResumeTask(final CheckBox checkBox, final Context context, final String subGroupKey, final String taskKey, final String taskName, final String subgroupName, final int position) {
 
         final DatabaseReference taskRef = FirebaseDatabase.getInstance().getReference("Groups").child(groupKey).child("subgroups").child(subGroupKey).child("tasks").child(taskKey).child("finished");
 
@@ -705,10 +710,11 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
         }else{
             new AlertDialog.Builder(context)
                     .setTitle("¿Está seguro que quiere dar por finalizada la tarea?")
-                    .setMessage("Se le notificará al administrador del proyecto si la tarea fue finalizada")
+                    .setMessage("Se le notificará al administrador del subgrupo que la tarea fue finalizada")
                     .setPositiveButton("Si", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
+                            sendNotificationToSubgroupAdmins(subgroupName,taskName,position);
                             checkBox.setChecked(true);
                             taskRef.setValue(true);
                         }
@@ -722,6 +728,26 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
                     )
                     .setCancelable(false)
                     .show();
+        }
+    }
+
+    private void sendNotificationToSubgroupAdmins(String subGroupName, String taskName, int position) {
+        SubGroup s = subGroups.get(position);
+        for(Map.Entry<String, String> entry: s.getMembers().entrySet()) {
+            String userid = entry.getKey();
+            if(!userid.equals(StaticFirebaseSettings.currentUserId) && entry.getValue().equals(Roles.SUBGROUP_ADMIN.toString())){
+                DatabaseReference userToNotifications = FirebaseDatabase.getInstance().getReference("Users").child(userid).child("notifications");
+                String notificationKey = userToNotifications.push().getKey();
+                Map<String,Object> notification = new HashMap<>();
+                notification.put("notificationKey",notificationKey);
+                notification.put("title","Tarea finalizada en " + subGroupName);
+                notification.put("message","La tarea " + taskName + " ha sido finalizada en " + subGroupName);
+                notification.put("from", groupKey);
+                notification.put("state", NotificationStatus.UNREAD);
+                notification.put("date", Calendar.getInstance().getTimeInMillis());
+                notification.put("type", NotificationTypes.TASK_FINISHED);
+                userToNotifications.child(notificationKey).setValue(notification);
+            }
         }
     }
 

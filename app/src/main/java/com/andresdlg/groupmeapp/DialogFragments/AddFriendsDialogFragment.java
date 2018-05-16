@@ -264,7 +264,7 @@ public class AddFriendsDialogFragment extends DialogFragment {
 
 
             //Reviso si ya se envio la solicitud al usuario. En ese caso cambio el icono y deshabilito envio
-            wasSent(id, context);
+            wasSent(id, context, contactName);
             //mContactAdd = mView.findViewById(R.id.btn_add_contact);
 
             mContactAlias.setText(String.format("@%s", contactAlias));
@@ -290,7 +290,7 @@ public class AddFriendsDialogFragment extends DialogFragment {
                     .into(mContactPhoto);
         }
 
-        private void wasSent(final String id, final Context context) {
+        private void wasSent(final String id, final Context context, final String contactName) {
 
             //Obtengo el reloj de arena y lo pinto
             final Drawable mDrawablePending = context.getResources().getDrawable(R.drawable.timer_sand);
@@ -343,7 +343,7 @@ public class AddFriendsDialogFragment extends DialogFragment {
                             Map<String,Object> notification = new HashMap<>();
                             notification.put("notificationKey",notificationKey);
                             notification.put("title","Solicitud de amistad");
-                            notification.put("message","Has recibido una solicitud de amistad de ");
+                            notification.put("message","Has recibido una solicitud de amistad de " + contactName);
                             notification.put("from",userFrom);
                             notification.put("state", NotificationStatus.UNREAD);
                             notification.put("date", Calendar.getInstance().getTime());

@@ -12,11 +12,15 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.andresdlg.groupmeapp.Entities.Users;
 import com.andresdlg.groupmeapp.R;
+import com.andresdlg.groupmeapp.Utils.NotificationStatus;
+import com.andresdlg.groupmeapp.Utils.NotificationTypes;
 import com.andresdlg.groupmeapp.firebasePackage.FireApp;
 import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
@@ -33,6 +37,7 @@ public class NewPostActivity extends AppCompatActivity {
 
     EditText postText;
     Button postBtn;
+    private DatabaseReference mUsersDatabase;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,8 +48,11 @@ public class NewPostActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
+        mUsersDatabase = FirebaseDatabase.getInstance().getReference("Users");
+
         final String groupKey = ((FireApp) getApplication()).getGroupKey();
         final String groupName = ((FireApp) getApplication()).getGroupName();
+        final List<Users> groupUsers = ((FireApp) getApplication()).getGroupUsers();
 
         postsRef = FirebaseDatabase
                 .getInstance()
@@ -89,6 +97,33 @@ public class NewPostActivity extends AppCompatActivity {
                             Toast.makeText(NewPostActivity.this, "Hubo un error al guardar la publicación", Toast.LENGTH_SHORT).show();
                         }
                     });
+
+                    if(groupUsers.size() > 0){
+
+                        for(Users user : groupUsers){
+
+                            if(!user.getUserid().equals(StaticFirebaseSettings.currentUserId)){
+                                DatabaseReference userToNotifications = mUsersDatabase.child(user.getUserid()).child("notifications");
+                                String notificationKey = userToNotifications.push().getKey();
+                                Map<String,Object> notification = new HashMap<>();
+                                notification.put("notificationKey",notificationKey);
+                                notification.put("title","Nueva publicación");
+                                notification.put("message","Nuevo post de " + user.getName());
+                                notification.put("from", groupKey);
+                                notification.put("state", NotificationStatus.UNREAD);
+                                notification.put("date", Calendar.getInstance().getTimeInMillis());
+                                notification.put("type", NotificationTypes.NEW_POST);
+
+                                userToNotifications.child(notificationKey).setValue(notification).addOnSuccessListener(new OnSuccessListener<Void>() {
+                                    @Override
+                                    public void onSuccess(Void aVoid) {
+                                        Toast.makeText(NewPostActivity.this, "Notificacion enviada", Toast.LENGTH_SHORT).show();
+                                    }
+                                });
+                            }
+                        }
+                    }
+
 
                     finish();
                 }

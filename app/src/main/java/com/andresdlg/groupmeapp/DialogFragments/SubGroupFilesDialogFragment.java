@@ -31,6 +31,8 @@ import android.widget.Toast;
 import com.andresdlg.groupmeapp.Adapters.RVFilesAdapter;
 import com.andresdlg.groupmeapp.Entities.File;
 import com.andresdlg.groupmeapp.R;
+import com.andresdlg.groupmeapp.Utils.NotificationStatus;
+import com.andresdlg.groupmeapp.Utils.NotificationTypes;
 import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
 import com.bumptech.glide.Glide;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -351,6 +353,24 @@ public class SubGroupFilesDialogFragment extends DialogFragment {
                                 files.add(file);
                             }
                         });
+
+
+                        //NOTIFICO A LOS MIEMBROS DEL SUBGRUPO QUE SE HA SUBIDO UN NUEVO ARCHIVO
+                        for(Map.Entry<String, String> entry: members.entrySet()) {
+                            if(!StaticFirebaseSettings.currentUserId.equals(entry.getKey())){
+                                DatabaseReference userToNotifications = FirebaseDatabase.getInstance().getReference("Users").child(entry.getKey()).child("notifications");
+                                String notificationKey = userToNotifications.push().getKey();
+                                Map<String,Object> notification = new HashMap<>();
+                                notification.put("notificationKey",notificationKey);
+                                notification.put("title","Nuevo archivo en " + subGroupName);
+                                notification.put("message","Se ha subido " + file.getFilename() + " en " + subGroupName);
+                                notification.put("from", groupKey);
+                                notification.put("state", NotificationStatus.UNREAD);
+                                notification.put("date", Calendar.getInstance().getTimeInMillis());
+                                notification.put("type", NotificationTypes.NEW_FILE);
+                                userToNotifications.child(notificationKey).setValue(notification);
+                            }
+                        }
                     }
                 });
     }

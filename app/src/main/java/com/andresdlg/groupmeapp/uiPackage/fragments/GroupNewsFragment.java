@@ -6,7 +6,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
-import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v4.app.FragmentActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -19,6 +19,7 @@ import com.andresdlg.groupmeapp.Adapters.RVNewsAdapter;
 import com.andresdlg.groupmeapp.Entities.Post;
 import com.andresdlg.groupmeapp.R;
 import com.andresdlg.groupmeapp.firebasePackage.FireApp;
+import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
 import com.andresdlg.groupmeapp.uiPackage.NewPostActivity;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
@@ -47,9 +48,19 @@ public class GroupNewsFragment extends Fragment {
     RVNewsAdapter rvNewsAdapter;
     LinearLayoutManager llm;
 
+    List<String> postRevised;
+    int postQuantity ;
+
+    OnNewPostSetListener mOnNewPostSetListener;
+
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        onAttachToParentFragment(getActivity());
+
+        postRevised = new ArrayList<>();
+
+        postQuantity = 0;
     }
 
     @Nullable
@@ -96,10 +107,36 @@ public class GroupNewsFragment extends Fragment {
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
                 Post post = dataSnapshot.getValue(Post.class);
                 updatePosts(post);
+
+                if(post.getSeenBy()!=null){
+                    boolean wasRevised = false;
+                    for(String p : postRevised){
+                        if(p.equals(post.getPostId())){
+                            wasRevised = true;
+                            break;
+                        }
+                    }
+                    if(!wasRevised){
+                        boolean iHaveSeenPost = false;
+                        for(String id : post.getSeenBy()){
+                            if(id.equals(StaticFirebaseSettings.currentUserId)){
+                                iHaveSeenPost = true;
+                                break;
+                            }
+                        }
+                        if(!iHaveSeenPost){
+                            postQuantity += 1;
+                        }
+                        postRevised.add(post.getPostId());
+                    }
+                }else{
+                    postRevised.add(post.getPostId());
+                    postQuantity += 1;
+                }
+
+                mOnNewPostSetListener.onNewPostSet(postQuantity);
+
                 rvNewsAdapter.notifyDataSetChanged();
-                /*rvPosts.setVisibility(View.VISIBLE);
-                progressBar.setVisibility(View.GONE);
-                swipeContainer.setRefreshing(false);*/
             }
 
             @Override
@@ -165,8 +202,40 @@ public class GroupNewsFragment extends Fragment {
             if(isVisibleToUser){
                 fab.show();
             }else{
+
+                for(Post p : posts){
+                    List<String> seenBy = p.getSeenBy();
+                    boolean existo = false;
+                    for(String u : seenBy){
+                        if(u.equals(StaticFirebaseSettings.currentUserId)){
+                            existo = true;
+                        }
+                    }
+                    if(!existo){
+                        seenBy.add(StaticFirebaseSettings.currentUserId);
+                        FirebaseDatabase.getInstance().getReference("Groups").child(p.getGroupKey()).child("posts").child(p.getPostId()).child("seenBy").setValue(seenBy);
+                    }
+                }
+                rvNewsAdapter.setPostsAsSeen();
+                mOnNewPostSetListener.onNewPostSet(0);
+
+                postQuantity = 0;
+
                 fab.hide();
             }
+        }
+    }
+
+    public interface OnNewPostSetListener{
+        void onNewPostSet(int postQuantity);
+    }
+
+    public void onAttachToParentFragment(FragmentActivity activity){
+        try {
+            mOnNewPostSetListener = (OnNewPostSetListener) activity;
+        }
+        catch (ClassCastException e){
+            throw new ClassCastException(activity.toString() + " must implement OnUserSelectionSetListener");
         }
     }
 }

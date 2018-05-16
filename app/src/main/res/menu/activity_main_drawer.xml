@@ -21,6 +21,10 @@
             android:icon="@drawable/ic_share"
             android:title="Compartir" />
         <item
+            android:id="@+id/libraries"
+            android:icon="@drawable/ic_library"
+            android:title="Librerias utilizadas" />
+        <item
             android:id="@+id/privacy"
             android:icon="@drawable/ic_lock"
             android:title="Términos y condiciones" />

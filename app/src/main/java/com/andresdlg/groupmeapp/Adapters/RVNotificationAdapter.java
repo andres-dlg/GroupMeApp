@@ -25,6 +25,7 @@ import com.andresdlg.groupmeapp.Entities.Users;
 import com.andresdlg.groupmeapp.R;
 import com.andresdlg.groupmeapp.Utils.GroupStatus;
 import com.andresdlg.groupmeapp.Utils.NotificationStatus;
+import com.andresdlg.groupmeapp.Utils.NotificationTypes;
 import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.DataSource;
@@ -44,6 +45,7 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 
+import static com.andresdlg.groupmeapp.Utils.NotificationTypes.FRIENDSHIP;
 import static com.andresdlg.groupmeapp.Utils.NotificationTypes.GROUP_INVITATION;
 
 /**
@@ -87,66 +89,256 @@ public class RVNotificationAdapter extends RecyclerView.Adapter<RVNotificationAd
     public void onBindViewHolder(@NonNull final NotificationViewHolder notificationViewHolder, @SuppressLint("RecyclerView") final int position) {
         ///TODO: Recuperar información del usuario que envio la notificacion con FirebaseDatabase
 
-        if(!notifications.get(position).getType().equals(GROUP_INVITATION.toString())){
-            userRef = usersRef.child(notifications.get(position).getFrom());
-            usersEventListener = new ValueEventListener() {
-                @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
-                    Users u = dataSnapshot.getValue(Users.class);
-                    notificationViewHolder.setPosition(position);
-                    notificationViewHolder.userAlias.setText(u.getAlias());
-                    notificationViewHolder.setImage(context,u.getImageURL());
-                    notificationViewHolder.hideBtn(context,notifications.get(position).getType());
-                    notificationViewHolder.notificationMessage.setText(notifications.get(position).getMessage());
-                    notificationViewHolder.setNewNotification(notifications.get(position).getState());
+        NotificationTypes type = null;
+        if(notifications.get(position).getType().equals(FRIENDSHIP.toString())){
+            type = FRIENDSHIP;
+        }else if(notifications.get(position).getType().equals(GROUP_INVITATION.toString())){
+            type = GROUP_INVITATION;
+        }else if(notifications.get(position).getType().equals(NotificationTypes.SUBGROUP_INVITATION.toString())){
+            type = NotificationTypes.SUBGROUP_INVITATION;
+        }else if(notifications.get(position).getType().equals(NotificationTypes.NEW_POST.toString())){
+            type = NotificationTypes.NEW_POST;
+        }else if (notifications.get(position).getType().equals(NotificationTypes.FRIENDSHIP_ACCEPTED.toString())){
+            type = NotificationTypes.FRIENDSHIP_ACCEPTED;
+        }else if (notifications.get(position).getType().equals(NotificationTypes.TASK_FINISHED.toString())){
+            type = NotificationTypes.TASK_FINISHED;
+        }else if (notifications.get(position).getType().equals(NotificationTypes.NEW_FILE.toString())){
+            type = NotificationTypes.NEW_FILE;
+        }
 
-                    //String date = dateDifference(notifications.get(position).getDate());
-                    Calendar calendar = Calendar.getInstance();
-                    calendar.setTimeInMillis(notifications.get(position).getDate());
-                    String date = prettyTime.format(calendar);
+        switch (type) {
 
-                    notificationViewHolder.notificationDate.setText(date);
-                    notificationViewHolder.setNotificationKey(notifications.get(position).getNotificationKey());
+            case FRIENDSHIP:
+                userRef = usersRef.child(notifications.get(position).getFrom());
+                usersEventListener = new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        Users u = dataSnapshot.getValue(Users.class);
+                        notificationViewHolder.setPosition(position);
+                        notificationViewHolder.userAlias.setText(u.getAlias());
+                        notificationViewHolder.setImage(context, u.getImageURL());
+                        notificationViewHolder.hideBtn(context, notifications.get(position).getType());
+                        notificationViewHolder.notificationMessage.setText(notifications.get(position).getMessage());
+                        notificationViewHolder.setNewNotification(notifications.get(position).getState());
 
-                    removeUserListener();
-                }
+                        //String date = dateDifference(notifications.get(position).getDate());
+                        Calendar calendar = Calendar.getInstance();
+                        calendar.setTimeInMillis(notifications.get(position).getDate());
+                        String date = prettyTime.format(calendar);
 
-                @Override
-                public void onCancelled(DatabaseError databaseError) {
+                        notificationViewHolder.notificationDate.setText(date);
+                        notificationViewHolder.setNotificationKey(notifications.get(position).getNotificationKey());
 
-                }
-            };
-            userRef.addValueEventListener(usersEventListener);
-        }else{
-            groupRef = groupsRef.child(notifications.get(position).getFrom());
-            groupsEventListener = new ValueEventListener() {
-                @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
-                    Group g = dataSnapshot.getValue(Group.class);
-                    notificationViewHolder.setPosition(position);
-                    notificationViewHolder.hideBtn(context,notifications.get(position).getType());
-                    notificationViewHolder.setImage(context,g.getImageUrl());
-                    notificationViewHolder.notificationMessage.setText(notifications.get(position).getMessage());
-                    notificationViewHolder.setNewNotification(notifications.get(position).getState());
-                    //String date = dateDifference(notifications.get(position).getDate());
+                        removeUserListener();
+                    }
 
-                    Calendar calendar = Calendar.getInstance();
-                    calendar.setTimeInMillis(notifications.get(position).getDate());
-                    String date = prettyTime.format(calendar);
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
 
-                    notificationViewHolder.notificationDate.setText(date);
-                    notificationViewHolder.setGroupKey(g.getGroupKey());
-                    notificationViewHolder.setNotificationKey(notifications.get(position).getNotificationKey());
+                    }
+                };
+                userRef.addValueEventListener(usersEventListener);
+                break;
 
-                    removeGroupsListener();
-                }
+            case GROUP_INVITATION:
+                groupRef = groupsRef.child(notifications.get(position).getFrom());
+                groupsEventListener = new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        Group g = dataSnapshot.getValue(Group.class);
+                        notificationViewHolder.setPosition(position);
+                        notificationViewHolder.hideBtn(context, notifications.get(position).getType());
+                        notificationViewHolder.userAlias.setText(g.getName());
+                        notificationViewHolder.setImage(context, g.getImageUrl());
+                        notificationViewHolder.notificationMessage.setText(notifications.get(position).getMessage());
+                        notificationViewHolder.setNewNotification(notifications.get(position).getState());
+                        //String date = dateDifference(notifications.get(position).getDate());
 
-                @Override
-                public void onCancelled(DatabaseError databaseError) {
+                        Calendar calendar = Calendar.getInstance();
+                        calendar.setTimeInMillis(notifications.get(position).getDate());
+                        String date = prettyTime.format(calendar);
 
-                }
-            };
-            groupRef.addListenerForSingleValueEvent(groupsEventListener);
+                        notificationViewHolder.notificationDate.setText(date);
+                        notificationViewHolder.setGroupKey(g.getGroupKey());
+                        notificationViewHolder.setNotificationKey(notifications.get(position).getNotificationKey());
+
+                        removeGroupsListener();
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                };
+                groupRef.addListenerForSingleValueEvent(groupsEventListener);
+                break;
+
+            case SUBGROUP_INVITATION:
+
+                groupRef = groupsRef.child(notifications.get(position).getFrom());
+                groupsEventListener = new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        Group g = dataSnapshot.getValue(Group.class);
+                        notificationViewHolder.setPosition(position);
+                        notificationViewHolder.hideBtn(context, notifications.get(position).getType());
+                        notificationViewHolder.userAlias.setText(g.getName());
+                        notificationViewHolder.setImage(context, g.getImageUrl());
+                        notificationViewHolder.notificationMessage.setText(notifications.get(position).getMessage());
+                        notificationViewHolder.setNewNotification(notifications.get(position).getState());
+                        //String date = dateDifference(notifications.get(position).getDate());
+
+                        Calendar calendar = Calendar.getInstance();
+                        calendar.setTimeInMillis(notifications.get(position).getDate());
+                        String date = prettyTime.format(calendar);
+
+                        notificationViewHolder.notificationDate.setText(date);
+                        notificationViewHolder.setGroupKey(g.getGroupKey());
+                        notificationViewHolder.setNotificationKey(notifications.get(position).getNotificationKey());
+
+                        removeGroupsListener();
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                };
+                groupRef.addListenerForSingleValueEvent(groupsEventListener);
+                break;
+
+            case NEW_POST:
+                groupRef = groupsRef.child(notifications.get(position).getFrom());
+                groupsEventListener = new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        Group g = dataSnapshot.getValue(Group.class);
+                        notificationViewHolder.setPosition(position);
+                        notificationViewHolder.hideBtn(context, notifications.get(position).getType());
+                        notificationViewHolder.userAlias.setText(g.getName());
+                        notificationViewHolder.setImage(context, g.getImageUrl());
+                        notificationViewHolder.notificationMessage.setText(notifications.get(position).getMessage());
+                        notificationViewHolder.setNewNotification(notifications.get(position).getState());
+                        //String date = dateDifference(notifications.get(position).getDate());
+
+                        Calendar calendar = Calendar.getInstance();
+                        calendar.setTimeInMillis(notifications.get(position).getDate());
+                        String date = prettyTime.format(calendar);
+
+                        notificationViewHolder.notificationDate.setText(date);
+                        notificationViewHolder.setGroupKey(g.getGroupKey());
+                        notificationViewHolder.setNotificationKey(notifications.get(position).getNotificationKey());
+
+                        removeGroupsListener();
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                };
+                groupRef.addListenerForSingleValueEvent(groupsEventListener);
+                break;
+
+            case FRIENDSHIP_ACCEPTED:
+                userRef = usersRef.child(notifications.get(position).getFrom());
+                usersEventListener = new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        Users u = dataSnapshot.getValue(Users.class);
+                        notificationViewHolder.setPosition(position);
+                        notificationViewHolder.userAlias.setText(u.getAlias());
+                        notificationViewHolder.setImage(context, u.getImageURL());
+                        notificationViewHolder.hideBtn(context, notifications.get(position).getType());
+                        notificationViewHolder.notificationMessage.setText(notifications.get(position).getMessage());
+                        notificationViewHolder.setNewNotification(notifications.get(position).getState());
+
+                        //String date = dateDifference(notifications.get(position).getDate());
+                        Calendar calendar = Calendar.getInstance();
+                        calendar.setTimeInMillis(notifications.get(position).getDate());
+                        String date = prettyTime.format(calendar);
+
+                        notificationViewHolder.notificationDate.setText(date);
+                        notificationViewHolder.setNotificationKey(notifications.get(position).getNotificationKey());
+
+                        removeUserListener();
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                };
+                userRef.addValueEventListener(usersEventListener);
+                break;
+
+            case TASK_FINISHED:
+
+                groupRef = groupsRef.child(notifications.get(position).getFrom());
+                groupsEventListener = new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        Group g = dataSnapshot.getValue(Group.class);
+                        notificationViewHolder.setPosition(position);
+                        notificationViewHolder.hideBtn(context, notifications.get(position).getType());
+                        notificationViewHolder.userAlias.setText(g.getName());
+                        notificationViewHolder.setImage(context, g.getImageUrl());
+                        notificationViewHolder.notificationMessage.setText(notifications.get(position).getMessage());
+                        notificationViewHolder.setNewNotification(notifications.get(position).getState());
+                        //String date = dateDifference(notifications.get(position).getDate());
+
+                        Calendar calendar = Calendar.getInstance();
+                        calendar.setTimeInMillis(notifications.get(position).getDate());
+                        String date = prettyTime.format(calendar);
+
+                        notificationViewHolder.notificationDate.setText(date);
+                        notificationViewHolder.setGroupKey(g.getGroupKey());
+                        notificationViewHolder.setNotificationKey(notifications.get(position).getNotificationKey());
+
+                        removeGroupsListener();
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                };
+                groupRef.addListenerForSingleValueEvent(groupsEventListener);
+                break;
+
+            case NEW_FILE:
+                groupRef = groupsRef.child(notifications.get(position).getFrom());
+                groupsEventListener = new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        Group g = dataSnapshot.getValue(Group.class);
+                        notificationViewHolder.setPosition(position);
+                        notificationViewHolder.hideBtn(context, notifications.get(position).getType());
+                        notificationViewHolder.userAlias.setText(g.getName());
+                        notificationViewHolder.setImage(context, g.getImageUrl());
+                        notificationViewHolder.notificationMessage.setText(notifications.get(position).getMessage());
+                        notificationViewHolder.setNewNotification(notifications.get(position).getState());
+                        //String date = dateDifference(notifications.get(position).getDate());
+
+                        Calendar calendar = Calendar.getInstance();
+                        calendar.setTimeInMillis(notifications.get(position).getDate());
+                        String date = prettyTime.format(calendar);
+
+                        notificationViewHolder.notificationDate.setText(date);
+                        notificationViewHolder.setGroupKey(g.getGroupKey());
+                        notificationViewHolder.setNotificationKey(notifications.get(position).getNotificationKey());
+
+                        removeGroupsListener();
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                };
+                groupRef.addListenerForSingleValueEvent(groupsEventListener);
+                break;
+
         }
     }
 
@@ -184,7 +376,6 @@ public class RVNotificationAdapter extends RecyclerView.Adapter<RVNotificationAd
         TextView notificationMessage;
         TextView notificationDate;
         private String groupKey;
-        private DatabaseReference groupRef;
         private String notificationKey;
         private int position;
         DatabaseReference userRef;
@@ -231,39 +422,80 @@ public class RVNotificationAdapter extends RecyclerView.Adapter<RVNotificationAd
         }
 
         void hideBtn(final Context context, String type) {
-            if(!type.equals(GROUP_INVITATION.toString())){
-                menuBtn.setVisibility(View.GONE);
-            }else{
-                userAlias.setVisibility(View.INVISIBLE);
-                menuBtn.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        final PopupMenu popupMenu = new PopupMenu(context, view);
-                        final Menu menu = popupMenu.getMenu();
 
-                        popupMenu.getMenuInflater().inflate(R.menu.fragment_notifications_group_menu, menu);
-                        popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-                            @Override
-                            public boolean onMenuItemClick(MenuItem menuItem) {
-                                int id = menuItem.getItemId();
-                                switch (id){
-                                    case R.id.accept:
-                                        //ENVIAR MENSAJE
-                                        acceptInvitation(groupKey, position);
-                                        break;
-                                    case R.id.reject:
-                                        //AGREGAR A GRUPO
-                                        rejectInvitation(groupKey, position);
-                                        break;
-                                    default:
-                                        break;
+            NotificationTypes notiType = null;
+            if(type.equals(FRIENDSHIP.toString())){
+                notiType = FRIENDSHIP;
+            }else if(type.equals(GROUP_INVITATION.toString())){
+                notiType = GROUP_INVITATION;
+            }else if(type.equals(NotificationTypes.SUBGROUP_INVITATION.toString())){
+                notiType = NotificationTypes.SUBGROUP_INVITATION;
+            }else if(type.equals(NotificationTypes.NEW_POST.toString())){
+                notiType = NotificationTypes.NEW_POST;
+            }else if (type.equals(NotificationTypes.FRIENDSHIP_ACCEPTED.toString())){
+                notiType = NotificationTypes.FRIENDSHIP_ACCEPTED;
+            }else if (type.equals(NotificationTypes.TASK_FINISHED.toString())){
+                notiType = NotificationTypes.TASK_FINISHED;
+            }else if (type.equals(NotificationTypes.NEW_FILE.toString())){
+                notiType = NotificationTypes.NEW_FILE;
+            }
+
+            switch (notiType){
+                case GROUP_INVITATION:
+                    menuBtn.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            final PopupMenu popupMenu = new PopupMenu(context, view);
+                            final Menu menu = popupMenu.getMenu();
+
+                            popupMenu.getMenuInflater().inflate(R.menu.fragment_notifications_group_menu, menu);
+                            popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+                                @Override
+                                public boolean onMenuItemClick(MenuItem menuItem) {
+                                    int id = menuItem.getItemId();
+                                    switch (id){
+                                        case R.id.accept:
+                                            //ENVIAR MENSAJE
+                                            acceptInvitation(groupKey, position);
+                                            break;
+                                        case R.id.reject:
+                                            //AGREGAR A GRUPO
+                                            rejectInvitation(groupKey, position);
+                                            break;
+                                        default:
+                                            break;
+                                    }
+                                    return true;
                                 }
-                                return true;
-                            }
-                        });
-                        popupMenu.show();
-                    }
-                });
+                            });
+                            popupMenu.show();
+                        }
+                    });
+                    break;
+
+                case FRIENDSHIP:
+                    menuBtn.setVisibility(View.GONE);
+                    break;
+
+                case FRIENDSHIP_ACCEPTED:
+                    menuBtn.setVisibility(View.GONE);
+                    break;
+
+                case SUBGROUP_INVITATION:
+                    menuBtn.setVisibility(View.GONE);
+                    break;
+
+                case NEW_POST:
+                    menuBtn.setVisibility(View.GONE);
+                    break;
+
+                case TASK_FINISHED:
+                    menuBtn.setVisibility(View.GONE);
+                    break;
+
+                case NEW_FILE:
+                    menuBtn.setVisibility(View.GONE);
+                    break;
             }
         }
 

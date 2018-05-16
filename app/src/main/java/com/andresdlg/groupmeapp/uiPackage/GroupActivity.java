@@ -49,7 +49,7 @@ import java.util.List;
 import de.hdodenhof.circleimageview.CircleImageView;
 import devlight.io.library.ntb.NavigationTabBar;
 
-public class GroupActivity extends AppCompatActivity implements GroupChatFragment.OnNewMessageListener{
+public class GroupActivity extends AppCompatActivity implements GroupChatFragment.OnNewMessageListener, GroupNewsFragment.OnNewPostSetListener{
 
     DatabaseReference groupRef;
     DatabaseReference userRef;
@@ -166,7 +166,6 @@ public class GroupActivity extends AppCompatActivity implements GroupChatFragmen
                         .badgeTitle("icon")
                         .build()
         );
-
         navigationTabBar.setModels(models);
         navigationTabBar.setViewPager(viewPager, 0);
         navigationTabBar.setInactiveColor(getResources().getColor(R.color.cardview_dark_background));
@@ -330,7 +329,6 @@ public class GroupActivity extends AppCompatActivity implements GroupChatFragmen
             Glide.with(this)
                     .load(url)
                     .into(civ);
-            //Picasso.with(this).load(url).into(civ);
         }
 
         if(groupUsers == null){
@@ -435,6 +433,17 @@ public class GroupActivity extends AppCompatActivity implements GroupChatFragmen
         if(messageQuantity > 0){
             model.showBadge();
             model.setBadgeTitle(String.valueOf(messageQuantity));
+        }else{
+            model.hideBadge();
+        }
+    }
+
+    @Override
+    public void onNewPostSet(int postQuantity) {
+        NavigationTabBar.Model model = models.get(0);
+        if(postQuantity > 0){
+            model.showBadge();
+            model.setBadgeTitle(String.valueOf(postQuantity));
         }else{
             model.hideBadge();
         }

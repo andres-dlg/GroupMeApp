@@ -363,7 +363,7 @@ public class HeaderDialogFragment extends DialogFragment implements GroupAddMemb
                     String notificationKey = userToNotifications.push().getKey();
                     Map<String,Object> notification = new HashMap<>();
                     notification.put("notificationKey",notificationKey);
-                    notification.put("title","Invitación a grupo");
+                    notification.put("title","Nuevo miembro de subgrupo");
                     notification.put("message","Te han añadido al subgrupo " + name);
                     notification.put("from", parentGroupKey);
                     notification.put("state", NotificationStatus.UNREAD);

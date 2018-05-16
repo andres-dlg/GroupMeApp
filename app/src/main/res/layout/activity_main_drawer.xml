@@ -127,13 +127,48 @@
             android:layout_marginLeft="16dp"
             android:src="@drawable/ic_lock" />
         <TextView
-            android:text="Condiciones y políticas"
+            android:text="Términos y condiciones"
             android:layout_width="wrap_content"
             android:layout_marginLeft="24dp"
             android:layout_height="48dp"
             android:gravity="center_vertical"
             android:textColor="@color/black" />
     </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginLeft="15dp"
+        android:layout_marginRight="15dp"
+        android:background="@color/bg_add_photo" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:id="@+id/libraries"
+        android:foreground="?android:attr/selectableItemBackgroundBorderless">
+        <ImageView
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_gravity="center_vertical"
+            android:layout_marginLeft="16dp"
+            android:src="@drawable/ic_library" />
+        <TextView
+            android:text="Librerias utilizadas"
+            android:layout_width="wrap_content"
+            android:layout_marginLeft="24dp"
+            android:layout_height="48dp"
+            android:gravity="center_vertical"
+            android:textColor="@color/black" />
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginLeft="15dp"
+        android:layout_marginRight="15dp"
+        android:background="@color/bg_add_photo" />
 
     <View
         android:layout_width="match_parent"

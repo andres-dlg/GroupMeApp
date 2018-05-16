@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityOptionsCompat;
@@ -22,6 +23,7 @@ import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.animation.DecelerateInterpolator;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -29,9 +31,11 @@ import com.afollestad.materialdialogs.GravityEnum;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.andresdlg.groupmeapp.DialogFragments.AddFriendsDialogFragment;
 import com.andresdlg.groupmeapp.DialogFragments.FriendsDialogFragment;
+import com.andresdlg.groupmeapp.DialogFragments.LibrariesDialogFragment;
 import com.andresdlg.groupmeapp.DialogFragments.TermsAndConditionsDialogFragment;
 import com.andresdlg.groupmeapp.Entities.Users;
 import com.andresdlg.groupmeapp.R;
+import com.andresdlg.groupmeapp.Utils.RoundRectangle;
 import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
 import com.andresdlg.groupmeapp.uiPackage.fragments.GroupsFragment;
 import com.andresdlg.groupmeapp.uiPackage.fragments.MessagesFragment;
@@ -40,8 +44,6 @@ import com.andresdlg.groupmeapp.uiPackage.fragments.NotificationFragment;
 import com.andresdlg.groupmeapp.uiPackage.login.LoginActivity;
 import com.bumptech.glide.Glide;
 import com.codemybrainsout.ratingdialog.RatingDialog;
-import com.getkeepsafe.taptargetview.TapTarget;
-import com.getkeepsafe.taptargetview.TapTargetView;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
@@ -55,6 +57,11 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.ogaclejapan.smarttablayout.utils.v4.FragmentPagerItemAdapter;
 import com.ogaclejapan.smarttablayout.utils.v4.FragmentPagerItems;
+import com.takusemba.spotlight.OnSpotlightStateChangedListener;
+import com.takusemba.spotlight.OnTargetStateChangedListener;
+import com.takusemba.spotlight.Spotlight;
+import com.takusemba.spotlight.shape.Circle;
+import com.takusemba.spotlight.target.SimpleTarget;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -90,6 +97,7 @@ public class MainActivity extends AppCompatActivity
     CircleImageView nav_photo;
 
     ArrayList<NavigationTabBar.Model> models;
+    NavigationTabBar navigationTabBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -137,7 +145,7 @@ public class MainActivity extends AppCompatActivity
         viewPager.setAdapter(adapter);
         viewPager.setOffscreenPageLimit(3);
 
-        final NavigationTabBar navigationTabBar = (NavigationTabBar) findViewById(R.id.ntb);
+        navigationTabBar = (NavigationTabBar) findViewById(R.id.ntb);
         models = new ArrayList<>();
         models.add(
                 new NavigationTabBar.Model.Builder(
@@ -355,9 +363,16 @@ public class MainActivity extends AppCompatActivity
                 drawer.closeDrawer(Gravity.LEFT);
                 break;
             case R.id.help:
-                //Toast.makeText(MainActivity.this, "Ayuda!", Toast.LENGTH_SHORT).show();
+                viewPager.setCurrentItem(0);
                 drawer.closeDrawer(Gravity.LEFT);
-                letTheShowStart();
+                final Handler handler = new Handler();
+                handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        letTheFirstPartOfTheShowStart();
+                    }
+                }, 1000);
+                //Toast.makeText(MainActivity.this, "Ayuda!", Toast.LENGTH_SHORT).show();
                 break;
             case R.id.share:
                 try {
@@ -374,13 +389,17 @@ public class MainActivity extends AppCompatActivity
                 }
                 drawer.closeDrawer(Gravity.LEFT);
                 break;
+            case R.id.libraries:
+                showLibrariesDialogFragment();
+                drawer.closeDrawer(Gravity.LEFT);
+                break;
             case R.id.about:
                 new MaterialDialog.Builder(this)
+                        .customView(R.layout.about_dialog,true)
                         .title("Acerca de GroupMeApp")
                         .titleGravity(GravityEnum.CENTER)
-                        .icon(getResources().getDrawable(R.drawable.ic_launcher))
                         .limitIconToDefaultSize()
-                        .content("GroupMeApp para Android\n2018\n\nVersión 1.0")
+                        //.content("GroupMeApp para Android\n2018\n\nVersión 1.0")
                         .contentGravity(GravityEnum.CENTER)
                         .positiveText("OK")
                         .show();
@@ -416,92 +435,260 @@ public class MainActivity extends AppCompatActivity
         return false;
     }
 
-    private void letTheShowStart() {
 
+
+    private void letTheFirstPartOfTheShowStart() {
+
+        int[] oneLocation;
+        float oneX = 0;
+        float oneY = 0;
+
+        // 1) TARGET PANEL DE NAVEGACIÓN
+        oneLocation = new int[2];
+        navigationTabBar.getLocationInWindow(oneLocation);
+        oneX = oneLocation[0] + navigationTabBar.getWidth() / 2f;
+        oneY = oneLocation[1] + navigationTabBar.getHeight() / 2f;
+        SimpleTarget tabBarTarget = new SimpleTarget.Builder(this)
+                .setPoint(oneX, oneY)
+                .setShape(new RoundRectangle(0,oneLocation[1],navigationTabBar.getWidth(),navigationTabBar.getHeight()))
+                .setTitle("Panel de navegación")
+                .setDescription("Aquí podrás navegar por las secciones de Noticias, Grupos, Notificaciones y Mensajes")
+                .build();
+
+        // 2) TARGET PESTAÑA NOTICIAS
+        oneLocation = new int[2];
+        navigationTabBar.getLocationInWindow(oneLocation);
+        oneX = oneLocation[0] + navigationTabBar.getWidth() / 2f;
+        oneY = oneLocation[1] + navigationTabBar.getHeight() / 2f;
+        SimpleTarget tabBarNewsTarget = new SimpleTarget.Builder(this)
+                .setPoint(oneX, oneY)
+                .setShape(new RoundRectangle(0,oneLocation[1],navigationTabBar.getWidth()/4,navigationTabBar.getHeight()))
+                .setTitle("Sección de noticias")
+                .setDescription("Aquí podrás visualizar todas las noticias publicadas en tus grupos")
+                .build();
+
+        // 3) TARGET CONTACTOS
+        View contacts = toolbar.findViewById(R.id.contacts);
+        oneLocation = new int[2];
+        contacts.getLocationInWindow(oneLocation);
+        oneX = oneLocation[0] + contacts.getWidth() / 2f;
+        oneY = oneLocation[1] + contacts.getHeight() / 2f;
+        SimpleTarget contactsTarget = new SimpleTarget.Builder(this)
+                .setPoint(oneX, oneY)
+                .setShape(new Circle(100f))
+                .setTitle("Contactos")
+                .setDescription("Aqui tendrás la lista de contactos y las solicitudes pendientes")
+                .build();
+
+        // 4) TARGET AGREGAR CONTACTOS
+        View addcontacts = toolbar.findViewById(R.id.add_contact);
+        oneLocation = new int[2];
+        addcontacts.getLocationInWindow(oneLocation);
+        oneX = oneLocation[0] + addcontacts.getWidth() / 2f;
+        oneY = oneLocation[1] + addcontacts.getHeight() / 2f;
+        SimpleTarget addContactsTarget = new SimpleTarget.Builder(this)
+                .setPoint(oneX, oneY)
+                .setShape(new Circle(100f))
+                .setTitle("Agregar contactos")
+                .setDescription("Aqui tendrás la lista de contactos y las solicitudes pendientes")
+                .build();
+
+
+        // TARGET BOTON DE FILTRO EN FRAGMENT DE NOTICIAS
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        List<Fragment> fragments = fragmentManager.getFragments();
+        View fabFilter = fragments.get(0).getView().findViewById(R.id.fabFilter);
+        oneLocation = new int[2];
+        fabFilter.getLocationInWindow(oneLocation);
+        oneX = oneLocation[0] + fabFilter.getWidth() / 2f;
+        oneY = oneLocation[1] + fabFilter.getHeight() / 2f;
+        SimpleTarget simpleTarget = new SimpleTarget.Builder(this)
+                .setPoint(oneX, oneY)
+                .setShape(new Circle(200f))
+                .setTitle("Filtro")
+                .setDescription("Aquí podrás elegir que publicaciones ver")
+                .build();
+
+
+        //EMPIEZA LA PRIMER PARTE DEL SHOW
+        Spotlight.with(this)
+                .setOverlayColor(R.color.background)
+                .setDuration(1000L)
+                .setAnimation(new DecelerateInterpolator(2f))
+                //Agrego los targets
+                .setTargets(tabBarTarget,tabBarNewsTarget,contactsTarget,addContactsTarget,simpleTarget)
+        .setClosedOnTouchedOutside(true)
+                .setOnSpotlightStateListener(new OnSpotlightStateChangedListener() {
+                    @Override
+                    public void onStarted() {
+                        Toast.makeText(MainActivity.this, "spotlight is started", Toast.LENGTH_SHORT).show();
+                    }
+
+                    @Override
+                    public void onEnded() {
+                        Toast.makeText(MainActivity.this, "second part started", Toast.LENGTH_SHORT).show();
+                        viewPager.setCurrentItem(1);
+                        final Handler handler = new Handler();
+                        handler.postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                letTheSecondPartOfTheShowStart();
+                            }
+                        }, 1000);
+                    }
+                })
+        .start();
+
+    }
+
+    private void letTheSecondPartOfTheShowStart() {
+
+        int[] oneLocation;
+        float oneX = 0;
+        float oneY = 0;
+
+        // 1) TARGET PESTAÑA GRUPOS
+        oneLocation = new int[2];
+        navigationTabBar.getLocationInWindow(oneLocation);
+        oneX = oneLocation[0] + navigationTabBar.getWidth() / 2f;
+        oneY = oneLocation[1] + navigationTabBar.getHeight() / 2f;
+        SimpleTarget tabBarNewsTarget = new SimpleTarget.Builder(this)
+                .setPoint(oneX, oneY)
+                .setShape(new RoundRectangle(navigationTabBar.getWidth()/4,oneLocation[1],navigationTabBar.getWidth()/2,navigationTabBar.getHeight()))
+                .setTitle("Sección de grupos")
+                .setDescription("Aquí podrás visualizar todos los grupos a los que perteneces")
+                .build();
+
+        // 2) TARGET AGREGAR GRUPOS
         FragmentManager fragmentManager = getSupportFragmentManager();
         List<Fragment> fragments = fragmentManager.getFragments();
 
-        /*new TapTargetSequence(this)
-                .targets(
-                        TapTarget.forToolbarMenuItem(toolbar, R.id.contacts,"Test","Test")
-                                .outerCircleColor(R.color.colorPrimary)
-                                .outerCircleAlpha(0.96f)
-                                .targetCircleColor(R.color.white)
-                                .titleTextSize(30)
-                                .titleTextColor(R.color.white)
-                                .descriptionTextSize(20)
-                                .descriptionTextColor(R.color.colorPrimaryDark)
-                                .textColor(R.color.white)
-                                .textTypeface(Typeface.SANS_SERIF)
-                                .dimColor(R.color.black)
-                                .drawShadow(true)
-                                .cancelable(false)
-                                .tintTarget(false)
-                                .transparentTarget(false)
-                                .targetRadius(60),
-                        TapTarget.forToolbarMenuItem(toolbar, R.id.add_contact, "Test2","Test2")
-                                .outerCircleColor(R.color.colorPrimary)
-                                .outerCircleAlpha(0.96f)
-                                .targetCircleColor(R.color.white)
-                                .titleTextSize(30)
-                                .titleTextColor(R.color.white)
-                                .descriptionTextSize(20)
-                                .descriptionTextColor(R.color.colorPrimaryDark)
-                                .textColor(R.color.white)
-                                .textTypeface(Typeface.SANS_SERIF)
-                                .dimColor(R.color.black)
-                                .drawShadow(true)
-                                .cancelable(false)
-                                .tintTarget(false)
-                                .transparentTarget(false)
-                                .targetRadius(60) // SI QUIERO MAS TARGETS IR SEPARANDO POR COMAS DESDE ACA
-                                )
-                .listener(new TapTargetSequence.Listener() {
-                    // This listener will tell us when interesting(tm) events happen in regards
-                    // to the sequence
+        View fabAddGroup = fragments.get(1).getView().findViewById(R.id.fabGroups);
+        oneLocation = new int[2];
+        fabAddGroup.getLocationInWindow(oneLocation);
+        oneX = oneLocation[0] + fabAddGroup.getWidth() / 2f;
+        oneY = oneLocation[1] + fabAddGroup.getHeight() / 2f;
+        SimpleTarget addGroupTarget = new SimpleTarget.Builder(this)
+                .setPoint(oneX, oneY)
+                .setShape(new Circle(200f))
+                .setTitle("Agregar grupos")
+                .setDescription("Aquí puedes crear un nuevo grupo dandole un nombre, una foto, objetivo e invitar a tus contactos a unirse ")
+                .build();
+
+        Spotlight.with(this)
+                .setOverlayColor(R.color.background)
+                .setDuration(1000L)
+                .setAnimation(new DecelerateInterpolator(2f))
+                //Agrego los targets
+                .setTargets(tabBarNewsTarget,addGroupTarget)
+                .setClosedOnTouchedOutside(true)
+                .setOnSpotlightStateListener(new OnSpotlightStateChangedListener() {
                     @Override
-                    public void onSequenceFinish() {
-                        // Yay
+                    public void onStarted() {
+                        Toast.makeText(MainActivity.this, "spotlight is started", Toast.LENGTH_SHORT).show();
                     }
 
                     @Override
-                    public void onSequenceStep(TapTarget lastTarget, boolean targetClicked) {
+                    public void onEnded() {
+                        Toast.makeText(MainActivity.this, "second part finished", Toast.LENGTH_SHORT).show();
+                        viewPager.setCurrentItem(2);
+                        final Handler handler = new Handler();
+                        handler.postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                letTheThirdPartOfTheShowStart();
+                            }
+                        }, 1000);
 
+                    }
+                })
+                .start();
+
+    }
+
+    private void letTheThirdPartOfTheShowStart() {
+        int[] oneLocation;
+        float oneX = 0;
+        float oneY = 0;
+
+        oneLocation = new int[2];
+        navigationTabBar.getLocationInWindow(oneLocation);
+        oneX = oneLocation[0] + navigationTabBar.getWidth() / 2f;
+        oneY = oneLocation[1] + navigationTabBar.getHeight() / 2f;
+        SimpleTarget tabBarNotificationsTarget = new SimpleTarget.Builder(this)
+                .setPoint(oneX, oneY)
+                .setShape(new RoundRectangle(navigationTabBar.getWidth()/2,oneLocation[1],(navigationTabBar.getWidth() -  navigationTabBar.getWidth()/4),navigationTabBar.getHeight()))
+                .setTitle("Sección de notificaciones")
+                .setDescription("Aquí podrás visualizar todas las notificaciones que hayas recibido. Se te avisará cuando recibas alguna, no te preocupes")
+                .build();
+
+        Spotlight.with(this)
+                .setOverlayColor(R.color.background)
+                .setDuration(1000L)
+                .setAnimation(new DecelerateInterpolator(2f))
+                //Agrego los targets
+                .setTargets(tabBarNotificationsTarget)
+                .setClosedOnTouchedOutside(true)
+                .setOnSpotlightStateListener(new OnSpotlightStateChangedListener() {
+                    @Override
+                    public void onStarted() {
+                        Toast.makeText(MainActivity.this, "spotlight is started", Toast.LENGTH_SHORT).show();
                     }
 
                     @Override
-                    public void onSequenceCanceled(TapTarget lastTarget) {
-                        // Boo
+                    public void onEnded() {
+                        Toast.makeText(MainActivity.this, "third part finished", Toast.LENGTH_SHORT).show();
+                        viewPager.setCurrentItem(3);
+                        final Handler handler = new Handler();
+                        handler.postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                letTheForthPartOfTheShowStart();
+                            }
+                        }, 1000);
+
                     }
-                });*/
+                })
+                .start();
+    }
 
+    private void letTheForthPartOfTheShowStart() {
 
-        // EJEMPLO DE TARGET EN UN FRAGMENT
-        View v = fragments.get(0).getView().findViewById(R.id.fabFilter);
-        TapTargetView.showFor(this,                 // `this` is an Activity
-                TapTarget.forView(v, "Filtro", "Con este filtro podrás elegir que posts ver ;)")
-                        // All options below are optional
-                        .outerCircleColor(R.color.colorPrimary)      // Specify a color for the outer circle
-                        .outerCircleAlpha(0.96f)            // Specify the alpha amount for the outer circle
-                        .targetCircleColor(R.color.white)   // Specify a color for the target circle
-                        .titleTextSize(30)                  // Specify the size (in sp) of the title text
-                        .titleTextColor(R.color.white)      // Specify the color of the title text
-                        .descriptionTextSize(20)            // Specify the size (in sp) of the description text
-                        .descriptionTextColor(R.color.colorPrimaryDark)  // Specify the color of the description text
-                        .textColor(R.color.white)            // Specify a color for both the title and description text
-                        .textTypeface(Typeface.SANS_SERIF)  // Specify a typeface for the text
-                        .dimColor(R.color.black)            // If set, will dim behind the view with 30% opacity of the given color
-                        .drawShadow(true)                   // Whether to draw a drop shadow or not
-                        .cancelable(false)                  // Whether tapping outside the outer circle dismisses the view
-                        .tintTarget(false)                   // Whether to tint the target view's color
-                        .transparentTarget(false)                 // Specify a custom drawable to draw as the target
-                        .targetRadius(60),                  // Specify the target radius (in dp)
-                new TapTargetView.Listener() {          // The listener can listen for regular clicks, long clicks or cancels
+        int[] oneLocation;
+        float oneX = 0;
+        float oneY = 0;
+
+        oneLocation = new int[2];
+        navigationTabBar.getLocationInWindow(oneLocation);
+        oneX = oneLocation[0] + navigationTabBar.getWidth() / 2f;
+        oneY = oneLocation[1] + navigationTabBar.getHeight() / 2f;
+        SimpleTarget tabBarNotificationsTarget = new SimpleTarget.Builder(this)
+                .setPoint(oneX, oneY)
+                .setShape(new RoundRectangle((navigationTabBar.getWidth()/2 + navigationTabBar.getWidth()/4),oneLocation[1],navigationTabBar.getWidth(),navigationTabBar.getHeight()))
+                .setTitle("Sección de mensajes")
+                .setDescription("Aquí podrás ver todos los mensajes que has enviado a tus contactos de forma individual")
+                .build();
+
+        Spotlight.with(this)
+                .setOverlayColor(R.color.background)
+                .setDuration(1000L)
+                .setAnimation(new DecelerateInterpolator(2f))
+                //Agrego los targets
+                .setTargets(tabBarNotificationsTarget)
+                .setClosedOnTouchedOutside(true)
+                .setOnSpotlightStateListener(new OnSpotlightStateChangedListener() {
                     @Override
-                    public void onTargetClick(TapTargetView view) {
-                        super.onTargetClick(view);
+                    public void onStarted() {
+                        Toast.makeText(MainActivity.this, "spotlight is started", Toast.LENGTH_SHORT).show();
                     }
-                });
+
+                    @Override
+                    public void onEnded() {
+                        Toast.makeText(MainActivity.this, "forth part finished", Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .start();
+
     }
 
 
@@ -535,6 +722,15 @@ public class MainActivity extends AppCompatActivity
     private void showTermsAndConditionDialogFragment() {
         FragmentManager fragmentManager = getSupportFragmentManager();
         TermsAndConditionsDialogFragment newFragment = new TermsAndConditionsDialogFragment();
+        newFragment.setStyle(DialogFragment.STYLE_NORMAL,R.style.AppTheme_DialogFragment);
+        FragmentTransaction transaction = fragmentManager.beginTransaction();
+        transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
+        transaction.add(android.R.id.content, newFragment).addToBackStack(null).commit();
+    }
+
+    private void showLibrariesDialogFragment() {
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        LibrariesDialogFragment newFragment = new LibrariesDialogFragment();
         newFragment.setStyle(DialogFragment.STYLE_NORMAL,R.style.AppTheme_DialogFragment);
         FragmentTransaction transaction = fragmentManager.beginTransaction();
         transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);

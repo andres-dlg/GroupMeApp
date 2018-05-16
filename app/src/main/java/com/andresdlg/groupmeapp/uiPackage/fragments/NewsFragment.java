@@ -20,7 +20,6 @@ import com.andresdlg.groupmeapp.Entities.Post;
 import com.andresdlg.groupmeapp.R;
 import com.andresdlg.groupmeapp.Utils.GroupStatus;
 import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
