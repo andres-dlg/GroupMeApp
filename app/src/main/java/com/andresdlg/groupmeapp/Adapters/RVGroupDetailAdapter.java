@@ -314,7 +314,7 @@ public class RVGroupDetailAdapter extends RecyclerView.Adapter<RVGroupDetailAdap
             groupRef.child("members").child(userId).setValue(null).addOnSuccessListener(new OnSuccessListener<Void>() {
                 @Override
                 public void onSuccess(Void aVoid) {
-                    Toast.makeText(context, "Borrado del grupo", Toast.LENGTH_SHORT).show();
+                    //Toast.makeText(context, "Borrado del grupo", Toast.LENGTH_SHORT).show();
 
                     usersList.remove(position);
                     notifyItemRemoved(position);
@@ -332,7 +332,7 @@ public class RVGroupDetailAdapter extends RecyclerView.Adapter<RVGroupDetailAdap
                         childRef.removeValue().addOnSuccessListener(new OnSuccessListener<Void>() {
                             @Override
                             public void onSuccess(Void aVoid) {
-                                Toast.makeText(context, "Borrado de los subgrupos", Toast.LENGTH_SHORT).show();
+                               // Toast.makeText(context, "Borrado de los subgrupos", Toast.LENGTH_SHORT).show();
                             }
                         });
                     }
@@ -351,7 +351,7 @@ public class RVGroupDetailAdapter extends RecyclerView.Adapter<RVGroupDetailAdap
             usersRef.removeValue().addOnSuccessListener(new OnSuccessListener<Void>() {
                 @Override
                 public void onSuccess(Void aVoid) {
-                    Toast.makeText(context, "Borrado de usuarios", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(context, "Usuario eliminado", Toast.LENGTH_SHORT).show();
                 }
             });
 

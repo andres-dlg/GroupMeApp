@@ -5,8 +5,11 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.v4.app.ActivityOptionsCompat;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.util.Pair;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
@@ -20,15 +23,18 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
+import android.view.animation.DecelerateInterpolator;
 import android.view.animation.Transformation;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.alamkanak.weekview.WeekViewEvent;
 import com.andresdlg.groupmeapp.Entities.Task;
 import com.andresdlg.groupmeapp.Entities.Users;
 import com.andresdlg.groupmeapp.R;
 import com.andresdlg.groupmeapp.Utils.GroupStatus;
+import com.andresdlg.groupmeapp.Utils.RoundRectangle;
 import com.andresdlg.groupmeapp.firebasePackage.FireApp;
 import com.andresdlg.groupmeapp.uiPackage.fragments.GroupChatFragment;
 import com.andresdlg.groupmeapp.uiPackage.fragments.GroupNewsFragment;
@@ -41,6 +47,10 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.ogaclejapan.smarttablayout.utils.v4.FragmentPagerItemAdapter;
 import com.ogaclejapan.smarttablayout.utils.v4.FragmentPagerItems;
+import com.takusemba.spotlight.OnSpotlightStateChangedListener;
+import com.takusemba.spotlight.Spotlight;
+import com.takusemba.spotlight.shape.Circle;
+import com.takusemba.spotlight.target.SimpleTarget;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -67,6 +77,7 @@ public class GroupActivity extends AppCompatActivity implements GroupChatFragmen
     TextView tv;
     CircleImageView civ;
     ArrayList<NavigationTabBar.Model> models;
+    Toolbar toolbar;
 
     String groupName;
 
@@ -76,7 +87,7 @@ public class GroupActivity extends AppCompatActivity implements GroupChatFragmen
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_group);
-        Toolbar toolbar = findViewById(R.id.toolbar);
+        toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -172,8 +183,8 @@ public class GroupActivity extends AppCompatActivity implements GroupChatFragmen
         navigationTabBar.setIsSwiped(true);
         navigationTabBar.setIsTitled(true);
         navigationTabBar.setTitleMode(NavigationTabBar.TitleMode.ACTIVE);
-        navigationTabBar.setTypeface(customFont);
-        navigationTabBar.setTitleSize(35);
+        //navigationTabBar.setTypeface(customFont);
+        navigationTabBar.setTitleSize(25);
         navigationTabBar.setIconSizeFraction((float) 0.5);
 
         navigationTabBar.setBadgePosition(NavigationTabBar.BadgePosition.RIGHT);
@@ -356,6 +367,23 @@ public class GroupActivity extends AppCompatActivity implements GroupChatFragmen
             case android.R.id.home:
                 finish();
                 return true;
+
+            case R.id.help:
+                if(viewPager.getCurrentItem() == 2){
+                    viewPager.setCurrentItem(1);
+                    viewPager.setCurrentItem(0);
+                }else{
+                    viewPager.setCurrentItem(0);
+                }
+                final Handler handler = new Handler();
+                handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        letTheFirstPartOfTheShowBegin();
+                    }
+                }, 1000);
+                return true;
+
             case R.id.dates:
                 clicked = true;
                 final Intent intent = new Intent(GroupActivity.this, TaskWeekViewActivity.class);
@@ -419,6 +447,179 @@ public class GroupActivity extends AppCompatActivity implements GroupChatFragmen
                 return super.onOptionsItemSelected(item);
         }
     }
+
+    private void letTheFirstPartOfTheShowBegin() {
+
+        int[] oneLocation;
+        float oneX;
+        float oneY;
+
+        // 1) TARGET PANEL DE NAVEGACIÓN
+        oneLocation = new int[2];
+        navigationTabBar.getLocationInWindow(oneLocation);
+        oneX = oneLocation[0] + navigationTabBar.getWidth() / 2f;
+        oneY = oneLocation[1] + navigationTabBar.getHeight() / 2f;
+        SimpleTarget tabBarTarget = new SimpleTarget.Builder(this)
+                .setPoint(oneX, oneY)
+                .setAnimation(new DecelerateInterpolator(2f))
+                .setShape(new RoundRectangle(0,oneLocation[1],navigationTabBar.getWidth(),navigationTabBar.getHeight()))
+                .setTitle("Panel de navegación")
+                .setDescription("Aquí podrás navegar por las secciones de Noticias de Grupo, Subgrupos y el Chat grupal")
+                .build();
+
+        // 2) TARGET PESTAÑA NOTICIAS
+        oneLocation = new int[2];
+        navigationTabBar.getLocationInWindow(oneLocation);
+        oneX = oneLocation[0] + navigationTabBar.getWidth() / 2f;
+        oneY = oneLocation[1] + navigationTabBar.getHeight() / 2f;
+        SimpleTarget tabBarNewsTarget = new SimpleTarget.Builder(this)
+                .setPoint(oneX, oneY)
+                .setAnimation(new DecelerateInterpolator(2f))
+                .setShape(new RoundRectangle(0,oneLocation[1],navigationTabBar.getWidth()/3,navigationTabBar.getHeight()))
+                .setTitle("Sección de noticias")
+                .setDescription("Aquí podrás visualizar todas las noticias publicadas en este grupo")
+                .build();
+
+        // 3) TARGET FAB NUEVO POST
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        List<Fragment> fragments = fragmentManager.getFragments();
+        View fabNewPost = fragments.get(1).getView().findViewById(R.id.fabNewPost);
+        oneLocation = new int[2];
+        fabNewPost.getLocationInWindow(oneLocation);
+        oneX = oneLocation[0] + fabNewPost.getWidth() / 2f;
+        oneY = oneLocation[1] + fabNewPost.getHeight() / 2f;
+        SimpleTarget fabNewPostTarget = new SimpleTarget.Builder(this)
+                .setPoint(oneX, oneY)
+                .setShape(new Circle(200f))
+                .setTitle("Nueva publicación")
+                .setDescription("Aquí podrás escribir una publicación y guardarla para que los demas miembros puedan verla")
+                .build();
+
+
+        //EMPIEZA LA PRIMER PARTE DEL SHOW
+        Spotlight.with(this)
+                .setOverlayColor(R.color.background)
+                .setDuration(1000L)
+                .setAnimation(new DecelerateInterpolator(2f))
+                //Agrego los targets
+                .setTargets(tabBarTarget,tabBarNewsTarget,fabNewPostTarget)
+                .setClosedOnTouchedOutside(true)
+                .setOnSpotlightStateListener(new OnSpotlightStateChangedListener() {
+                    @Override
+                    public void onStarted() {
+                    }
+
+                    @Override
+                    public void onEnded() {
+                        viewPager.setCurrentItem(1);
+                        final Handler handler = new Handler();
+                        handler.postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                letTheSecondPartOfTheShowBegin();
+                            }
+                        }, 1000);
+                    }
+                })
+                .start();
+
+    }
+
+    private void letTheSecondPartOfTheShowBegin() {
+
+        int[] oneLocation;
+        float oneX;
+        float oneY;
+
+        oneLocation = new int[2];
+        navigationTabBar.getLocationInWindow(oneLocation);
+        oneX = oneLocation[0] + navigationTabBar.getWidth() / 2f;
+        oneY = oneLocation[1] + navigationTabBar.getHeight() / 2f;
+        SimpleTarget tabBarSubGroupsTarget = new SimpleTarget.Builder(this)
+                .setPoint(oneX, oneY)
+                .setAnimation(new DecelerateInterpolator(2f))
+                .setShape(new RoundRectangle(navigationTabBar.getWidth()/3,oneLocation[1],navigationTabBar.getWidth() - navigationTabBar.getWidth()/3,navigationTabBar.getHeight()))
+                .setTitle("Sección de subgrupos")
+                .setDescription("Aquí podrás visualizar los subgrupos existentes y acceder a todos sus detalles (si eres miembro) incluyendo la creación de tareas")
+                .build();
+
+        // 3) TARGET FAB NUEVO POST
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        List<Fragment> fragments = fragmentManager.getFragments();
+        View fabNewPost = fragments.get(2).getView().findViewById(R.id.fabSubGroups);
+        oneLocation = new int[2];
+        fabNewPost.getLocationInWindow(oneLocation);
+        oneX = oneLocation[0] + fabNewPost.getWidth() / 2f;
+        oneY = oneLocation[1] + fabNewPost.getHeight() / 2f;
+        SimpleTarget fabSubGroupsTarget = new SimpleTarget.Builder(this)
+                .setPoint(oneX, oneY)
+                .setShape(new Circle(200f))
+                .setTitle("Nuevo subgrupo")
+                .setDescription("Desde aquí podrás crear un nuevo subgrupo y añadir a los miembros del grupo que tu quieras")
+                .build();
+
+
+        oneLocation = new int[2];
+        navigationTabBar.getLocationInWindow(oneLocation);
+        oneX = oneLocation[0] + navigationTabBar.getWidth() / 2f;
+        oneY = oneLocation[1] + navigationTabBar.getHeight() / 2f;
+        SimpleTarget tabBarChatTarget = new SimpleTarget.Builder(this)
+                .setPoint(oneX, oneY)
+                .setAnimation(new DecelerateInterpolator(2f))
+                .setShape(new RoundRectangle(navigationTabBar.getWidth() - navigationTabBar.getWidth()/3,oneLocation[1],navigationTabBar.getWidth(),navigationTabBar.getHeight()))
+                .setTitle("Sección de chat")
+                .setDescription("Aquí podrás chatear con tus compañeros de grupo sin importar a que subgrupo pertenezcan")
+                .build();
+
+        // 3) TARGET DATES
+        View dates = toolbar.findViewById(R.id.dates);
+        oneLocation = new int[2];
+        dates.getLocationInWindow(oneLocation);
+        oneX = oneLocation[0] + dates.getWidth() / 2f;
+        oneY = oneLocation[1] + dates.getHeight() / 2f;
+        SimpleTarget datesTarget = new SimpleTarget.Builder(this)
+                .setPoint(oneX, oneY)
+                .setShape(new Circle(100f))
+                .setTitle("Vista global de tareas")
+                .setDescription("Una vez que hayas definido algunas tareas, podrás ver aquí la duración de las mismas de forma mas amigable y tambien como se superponen en el calendario. Podrás hacer click en cualquier tarea para ver sus detalles")
+                .build();
+
+        float datesX = oneX;
+
+
+        // 3) TARGET GROUP
+        oneLocation = new int[2];
+        toolbar.getLocationInWindow(oneLocation);
+        oneX = oneLocation[0] + dates.getWidth() / 2f;
+        oneY = oneLocation[1] + dates.getHeight() / 2f;
+        SimpleTarget toolbarTarget = new SimpleTarget.Builder(this)
+                .setPoint(oneX, oneY)
+                .setShape(new RoundRectangle(150,oneLocation[1]-10,datesX-100,toolbar.getHeight()))
+                .setTitle("Detalles de grupo")
+                .setDescription("Si tocas en el nombre del grupo podrás ver todo el detalle de este grupo incluyendo miembros y objetivos")
+                .build();
+
+        Spotlight.with(this)
+                .setOverlayColor(R.color.background)
+                .setDuration(1000L)
+                .setAnimation(new DecelerateInterpolator(2f))
+                //Agrego los targets
+                .setTargets(tabBarSubGroupsTarget,fabSubGroupsTarget,tabBarChatTarget,datesTarget,toolbarTarget)
+                .setClosedOnTouchedOutside(true)
+                .setOnSpotlightStateListener(new OnSpotlightStateChangedListener() {
+                    @Override
+                    public void onStarted() {
+                    }
+
+                    @Override
+                    public void onEnded() {
+
+                    }
+                })
+                .start();
+
+    }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {

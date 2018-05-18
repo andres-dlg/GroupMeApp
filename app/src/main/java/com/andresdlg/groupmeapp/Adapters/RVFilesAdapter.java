@@ -1,5 +1,6 @@
 package com.andresdlg.groupmeapp.Adapters;
 
+import android.annotation.SuppressLint;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
@@ -9,7 +10,6 @@ import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Environment;
-import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
 import android.support.v4.app.NotificationCompat;
 import android.support.v7.app.AlertDialog;
@@ -63,7 +63,7 @@ public class RVFilesAdapter extends RecyclerView.Adapter<RVFilesAdapter.FilesVie
 
     private NotificationManager notificationManager;
     private NotificationCompat.Builder mBuilder;
-    int notificationChannel;
+    private int notificationChannel;
 
     public RVFilesAdapter(List<File> files, Context context, String subGroupName, String groupKey, String subGroupKey){
         this.files = files;
@@ -293,7 +293,7 @@ public class RVFilesAdapter extends RecyclerView.Adapter<RVFilesAdapter.FilesVie
         }
 
         private String milisecondsToDate(long miliseconds){
-            DateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm");
+            @SuppressLint("SimpleDateFormat") DateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm");
             Calendar calendar = Calendar.getInstance();
             calendar.setTimeInMillis(miliseconds);
             return formatter.format(calendar.getTime());

@@ -34,7 +34,6 @@
         app:ntb_badge_use_typeface="true"
         app:ntb_badged="true"
         app:ntb_bg_color="@color/colorAccent"
-        app:ntb_typeface="@font/simplifica_font"
         android:elevation="50dp"/>
 
     <View

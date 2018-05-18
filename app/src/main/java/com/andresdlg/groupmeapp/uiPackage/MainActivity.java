@@ -185,8 +185,8 @@ public class MainActivity extends AppCompatActivity
         navigationTabBar.setIsSwiped(true);
         navigationTabBar.setIsTitled(true);
         navigationTabBar.setTitleMode(NavigationTabBar.TitleMode.ACTIVE);
-        navigationTabBar.setTypeface(customFont);
-        navigationTabBar.setTitleSize(30);
+        //navigationTabBar.setTypeface(customFont);
+        navigationTabBar.setTitleSize(25);
         navigationTabBar.setIconSizeFraction((float) 0.5);
 
         navigationTabBar.setBadgePosition(NavigationTabBar.BadgePosition.RIGHT);
@@ -521,12 +521,10 @@ public class MainActivity extends AppCompatActivity
                 .setOnSpotlightStateListener(new OnSpotlightStateChangedListener() {
                     @Override
                     public void onStarted() {
-                        Toast.makeText(MainActivity.this, "spotlight is started", Toast.LENGTH_SHORT).show();
                     }
 
                     @Override
                     public void onEnded() {
-                        Toast.makeText(MainActivity.this, "second part started", Toast.LENGTH_SHORT).show();
                         viewPager.setCurrentItem(1);
                         final Handler handler = new Handler();
                         handler.postDelayed(new Runnable() {
@@ -585,12 +583,10 @@ public class MainActivity extends AppCompatActivity
                 .setOnSpotlightStateListener(new OnSpotlightStateChangedListener() {
                     @Override
                     public void onStarted() {
-                        Toast.makeText(MainActivity.this, "spotlight is started", Toast.LENGTH_SHORT).show();
                     }
 
                     @Override
                     public void onEnded() {
-                        Toast.makeText(MainActivity.this, "second part finished", Toast.LENGTH_SHORT).show();
                         viewPager.setCurrentItem(2);
                         final Handler handler = new Handler();
                         handler.postDelayed(new Runnable() {
@@ -632,12 +628,10 @@ public class MainActivity extends AppCompatActivity
                 .setOnSpotlightStateListener(new OnSpotlightStateChangedListener() {
                     @Override
                     public void onStarted() {
-                        Toast.makeText(MainActivity.this, "spotlight is started", Toast.LENGTH_SHORT).show();
                     }
 
                     @Override
                     public void onEnded() {
-                        Toast.makeText(MainActivity.this, "third part finished", Toast.LENGTH_SHORT).show();
                         viewPager.setCurrentItem(3);
                         final Handler handler = new Handler();
                         handler.postDelayed(new Runnable() {
@@ -679,12 +673,10 @@ public class MainActivity extends AppCompatActivity
                 .setOnSpotlightStateListener(new OnSpotlightStateChangedListener() {
                     @Override
                     public void onStarted() {
-                        Toast.makeText(MainActivity.this, "spotlight is started", Toast.LENGTH_SHORT).show();
                     }
 
                     @Override
                     public void onEnded() {
-                        Toast.makeText(MainActivity.this, "forth part finished", Toast.LENGTH_SHORT).show();
                     }
                 })
                 .start();

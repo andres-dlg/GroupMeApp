@@ -108,6 +108,9 @@ public class LibrariesDialogFragment extends DialogFragment {
         Library lib12 = new Library("PhotoView", "Implementation of ImageView for Android that supports zooming, by various touch gestures", "https://github.com/chrisbanes/PhotoView");
         libraries.add(lib12);
 
+        Library lib13 = new Library("Spotlight", "Android Library that lights items for tutorials or walk-throughs etc...", "https://github.com/TakuSemba/Spotlight");
+        libraries.add(lib13);
+
     }
 
     @Override

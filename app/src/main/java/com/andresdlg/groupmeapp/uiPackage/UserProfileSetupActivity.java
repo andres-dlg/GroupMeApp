@@ -200,13 +200,13 @@ public class UserProfileSetupActivity extends AppCompatActivity {
                         .listener(new RequestListener<Drawable>() {
                             @Override
                             public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
-                                supportStartPostponedEnterTransition();
+                                //supportStartPostponedEnterTransition();
                                 return false;
                             }
 
                             @Override
                             public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
-                                supportStartPostponedEnterTransition();
+                                //supportStartPostponedEnterTransition();
                                 return false;
                             }
                         })
