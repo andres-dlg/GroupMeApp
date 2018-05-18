@@ -40,6 +40,10 @@ import com.andresdlg.groupmeapp.uiPackage.fragments.GroupChatFragment;
 import com.andresdlg.groupmeapp.uiPackage.fragments.GroupNewsFragment;
 import com.andresdlg.groupmeapp.uiPackage.fragments.SubGroupsFragment;
 import com.bumptech.glide.Glide;
+import com.google.android.gms.ads.AdListener;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.MobileAds;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -68,6 +72,8 @@ public class GroupActivity extends AppCompatActivity implements GroupChatFragmen
     ValueEventListener userEventListener;
     ValueEventListener subGroupsValueEventListener;
 
+    AdView mAdView;
+
     ViewPager viewPager;
     String groupKey;
     List<Users> groupUsers;
@@ -87,6 +93,43 @@ public class GroupActivity extends AppCompatActivity implements GroupChatFragmen
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_group);
+
+        MobileAds.initialize(this,"ca-app-pub-3940256099942544~3347511713");
+
+        mAdView = findViewById(R.id.adview);
+        AdRequest adRequest = new AdRequest.Builder().build();
+        mAdView.loadAd(adRequest);
+        mAdView.setAdListener(new AdListener(){
+            @Override
+            public void onAdLoaded() {
+                // Code to be executed when an ad finishes loading.
+            }
+
+            @Override
+            public void onAdFailedToLoad(int errorCode) {
+                Toast.makeText(GroupActivity.this, "Fallo al cargar anuncio", Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onAdOpened() {
+                // Code to be executed when an ad opens an overlay that
+                // covers the screen.
+            }
+
+            @Override
+            public void onAdLeftApplication() {
+                // Code to be executed when the user has left the app.
+            }
+
+            @Override
+            public void onAdClosed() {
+                // Code to be executed when when the user is about to return
+                // to the app after tapping on an ad.
+            }
+        });
+
+
+
         toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -205,8 +248,9 @@ public class GroupActivity extends AppCompatActivity implements GroupChatFragmen
 
                     viewPagerWasInChatPage = true;
 
-                    navigationTabBar.animate().translationY(140);
-                    dummyView.animate().translationY(140);
+                    navigationTabBar.animate().translationY(256);
+                    dummyView.animate().translationY(256);
+                    mAdView.animate().translationY(256);
 
                     int newMarginDp = 4;
 
@@ -228,8 +272,9 @@ public class GroupActivity extends AppCompatActivity implements GroupChatFragmen
 
                         navigationTabBar.animate().translationY(0);
                         dummyView.animate().translationY(0);
+                        mAdView.animate().translationY(0);
 
-                        int newMarginDp = 50;
+                        int newMarginDp = 96;
                         final int px = (int) (TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, newMarginDp, metrics));
 
                         Animation a = new Animation() {
