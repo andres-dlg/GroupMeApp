@@ -41,11 +41,6 @@ public class TaskWeekViewActivity extends TaskWeekViewBaseActivty {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         //groupKey = getIntent().getStringExtra("groupKey");
-
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setTitle("Calendario de tareas");
-
-
     }
 
     @Override

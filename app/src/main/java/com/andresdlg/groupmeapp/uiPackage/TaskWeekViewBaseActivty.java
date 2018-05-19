@@ -38,7 +38,8 @@ public class TaskWeekViewBaseActivty extends AppCompatActivity implements WeekVi
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_task_week_view_activty);
 
-
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setTitle("Calendario de tareas");
 
                 // Get a reference for the week view in the layout.
         mWeekView = (WeekView) findViewById(R.id.weekView);

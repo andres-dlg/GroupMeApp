@@ -368,12 +368,14 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
         private void addTaskToList(final Task task) {
             View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.list_item_sub_group_task, parent, false);
             FrameLayout fl = v.findViewById(R.id.fltask);
-            fl.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    showTaskDialog(task, subGroups.get(position).getSubGroupKey(), groupKey);
-                }
-            });
+            if(isSubGroupMember){
+                fl.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        showTaskDialog(task, subGroups.get(position).getSubGroupKey(), groupKey);
+                    }
+                });
+            }
 
             //Nombre de la tarea
             textView = fl.findViewById(R.id.tasktv);

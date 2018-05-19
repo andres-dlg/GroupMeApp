@@ -22,7 +22,6 @@ import com.andresdlg.groupmeapp.Entities.Message;
 
 import com.andresdlg.groupmeapp.Entities.Users;
 import com.andresdlg.groupmeapp.R;
-import com.andresdlg.groupmeapp.firebasePackage.FireApp;
 import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
@@ -82,7 +81,10 @@ public class GroupChatFragment extends Fragment {
         Toolbar toolbar =  view.findViewById(R.id.toolbar_chats);
         toolbar.setVisibility(View.GONE);
 
-        conversationKey = ((FireApp) getActivity().getApplication()).getGroupKey();
+        Bundle bundle = getArguments();
+        conversationKey = bundle.getString("groupKey");
+
+        //conversationKey = ((FireApp) getActivity().getApplication()).getGroupKey();
 
         conversation = new Conversation();
 

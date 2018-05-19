@@ -68,6 +68,9 @@ public class GroupNewsFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_news_group,container,false);
 
+        Bundle bundle = getArguments();
+        String groupKey = bundle.getString("groupKey");
+
         progressBar = view.findViewById(R.id.progressBar);
 
         tvNoNews = view.findViewById(R.id.tvNoNews);
@@ -81,7 +84,7 @@ public class GroupNewsFragment extends Fragment {
             }
         });
 
-        String groupKey = ((FireApp) getContext().getApplicationContext()).getGroupKey();
+        //String groupKey = ((FireApp) getContext().getApplicationContext()).getGroupKey();
 
         postsRef = FirebaseDatabase.getInstance().getReference("Groups").child(groupKey).child("posts");
 

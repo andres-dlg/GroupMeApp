@@ -146,6 +146,8 @@ public class GroupActivity extends AppCompatActivity implements GroupChatFragmen
         groupName = getIntent().getStringExtra("groupName");
         final String groupPhotoUrl = getIntent().getStringExtra("groupImage");
 
+        ((FireApp) this.getApplication()).setGroupKey(groupKey);
+
         tv = toolbar.findViewById(R.id.action_bar_title_1);
         civ = toolbar.findViewById(R.id.conversation_contact_photo);
 
@@ -160,8 +162,6 @@ public class GroupActivity extends AppCompatActivity implements GroupChatFragmen
             public void onClick(View view) {
                 Intent intent = new Intent(GroupActivity.this, GroupDetailActivity.class);
                 // Pass data object in the bundle and populate details activity.
-
-
                 intent.putExtra("groupName", groupName);
                 intent.putExtra("groupPhotoUrl", groupPhotoUrl);
                 intent.putExtra("groupKey", groupKey);
@@ -180,13 +180,14 @@ public class GroupActivity extends AppCompatActivity implements GroupChatFragmen
 
         //StaticFirebaseSettings.currentUserId = FirebaseAuth.getInstance().getUid();
 
-        ((FireApp) this.getApplication()).setGroupKey(groupKey);
+        Bundle bundle = new Bundle();
+        bundle.putString("groupKey",groupKey);
 
         FragmentPagerItemAdapter adapter = new FragmentPagerItemAdapter(
                 getSupportFragmentManager(), FragmentPagerItems.with(this)
-                .add(R.string.news_fragment, GroupNewsFragment.class)
-                .add(R.string.sub_groups_fragment, SubGroupsFragment.class)
-                .add("Chat", GroupChatFragment.class)
+                .add(R.string.news_fragment, GroupNewsFragment.class,bundle)
+                .add(R.string.sub_groups_fragment, SubGroupsFragment.class,bundle)
+                .add("Chat", GroupChatFragment.class,bundle)
                 .create());
 
         viewPager = findViewById(R.id.viewpager);

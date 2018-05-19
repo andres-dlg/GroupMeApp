@@ -24,7 +24,6 @@ import com.andresdlg.groupmeapp.Entities.SubGroup;
 import com.andresdlg.groupmeapp.Entities.Task;
 import com.andresdlg.groupmeapp.R;
 import com.andresdlg.groupmeapp.Utils.GroupType;
-import com.andresdlg.groupmeapp.firebasePackage.FireApp;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -62,9 +61,13 @@ public class SubGroupsFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
 
+        Bundle bundle = getArguments();
+
+        String groupKey = bundle.getString("groupKey");
+
         subGroups = new ArrayList<>();
 
-        groupKey = ((FireApp) getActivity().getApplication()).getGroupKey();
+        //groupKey = ((FireApp) getActivity().getApplication()).getGroupKey();
 
         subGroupsRef = FirebaseDatabase.getInstance().getReference("Groups").child(groupKey).child("subgroups");
 
@@ -204,25 +207,22 @@ public class SubGroupsFragment extends Fragment {
 
                     if(type == RVSubGroupAdapter.taskTypes.NEW_TASK){
                         rvSubGroupsAdapter.setNewTaskFlag();
+                        rvSubGroupsAdapter.notifyItemChanged(i);
                     }else if(type == RVSubGroupAdapter.taskTypes.UPDATED_TASK){
                         rvSubGroupsAdapter.setUpdatedTaskFlag();
+                        rvSubGroupsAdapter.notifyItemChanged(i);
                     }else{
                         rvSubGroupsAdapter.setDeletedTaskFlag();
+                        rvSubGroupsAdapter.notifyDataSetChanged();
                     }
 
-                    rvSubGroupsAdapter.notifyDataSetChanged();
                     swipeContainer.setRefreshing(false);
                 }
             }
 
             @Override
             public void onChildRemoved(DataSnapshot data) {
-                /*int i = findPosition(data.child("subGroupKey").getValue().toString());
-                if(i != -1){
-                    subGroups.remove(i);
-                    rvSubGroupsAdapter.notifyItemRemoved(i);
-                    rvSubGroupsAdapter.notifyItemRangeChanged(i,subGroups.size());
-                }*/
+
             }
 
             @Override
