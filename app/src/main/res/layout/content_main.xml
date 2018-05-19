@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<android.support.design.widget.CoordinatorLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:ads="http://schemas.android.com/tools"
     android:id="@+id/parent"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -50,18 +50,30 @@
         >
     </View>
 
-    <View
+    <LinearLayout
         android:id="@+id/viewToAnchor"
         android:layout_width="match_parent"
-        android:layout_height="48dp"
+        android:layout_height="wrap_content"
         android:layout_gravity="bottom"
+        android:gravity="center"
         android:elevation="10dp"
+        android:layout_centerHorizontal="true"
         android:layout_above="@+id/adview"
         android:translationZ="10dp"
-        >
-    </View>
+        android:orientation="horizontal">
 
-    <com.google.android.gms.ads.AdView
+        <com.google.android.gms.ads.AdView
+            xmlns:ads="http://schemas.android.com/apk/res-auto"
+            android:id="@+id/adView"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            ads:adSize="BANNER"
+            ads:adUnitId="ca-app-pub-6164739277423889/8658953023"/>
+
+    </LinearLayout>
+
+    <!--<com.google.android.gms.ads.AdView
         xmlns:ads="http://schemas.android.com/apk/res-auto"
         android:id="@+id/adview"
         android:layout_width="match_parent"
@@ -72,6 +84,6 @@
         ads:adSize="SMART_BANNER"
         ads:layout_anchor="@id/viewToAnchor"
         ads:adUnitId="ca-app-pub-3940256099942544/6300978111"
-        ads:layout_anchorGravity="bottom|center"/>
+        ads:layout_anchorGravity="bottom|center"/>-->
 
 </android.support.design.widget.CoordinatorLayout>

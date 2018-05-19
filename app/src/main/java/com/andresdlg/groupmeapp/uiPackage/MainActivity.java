@@ -3,6 +3,7 @@ package com.andresdlg.groupmeapp.uiPackage;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
@@ -24,6 +25,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.animation.DecelerateInterpolator;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -81,6 +83,9 @@ public class MainActivity extends AppCompatActivity
         NewsFragment.OnNewPostSetListener,
         MessagesFragment.OnNewMessageListener{
 
+    //private static final String AD_UNIT_ID = "ca-app-pub-6164739277423889/8658953023";
+    private static final String AD_UNIT_ID = "ca-app-pub-3940256099942544/6300978111";
+
     AdView mAdView;
 
     //FIREBASE AUTHENTICATION FIELDS
@@ -110,11 +115,13 @@ public class MainActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        
+        //MobileAds.initialize(this,"ca-app-pub-3940256099942544~3347511713");
+        MobileAds.initialize(this,"ca-app-pub-6164739277423889~7593283366");
 
-        MobileAds.initialize(this,"ca-app-pub-3940256099942544~3347511713");
-
-        mAdView = findViewById(R.id.adview);
+        mAdView = findViewById(R.id.adView);
         AdRequest adRequest = new AdRequest.Builder().build();
+
         mAdView.loadAd(adRequest);
         mAdView.setAdListener(new AdListener(){
             @Override
@@ -161,6 +168,8 @@ public class MainActivity extends AppCompatActivity
                 return false;
             }
         });
+
+        //createBanner();
 
         TextView tv = findViewById(R.id.custom_title);
         Typeface customFont = Typeface.createFromAsset(this.getAssets(),"fonts/Simplifica.ttf");

@@ -57,6 +57,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static android.Manifest.permission.ACCESS_COARSE_LOCATION;
 import static android.Manifest.permission.CAMERA;
 import static android.Manifest.permission.READ_CONTACTS;
 import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
@@ -222,6 +223,7 @@ public class LoginActivity extends AppCompatActivity {
         if(Build.VERSION.SDK_INT >= 23) {
             int contactsPermission = ContextCompat.checkSelfPermission(this, READ_CONTACTS);
             int internetPermission = ContextCompat.checkSelfPermission(this, CAMERA);
+            int locationPermission = ContextCompat.checkSelfPermission(this, ACCESS_COARSE_LOCATION);
             List<String> listPermissionsNeeded = new ArrayList<>();
 
             //ya se concedio el permiso de contactos?
@@ -234,6 +236,10 @@ public class LoginActivity extends AppCompatActivity {
             //Si no se concedio lo agrego a la lista de los permisos necesarios
             if (internetPermission != PackageManager.PERMISSION_GRANTED) {
                 listPermissionsNeeded.add(CAMERA);
+            }
+
+            if (locationPermission != PackageManager.PERMISSION_GRANTED) {
+                listPermissionsNeeded.add(ACCESS_COARSE_LOCATION);
             }
 
             if (internetPermission != PackageManager.PERMISSION_GRANTED) {
