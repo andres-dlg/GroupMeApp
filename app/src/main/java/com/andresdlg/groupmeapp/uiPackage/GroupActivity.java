@@ -465,7 +465,7 @@ public class GroupActivity extends AppCompatActivity implements GroupChatFragmen
                                     Calendar taskEndDateTime = Calendar.getInstance();
                                     taskEndDateTime.setTimeInMillis(task.getEndDate());
 
-                                    WeekViewEventGroupMeApp eventGroupMeApp = new WeekViewEventGroupMeApp(i, subgroupRef.child("name").getValue() + "-" + task.getName(), groupKey, subgroupRef.child("subGroupKey").getValue().toString(), task.getTaskKey(), task.getTaskDescription(), task.getFinished(), taskStartDateTime, taskEndDateTime);
+                                    WeekViewEventGroupMeApp eventGroupMeApp = new WeekViewEventGroupMeApp(i, task.getName(), groupKey, subgroupRef.child("subGroupKey").getValue().toString(), task.getTaskKey(), task.getTaskDescription(), task.getFinished(), taskStartDateTime, taskEndDateTime);
                                     WeekViewEvent event = new WeekViewEvent(i, subgroupRef.child("name").getValue() + "-" + task.getName(), groupKey + "RQYg6ybUaE|sep" + subgroupRef.child("subGroupKey").getValue() + "RQYg6ybUaE|sep" + task.getTaskKey() + "RQYg6ybUaE|sep" +task.getTaskDescription() + "RQYg6ybUaE|sep" + task.getFinished(), taskStartDateTime, taskEndDateTime);
                                     event.setColor(getResources().getColor(R.color.colorPrimary));
                                     eventsGroupMeApp.add(eventGroupMeApp);

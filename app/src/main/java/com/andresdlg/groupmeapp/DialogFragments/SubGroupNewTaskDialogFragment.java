@@ -22,8 +22,11 @@ import com.andresdlg.groupmeapp.Entities.Task;
 import com.andresdlg.groupmeapp.R;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -49,7 +52,10 @@ public class SubGroupNewTaskDialogFragment extends DialogFragment {
 
     EditText taskStartDate;
     EditText taskEndDate;
-    LinearLayout container;
+    EditText taskFinished;
+    EditText subgroupName;
+    EditText taskDecription;
+    EditText taskName;
 
     Calendar startDateCalendar;
     Calendar endDateCalendar;
@@ -84,10 +90,39 @@ public class SubGroupNewTaskDialogFragment extends DialogFragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View v = inflater.inflate(R.layout.fragment_subgroup_new_task, container, false);
+        final View v;
+        if(fromWeekView){
+            v = inflater.inflate(R.layout.fragment_subgroup_task_details, container, false);
 
-        final EditText taskName = v.findViewById(R.id.task_name);
-        final EditText taskDecription = v.findViewById(R.id.task_desc);
+            taskFinished = v.findViewById(R.id.task_finished);
+            if(task.getFinished()){
+                taskFinished.setText("Finalizada");
+            }else{
+                taskFinished.setText("En curso");
+            }
+
+            subgroupName = v.findViewById(R.id.subgroup_name);
+
+            FirebaseDatabase.getInstance().getReference("Groups").child(groupKey).child("subgroups").child(subGroupKey).child("name").addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+
+                    subgroupName.setText(dataSnapshot.getValue().toString());
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
+                }
+            });
+
+        }else{
+            v = inflater.inflate(R.layout.fragment_subgroup_new_task, container, false);
+        }
+
+
+        taskName = v.findViewById(R.id.task_name);
+        taskDecription = v.findViewById(R.id.task_desc);
 
         taskStartDate = v.findViewById(R.id.start_date);
         taskStartDate.setOnClickListener(new View.OnClickListener() {
@@ -114,6 +149,8 @@ public class SubGroupNewTaskDialogFragment extends DialogFragment {
             taskDecription.setEnabled(false);
             taskStartDate.setEnabled(false);
             taskEndDate.setEnabled(false);
+            taskFinished.setEnabled(false);
+            subgroupName.setEnabled(false);
         }
 
         Toolbar toolbar = v.findViewById(R.id.toolbar_chats);
@@ -160,6 +197,9 @@ public class SubGroupNewTaskDialogFragment extends DialogFragment {
                 taskEndDate.setText(formatDate(task.getEndDate()));
             }
             taskDecription.setText(task.getTaskDescription());
+            if(taskDecription.getText().toString().isEmpty()){
+                taskDecription.setText("No hay descripción para esta tarea");
+            }
             databaseMode = UPDATE;
         }else{
             databaseMode = INSERT;

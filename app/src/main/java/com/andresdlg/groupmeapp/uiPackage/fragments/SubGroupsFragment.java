@@ -63,7 +63,7 @@ public class SubGroupsFragment extends Fragment {
 
         Bundle bundle = getArguments();
 
-        String groupKey = bundle.getString("groupKey");
+        groupKey = bundle.getString("groupKey");
 
         subGroups = new ArrayList<>();
 
