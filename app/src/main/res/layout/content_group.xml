@@ -90,7 +90,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             ads:adSize="BANNER"
-            ads:adUnitId="82dd66ec561d476ca95d51b5c0ef1707"/>
+            ads:adUnitId="ca-app-pub-6164739277423889/8658953023"/>
 
     </LinearLayout>
 

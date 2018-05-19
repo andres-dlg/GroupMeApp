@@ -73,17 +73,4 @@
 
     </LinearLayout>
 
-    <!--<com.google.android.gms.ads.AdView
-        xmlns:ads="http://schemas.android.com/apk/res-auto"
-        android:id="@+id/adview"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:layout_gravity="center_horizontal"
-        ads:adSize="SMART_BANNER"
-        ads:layout_anchor="@id/viewToAnchor"
-        ads:adUnitId="ca-app-pub-3940256099942544/6300978111"
-        ads:layout_anchorGravity="bottom|center"/>-->
-
 </android.support.design.widget.CoordinatorLayout>

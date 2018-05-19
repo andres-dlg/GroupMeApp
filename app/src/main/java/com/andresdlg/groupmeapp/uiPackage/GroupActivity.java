@@ -25,7 +25,6 @@ import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.DecelerateInterpolator;
 import android.view.animation.Transformation;
-import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -33,6 +32,7 @@ import android.widget.Toast;
 import com.alamkanak.weekview.WeekViewEvent;
 import com.andresdlg.groupmeapp.Entities.Task;
 import com.andresdlg.groupmeapp.Entities.Users;
+import com.andresdlg.groupmeapp.Entities.WeekViewEventGroupMeApp;
 import com.andresdlg.groupmeapp.R;
 import com.andresdlg.groupmeapp.Utils.GroupStatus;
 import com.andresdlg.groupmeapp.Utils.RoundRectangle;
@@ -43,7 +43,6 @@ import com.andresdlg.groupmeapp.uiPackage.fragments.SubGroupsFragment;
 import com.bumptech.glide.Glide;
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
-import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.MobileAds;
 import com.google.firebase.database.DataSnapshot;
@@ -67,7 +66,6 @@ import devlight.io.library.ntb.NavigationTabBar;
 
 public class GroupActivity extends AppCompatActivity implements GroupChatFragment.OnNewMessageListener, GroupNewsFragment.OnNewPostSetListener{
 
-    private static final String AD_UNIT_ID = "ca-app-pub-6164739277423889/8658953023";
     DatabaseReference groupRef;
     DatabaseReference userRef;
     DatabaseReference subGroupsRef;
@@ -97,7 +95,6 @@ public class GroupActivity extends AppCompatActivity implements GroupChatFragmen
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_group);
 
-        //MobileAds.initialize(this,"ca-app-pub-3940256099942544~3347511713");
         MobileAds.initialize(this,"ca-app-pub-6164739277423889~7593283366");
 
         mAdView = findViewById(R.id.adView);
@@ -250,9 +247,11 @@ public class GroupActivity extends AppCompatActivity implements GroupChatFragmen
 
                     viewPagerWasInChatPage = true;
 
-                    navigationTabBar.animate().translationY(256);
-                    dummyView.animate().translationY(256);
-                    mAdView.animate().translationY(256);
+                    final int px = (int) (TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 96, metrics));
+
+                    navigationTabBar.animate().translationY(px);
+                    dummyView.animate().translationY(px);
+                    mAdView.animate().translationY(px);
 
                     int newMarginDp = 4;
 
@@ -439,6 +438,7 @@ public class GroupActivity extends AppCompatActivity implements GroupChatFragmen
                 ((FireApp) getApplicationContext()).setEvents(null);
 
                 final List<WeekViewEvent> events = new ArrayList<>();
+                final List<WeekViewEventGroupMeApp> eventsGroupMeApp = new ArrayList<>();
 
                 final ProgressBar progressBar = new ProgressBar(this);
                 progressBar.setVisibility(View.VISIBLE);
@@ -464,8 +464,10 @@ public class GroupActivity extends AppCompatActivity implements GroupChatFragmen
                                     Calendar taskEndDateTime = Calendar.getInstance();
                                     taskEndDateTime.setTimeInMillis(task.getEndDate());
 
-                                    WeekViewEvent event = new WeekViewEvent(i, task.getName(), taskStartDateTime, taskEndDateTime);
+                                    WeekViewEventGroupMeApp eventGroupMeApp = new WeekViewEventGroupMeApp(i, subgroupRef.child("name").getValue() + "-" + task.getName(), groupKey, subgroupRef.child("subGroupKey").getValue().toString(), task.getTaskKey(), task.getTaskDescription(), task.getFinished(), taskStartDateTime, taskEndDateTime);
+                                    WeekViewEvent event = new WeekViewEvent(i, subgroupRef.child("name").getValue() + "-" + task.getName(), groupKey + "RQYg6ybUaE|sep" + subgroupRef.child("subGroupKey").getValue() + "RQYg6ybUaE|sep" + task.getTaskKey() + "RQYg6ybUaE|sep" +task.getTaskDescription() + "RQYg6ybUaE|sep" + task.getFinished(), taskStartDateTime, taskEndDateTime);
                                     event.setColor(getResources().getColor(R.color.colorPrimary));
+                                    eventsGroupMeApp.add(eventGroupMeApp);
                                     events.add(event);
                                     i++;
                                 }
@@ -473,6 +475,7 @@ public class GroupActivity extends AppCompatActivity implements GroupChatFragmen
                         }
                         progressBar.setVisibility(View.GONE);
                         ((FireApp) getApplicationContext()).setEvents(events);
+                        ((FireApp) getApplicationContext()).setEventsGroupMeApp(eventsGroupMeApp);
                         if (clicked){
                             startActivity(intent);
                             clicked = false;

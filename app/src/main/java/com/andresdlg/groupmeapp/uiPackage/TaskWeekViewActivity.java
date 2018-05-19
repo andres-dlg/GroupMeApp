@@ -6,6 +6,7 @@ import android.os.PersistableBundle;
 import android.provider.ContactsContract;
 import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
 
@@ -40,6 +41,11 @@ public class TaskWeekViewActivity extends TaskWeekViewBaseActivty {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         //groupKey = getIntent().getStringExtra("groupKey");
+
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setTitle("Calendario de tareas");
+
+
     }
 
     @Override
@@ -248,7 +254,7 @@ public class TaskWeekViewActivity extends TaskWeekViewBaseActivty {
             if (myEvent.getStartTime().get(Calendar.MONTH) == (newMonth-1) && myEvent.getStartTime().get(Calendar.YEAR) == newYear ) {
                 Calendar startTime = myEvent.getStartTime();
                 Calendar endTime = myEvent.getEndTime();
-                WeekViewEvent event = new WeekViewEvent((long)(Math.random()*999999999), myEvent.getName(), startTime, endTime);
+                WeekViewEvent event = new WeekViewEvent(myEvent.getId(), myEvent.getName(), startTime, endTime);
                 //event.setColor(ContextCompat.getColor(this, android.R.color.holo_blue_bright));
                 event.setColor(getColor());
                 eventosAgregados.add(event);

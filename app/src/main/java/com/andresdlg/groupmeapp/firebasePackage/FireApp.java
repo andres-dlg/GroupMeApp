@@ -4,6 +4,7 @@ import android.app.Application;
 
 import com.alamkanak.weekview.WeekViewEvent;
 import com.andresdlg.groupmeapp.Entities.Users;
+import com.andresdlg.groupmeapp.Entities.WeekViewEventGroupMeApp;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.database.FirebaseDatabase;
 
@@ -18,6 +19,7 @@ public class FireApp extends Application {
 
     private String groupKey;
     private List<WeekViewEvent> events;
+    private List<WeekViewEventGroupMeApp> eventsGroupMeApp;
     private String groupName;
     private String downloadUrl;
     private Map<String, String> members;
@@ -44,8 +46,16 @@ public class FireApp extends Application {
         this.events = events;
     }
 
+    public void setEventsGroupMeApp(List<WeekViewEventGroupMeApp> events) {
+        this.eventsGroupMeApp = events;
+    }
+
     public List<WeekViewEvent> getEvents() {
         return events;
+    }
+
+    public List<WeekViewEventGroupMeApp> getEventsGroupMeApp() {
+        return eventsGroupMeApp;
     }
 
     @Override
@@ -73,7 +83,6 @@ public class FireApp extends Application {
     public String getDownloadUrl() {
         return downloadUrl;
     }
-
 
     public Map<String, String> getMembers() {
         return members;

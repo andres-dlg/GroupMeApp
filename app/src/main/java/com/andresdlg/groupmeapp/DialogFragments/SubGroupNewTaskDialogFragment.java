@@ -15,6 +15,7 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.DatePicker;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.andresdlg.groupmeapp.Entities.Task;
@@ -44,9 +45,11 @@ public class SubGroupNewTaskDialogFragment extends DialogFragment {
     private String subGroupKey;
     private String groupKey;
     private Task task;
+    private boolean fromWeekView;
 
     EditText taskStartDate;
     EditText taskEndDate;
+    LinearLayout container;
 
     Calendar startDateCalendar;
     Calendar endDateCalendar;
@@ -63,6 +66,13 @@ public class SubGroupNewTaskDialogFragment extends DialogFragment {
         this.subGroupKey = subGroupKey;
         this.groupKey = groupKey;
         this.task = task;
+    }
+
+    public SubGroupNewTaskDialogFragment(String subGroupKey, String groupKey, Task task, boolean fromWeekView) {
+        this.subGroupKey = subGroupKey;
+        this.groupKey = groupKey;
+        this.task = task;
+        this.fromWeekView = fromWeekView;
     }
 
     @Override
@@ -97,20 +107,37 @@ public class SubGroupNewTaskDialogFragment extends DialogFragment {
             }
         });
 
+        container = v.findViewById(R.id.container);
+        if(fromWeekView){
+            container.setEnabled(false);
+            taskName.setEnabled(false);
+            taskDecription.setEnabled(false);
+            taskStartDate.setEnabled(false);
+            taskEndDate.setEnabled(false);
+        }
+
         Toolbar toolbar = v.findViewById(R.id.toolbar_chats);
-        toolbar.setTitle("Nueva tarea");
+        if(fromWeekView) {
+            toolbar.setTitle("Detalles de la tarea");
+        }else{
+            toolbar.setTitle("Nueva tarea");
+        }
         toolbar.inflateMenu(R.menu.fragment_subgroup_new_task);
-        toolbar.getMenu().getItem(0).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
-            @Override
-            public boolean onMenuItemClick(MenuItem item) {
-                if(!taskName.getText().toString().isEmpty()){
-                    saveTask(taskName.getText().toString(),taskDecription.getText().toString());
-                }else{
-                    Toast.makeText(getContext(), "Debe insertar un nombre para la tarea", Toast.LENGTH_SHORT).show();
+        if(fromWeekView){
+            toolbar.getMenu().removeItem(R.id.save);
+        }else{
+            toolbar.getMenu().getItem(0).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+                @Override
+                public boolean onMenuItemClick(MenuItem item) {
+                    if(!taskName.getText().toString().isEmpty()){
+                        saveTask(taskName.getText().toString(),taskDecription.getText().toString());
+                    }else{
+                        Toast.makeText(getContext(), "Debe insertar un nombre para la tarea", Toast.LENGTH_SHORT).show();
+                    }
+                    return true;
                 }
-                return true;
-            }
-        });
+            });
+        }
         toolbar.setNavigationIcon(R.drawable.ic_arrow_left_white_24dp);
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
