@@ -362,11 +362,8 @@ public class MainActivity extends AppCompatActivity
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle item selection
         switch (item.getItemId()) {
-            case R.id.add_contact:
-                showHeaderDialogFragment();
-                return true;
-            case R.id.contacts:
-                showContactsDialogFragment();
+            case R.id.delete:
+
                 return true;
             default:
                 return super.onOptionsItemSelected(item);

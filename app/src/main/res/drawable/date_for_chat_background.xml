@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:exitFadeDuration="150">
+    <item android:state_pressed="false">
+        <shape android:shape="rectangle">
+            <!--apply button background transparent, full opacity-->
+            <solid android:color="#6442a5f5"/>
+            <corners android:radius="100dp"/>
+        </shape>
+    </item>
+</selector>

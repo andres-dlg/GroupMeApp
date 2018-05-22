@@ -22,7 +22,11 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -42,6 +46,8 @@ public class ListMessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
     private String chatType;
     private String conversationKey;
 
+    private List<String> datesToDisplay;
+    private Map<String, String> messagesToDisplayDates;
 
     public ListMessageAdapter(Context context, Conversation conversation, String userToUrl, String currentUserUrl, String chatType, String conversationKey) {
         this.context = context;
@@ -50,6 +56,8 @@ public class ListMessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
         this.currentUserUrl = currentUserUrl;
         this.chatType = chatType;
         this.conversationKey = conversationKey;
+        datesToDisplay = new ArrayList<>();
+        messagesToDisplayDates = new HashMap<>();
     }
 
     @NonNull
@@ -68,11 +76,64 @@ public class ListMessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
     @Override
     public void onBindViewHolder(@NonNull final RecyclerView.ViewHolder holder, @SuppressLint("RecyclerView") final int position) {
 
+        //Calendario para mostrar la hora
+        long time = conversation.getListMessageData().get(position).getTimestamp();
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(time);
+        final String timeToShow = calendar.get(Calendar.HOUR_OF_DAY) + ":" + calendar.get(Calendar.MINUTE);
+
+        Calendar cal = Calendar.getInstance();
+        for(Message message : conversation.getListMessageData()){
+            cal.setTimeInMillis(message.getTimestamp());
+            String dateTemp = cal.get(Calendar.DAY_OF_MONTH) + "/" + cal.get(Calendar.MONTH) + "/" + cal.get(Calendar.YEAR);
+            checkIfDateWasDisplayed(dateTemp);
+        }
+
+        for(String dateToShow : datesToDisplay){
+            List<Message> tempList = new ArrayList<>();
+            for(int i = 0; i<conversation.getListMessageData().size(); i++){
+                Calendar calendar1 = Calendar.getInstance();
+                calendar1.setTimeInMillis(conversation.getListMessageData().get(i).getTimestamp());
+                String date1 = calendar1.get(Calendar.DAY_OF_MONTH) + "/" + calendar1.get(Calendar.MONTH) + "/" + calendar1.get(Calendar.YEAR);
+                if(date1.equals(dateToShow)){
+                   tempList.add(conversation.getListMessageData().get(i));
+                }
+            }
+            checkAndSaveTheOldestMessage(tempList,dateToShow);
+        }
+
+
         if(chatType.equals("User")){
             if (holder instanceof ItemMessageFriendHolder) {
+                boolean exists = false;
+                for(Map.Entry<String, String> entry: messagesToDisplayDates.entrySet()) {
+                    if(entry.getKey().equals(conversation.getListMessageData().get(position).getId())){
+                        ((ItemMessageFriendHolder) holder).date.setText(entry.getValue());
+                        exists = true;
+                        break;
+                    }
+                }
+                if(!exists){
+                    ((ItemMessageFriendHolder) holder).date.setVisibility(View.GONE);
+
+                }
+                ((ItemMessageFriendHolder) holder).textTimeFriend.setText(timeToShow);
                 ((ItemMessageFriendHolder) holder).txtContent.setText(conversation.getListMessageData().get(position).getText());
                 ((ItemMessageFriendHolder) holder).setAvatar(context,userToUrl);
             } else if (holder instanceof ItemMessageUserHolder) {
+                boolean exists = false;
+                for(Map.Entry<String, String> entry: messagesToDisplayDates.entrySet()) {
+                    if(entry.getKey().equals(conversation.getListMessageData().get(position).getId())){
+                        ((ItemMessageUserHolder) holder).date.setText(entry.getValue());
+                        exists = true;
+                        break;
+                    }
+                }
+                if(!exists){
+                    ((ItemMessageUserHolder) holder).date.setVisibility(View.GONE);
+
+                }
+                ((ItemMessageUserHolder) holder).textTimeUser.setText(timeToShow);
                 ((ItemMessageUserHolder) holder).txtContent.setText(conversation.getListMessageData().get(position).getText());
                 ((ItemMessageUserHolder) holder).setAvatar(context,currentUserUrl);
             }
@@ -83,9 +144,35 @@ public class ListMessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     Users u = dataSnapshot.getValue(Users.class);
                     if (holder instanceof ItemMessageFriendHolder) {
+                        boolean exists = false;
+                        for(Map.Entry<String, String> entry: messagesToDisplayDates.entrySet()) {
+                            if(entry.getKey().equals(conversation.getListMessageData().get(position).getId())){
+                                ((ItemMessageFriendHolder) holder).date.setText(entry.getValue());
+                                exists = true;
+                                break;
+                            }
+                        }
+                        if(!exists){
+                            ((ItemMessageFriendHolder) holder).date.setVisibility(View.GONE);
+
+                        }
+                        ((ItemMessageFriendHolder) holder).textTimeFriend.setText(timeToShow);
                         ((ItemMessageFriendHolder) holder).txtContent.setText(conversation.getListMessageData().get(position).getText());
                         ((ItemMessageFriendHolder) holder).setAvatar(context,u.getImageURL());
                     } else if (holder instanceof ItemMessageUserHolder) {
+                        boolean exists = false;
+                        for(Map.Entry<String, String> entry: messagesToDisplayDates.entrySet()) {
+                            if(entry.getKey().equals(conversation.getListMessageData().get(position).getId())){
+                                ((ItemMessageUserHolder) holder).date.setText(entry.getValue());
+                                exists = true;
+                                break;
+                            }
+                        }
+                        if(!exists){
+                            ((ItemMessageUserHolder) holder).date.setVisibility(View.GONE);
+
+                        }
+                        ((ItemMessageUserHolder) holder).textTimeUser.setText(timeToShow);
                         ((ItemMessageUserHolder) holder).txtContent.setText(conversation.getListMessageData().get(position).getText());
                         ((ItemMessageUserHolder) holder).setAvatar(context,u.getImageURL());
                     }
@@ -99,6 +186,39 @@ public class ListMessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
             };
             userRef.addListenerForSingleValueEvent(userValueEventListener);
         }
+    }
+
+    private void checkAndSaveTheOldestMessage(List<Message> tempList, String dateToShow){
+        String id = tempList.get(0).getId();
+        for(int i = 0; i<tempList.size() - 1; i++){
+            for (int j = i +1; j < tempList.size() ; j++){
+                if(tempList.get(j).getTimestamp()<tempList.get(i).getTimestamp()){
+                    id = tempList.get(j).getId();
+                }
+            }
+        }
+
+        Calendar today = Calendar.getInstance();
+        String[] fecha = dateToShow.split("/");
+        if(today.get(Calendar.DAY_OF_MONTH) == Integer.parseInt(fecha[0]) && today.get(Calendar.MONTH) == Integer.parseInt(fecha[1]) &&  today.get(Calendar.YEAR) == Integer.parseInt(fecha[2]) ) {
+            messagesToDisplayDates.put(id, "HOY");
+        }else if (today.get(Calendar.DAY_OF_MONTH)-1 == Integer.parseInt(fecha[0]) && today.get(Calendar.MONTH) == Integer.parseInt(fecha[1]) &&  today.get(Calendar.YEAR) == Integer.parseInt(fecha[2]) ) {
+            messagesToDisplayDates.put(id, "AYER");
+        }else if(today.get(Calendar.DAY_OF_MONTH)-2 == Integer.parseInt(fecha[0]) && today.get(Calendar.MONTH) == Integer.parseInt(fecha[1]) &&  today.get(Calendar.YEAR) == Integer.parseInt(fecha[2]) ) {
+            messagesToDisplayDates.put(id, "ANTEAYER");
+        }else{
+            messagesToDisplayDates.put(id,dateToShow);
+        }
+
+    }
+
+    private void checkIfDateWasDisplayed(String date) {
+        for(String displayedDate : datesToDisplay){
+            if(displayedDate.equals(date)){
+                return;
+            }
+        }
+        datesToDisplay.add(date);
     }
 
     private void removeListener() {
@@ -135,14 +255,19 @@ public class ListMessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
     }
 
 
+
     class ItemMessageUserHolder extends RecyclerView.ViewHolder {
         public TextView txtContent;
         CircleImageView avatar;
+        TextView textTimeUser;
+        TextView date;
 
         ItemMessageUserHolder(View itemView) {
             super(itemView);
             txtContent =  itemView.findViewById(R.id.textContentUser);
             avatar =  itemView.findViewById(R.id.imageView2);
+            textTimeUser = itemView.findViewById(R.id.textTimeUser);
+            date = itemView.findViewById(R.id.date);
         }
 
         public void setAvatar(final Context context, final String currentUserUrl) {
@@ -153,12 +278,15 @@ public class ListMessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
     class ItemMessageFriendHolder extends RecyclerView.ViewHolder {
         public TextView txtContent;
         CircleImageView avata;
-
+        TextView textTimeFriend;
+        TextView date;
 
         ItemMessageFriendHolder(View itemView) {
             super(itemView);
             txtContent =  itemView.findViewById(R.id.textContentFriend);
             avata =  itemView.findViewById(R.id.imageView3);
+            textTimeFriend = itemView.findViewById(R.id.textTimeFriend);
+            date = itemView.findViewById(R.id.date);
         }
 
         public void setAvatar(final Context context, final String userToUrl) {
@@ -167,4 +295,6 @@ public class ListMessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
                     .into(avata);
         }
     }
+
 }
+

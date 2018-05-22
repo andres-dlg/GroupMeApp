@@ -1,17 +1,22 @@
 package com.andresdlg.groupmeapp.uiPackage;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.andresdlg.groupmeapp.Adapters.ListMessageAdapter;
 import com.andresdlg.groupmeapp.Entities.Conversation;
@@ -46,6 +51,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
     private LinearLayoutManager linearLayoutManager;
     private Users userTo;
     private Users currentUser;
+    private LinearLayout toolbarContainer;
 
     DatabaseReference conversationRef;
     ValueEventListener valueEventListener;
@@ -59,12 +65,8 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         final Toolbar toolbar = findViewById(R.id.toolbar_chats);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        toolbar.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.e("Toolbar","Clicked");
-            }
-        });
+
+        toolbarContainer = findViewById(R.id.toolbar_container);
 
         final TextView tv = toolbar.findViewById(R.id.action_bar_title_1);
         final CircleImageView civ = toolbar.findViewById(R.id.conversation_contact_photo);
@@ -123,7 +125,16 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
                 Glide.with(ChatActivity.this)
                         .load(userTo.getImageURL())
                         .into(civ);
-                //Picasso.with(ChatActivity.this).load(userTo.getImageURL()).into(civ);
+
+                toolbarContainer.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Intent userProfileIntent = new Intent(ChatActivity.this, UserProfileSetupActivity.class);
+                        userProfileIntent.putExtra("iduser",userTo.getUserid());
+                        startActivity(userProfileIntent);
+                    }
+                });
+
                 currentUserRef.addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
@@ -189,17 +200,48 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         editWriteMessage = findViewById(R.id.editWriteMessage);
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
 
-        int id = item.getItemId();
-        switch (id){
-            case android.R.id.home:
-                this.finish();
-                break;
-        }
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.activity_chat_menu, menu);
         return true;
     }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle item selection
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                this.finish();
+                return true;
+            case R.id.delete:
+                deleteConversation();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+    private void deleteConversation() {
+        new AlertDialog.Builder(this,R.style.MyDialogTheme)
+                .setTitle("¿Desea eliminar la copia existente en su dispositivo?")
+                //.setMessage("Ya no estará disponib")
+                .setPositiveButton("Si", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+
+                    }
+                })
+                .setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+
+                    }
+                })
+                .setCancelable(false)
+                .show();
+    }
+
 
     @Override
     public void onBackPressed() {
