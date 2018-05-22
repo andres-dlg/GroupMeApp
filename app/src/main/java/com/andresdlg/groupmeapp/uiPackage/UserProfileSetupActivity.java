@@ -22,6 +22,7 @@ import android.view.WindowManager;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -63,6 +64,9 @@ public class UserProfileSetupActivity extends AppCompatActivity {
     Uri mCropImageUri;
     TextInputLayout mTextInputAlias;
     TextInputLayout mTextInputJob;
+    LinearLayout mMetricsLinearLayout;
+    TextView mGroupQuantity;
+    TextView mSubGroupQuantity;
 
     //FIREBASE AUTHENTICATION FIELDS
     FirebaseAuth mAuth;
@@ -103,7 +107,8 @@ public class UserProfileSetupActivity extends AppCompatActivity {
 
         //ASSIGN ID'S
         mCircleImageView = findViewById(R.id.user_profile_photo);
-        if(!iduser.isEmpty()){
+        if(iduser!=null){
+
             mBack = findViewById(R.id.back);
             mBack.setVisibility(View.VISIBLE);
             mBack.setOnClickListener(new View.OnClickListener() {
@@ -114,6 +119,7 @@ public class UserProfileSetupActivity extends AppCompatActivity {
             });
         }
 
+
         mTextInputAlias = findViewById(R.id.til);
 
         mAlias = findViewById(R.id.alias);
@@ -123,6 +129,12 @@ public class UserProfileSetupActivity extends AppCompatActivity {
         mTextInputJob = findViewById(R.id.til2);
 
         mJob =  findViewById(R.id.job);
+
+        mMetricsLinearLayout = findViewById(R.id.metricsLlo);
+
+        mGroupQuantity = findViewById(R.id.groupQuantityNumber);
+
+        mSubGroupQuantity = findViewById(R.id.subgroupQuantityNumber);
 
         mSaveButton = findViewById(R.id.save);
         mLater = findViewById(R.id.later);
@@ -136,7 +148,7 @@ public class UserProfileSetupActivity extends AppCompatActivity {
         mProgress = new ProgressDialog(this);
 
         //ASSIGN INSTANCE TO FIREBASE DATABASE
-        if(iduser.isEmpty()){
+        if(iduser==null){
             mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Users").child(mAuth.getCurrentUser().getUid());
         }else {
             mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Users").child(iduser);
@@ -166,7 +178,7 @@ public class UserProfileSetupActivity extends AppCompatActivity {
             }
         });
 
-        if(!iduser.isEmpty()){
+        if(iduser != null){
 
             getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
 
@@ -179,6 +191,8 @@ public class UserProfileSetupActivity extends AppCompatActivity {
                 mName.setEnabled(false);
             }
             setUserData();
+        }else{
+            mMetricsLinearLayout.setVisibility(View.GONE);
         }
 
     }
@@ -188,6 +202,17 @@ public class UserProfileSetupActivity extends AppCompatActivity {
         mUserDatabase.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
+
+                int groupQuantity = (int)dataSnapshot.child("groups").getChildrenCount();
+                mGroupQuantity.setText(String.valueOf(groupQuantity));
+
+                int subgroupQuantity = 0;
+                for(DataSnapshot data : dataSnapshot.child("groups").getChildren()){
+                    subgroupQuantity += (int)data.child("subgroups").getChildrenCount();
+                }
+                mSubGroupQuantity.setText(String.valueOf(subgroupQuantity));
+
+
                 u = dataSnapshot.getValue(Users.class);
                 mName.setText(u.getName());
                 mAlias.setText(u.getAlias());
