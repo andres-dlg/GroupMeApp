@@ -29,13 +29,6 @@ exports.sendNotification = functions.database.ref("/Users/{user_id}/notification
             const token_id = result.val().token_id;
 
             const payload = {
-                /*notification: {
-                    title: notification_title,
-                    message: from_message,
-                    icon: "default",
-                    click_action: "com.andresdlg.groupmeapp.firebasepushnotifications.TARGETNOTIFICATION",
-                    type: notification_type
-                },*/
                 data:{
                     title: notification_title,
                     message: from_message,

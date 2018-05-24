@@ -177,7 +177,7 @@ public class SubGroupsFragment extends Fragment {
                 }
                 sgf.setTasks(tasks);
                 subGroups.add(sgf);
-                rvSubGroupsAdapter.setCantidadTasks(tasks.size());
+                rvSubGroupsAdapter.setCantidadTasks(sgf.getSubGroupKey(),tasks.size());
                 rvSubGroupsAdapter.notifyDataSetChanged();
             }
 
@@ -201,7 +201,7 @@ public class SubGroupsFragment extends Fragment {
                         subGroups.add(i,sgf);
                     }
 
-                    RVSubGroupAdapter.taskTypes type = rvSubGroupsAdapter.checkTasksSize(tasks.size());
+                    RVSubGroupAdapter.taskTypes type = rvSubGroupsAdapter.checkTasksSize(subGroups.get(i).getSubGroupKey(),tasks.size());
 
                     if(type == RVSubGroupAdapter.taskTypes.NEW_TASK){
                         rvSubGroupsAdapter.setNewTaskFlag();

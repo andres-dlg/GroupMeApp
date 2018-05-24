@@ -90,17 +90,22 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
 
     private taskTypes actualTaskType;
 
-    private int cantidadDeTasks;
+    private Map<String,Integer> cantidadDeTasks;
 
-    public void setCantidadTasks(int size) {
-        cantidadDeTasks = size;
+    public void setCantidadTasks(String subGroupKey, int size) {
+        for(Map.Entry<String, Integer> entry: cantidadDeTasks.entrySet()) {
+            if(entry.getKey().equals(subGroupKey)){
+                entry.setValue(size);
+                return;
+            }
+        }
+        cantidadDeTasks.put(subGroupKey,size);
     }
 
-    public taskTypes checkTasksSize(int size) {
-
-        if(size == cantidadDeTasks){
+    public taskTypes checkTasksSize(String subGroupKey, int size) {
+        if(size == cantidadDeTasks.get(subGroupKey)){
             return taskTypes.UPDATED_TASK;
-        }else if(size > cantidadDeTasks){
+        }else if(size > cantidadDeTasks.get(subGroupKey)){
             return taskTypes.NEW_TASK;
         }else{
             return taskTypes.DELETED_TASK;
@@ -120,7 +125,7 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
         this.contexto = context;
 
         actualTaskType = taskTypes.EXISTING_TASK;
-        cantidadDeTasks = 0;
+        cantidadDeTasks = new HashMap<>();
     }
 
     @NonNull

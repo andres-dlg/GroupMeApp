@@ -45,6 +45,7 @@ public class FirebaseMessagingService extends com.google.firebase.messaging.Fire
                         .setDefaults(Notification.DEFAULT_ALL)
                         .setSmallIcon(R.drawable.app_logo_2)
                         .setContentTitle(dataTitle)
+                        .setGroup(dataType) // AGRUPO LAS NOTIFICACIONES DEL MISMO TIPO
                         .setContentText(dataMessage);
 
         Intent resultIntent = new Intent(click_action);
