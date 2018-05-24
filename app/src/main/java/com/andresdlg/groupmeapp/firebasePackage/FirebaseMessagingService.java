@@ -84,12 +84,17 @@ public class FirebaseMessagingService extends com.google.firebase.messaging.Fire
         NotificationManager mNotifyMgr =
                 (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 
+
         if(!appInForeGround(this)){
             mNotifyMgr.notify(mNotificationId,
                     mBuilder.setVibrate(new long[] { 1000, 1000, 1000, 1000, 1000 })
                             .setSound(alarmSound)
                             .build());
         }
+
+        //PARA AGRUPAR NOTIFICACIONES TENGO QUE ejectuar el metodo setGroup en mBuilder y ponerle un mNotificationId IGUALLLL
+
+        //PARA AGRUPAR LOS MENSAJES DEBERIA VER SI LOS MENSAJES SON DEL MISMO AUTOR ADEMAS DE TENER EL MISMO ID JAJAJAJA
     }
 
     private boolean appInForeGround(@NonNull Context context){
