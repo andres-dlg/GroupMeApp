@@ -137,8 +137,6 @@ public class NewsFragment extends Fragment {
 
         groupsRef = FirebaseDatabase.getInstance().getReference("Groups");
 
-        getUserGroups();
-
         return view;
     }
 
@@ -168,6 +166,7 @@ public class NewsFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
+        getUserGroups();
     }
 
     private void getUserGroups() {

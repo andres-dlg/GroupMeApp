@@ -8,12 +8,19 @@
         <item name="android:windowContentTransitions">true</item>
     </style>
 
+
     <style name="AppTheme.NoActionBar">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
     </style>
 
     <style name="AppTheme.NoActionBar2">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+        <item name="colorAccent">@color/celestito</item>
+    </style>
+
+    <style name="AppTheme.NoActionBar4" parent="AlertDialog.AppCompat.Light">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
         <item name="colorAccent">@color/celestito</item>
@@ -63,6 +70,17 @@
         <item name="colorPrimary">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorPrimaryDark</item>
         <item name="android:homeAsUpIndicator">@drawable/ic_action_navigation_arrow_back_inverted</item>
+        <item name="android:panelFullBackground">@color/white</item>
+    </style>
+
+    <style name="MyDialogTheme3" parent="AppTheme.NoActionBar4">
+        <item name="colorPrimary">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorPrimaryDark</item>
+        <item name="android:homeAsUpIndicator">@drawable/ic_action_navigation_arrow_back_inverted</item>
+    </style>
+
+    <style name="PopupMenuStyle" parent="Theme.AppCompat.Light">
+        <item name="android:background">@android:color/white</item>
     </style>
 
 

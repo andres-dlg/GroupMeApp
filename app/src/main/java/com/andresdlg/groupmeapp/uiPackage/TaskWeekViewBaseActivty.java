@@ -6,6 +6,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
 import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -37,6 +38,9 @@ public class TaskWeekViewBaseActivty extends AppCompatActivity implements WeekVi
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_task_week_view_activty);
+
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setTitle("Calendario de tareas");
@@ -117,6 +121,7 @@ public class TaskWeekViewBaseActivty extends AppCompatActivity implements WeekVi
         setupDateTimeInterpreter(id == R.id.action_week_view);
         switch (id){
             case android.R.id.home:
+                finish();
                 onBackPressed();
                 return true;
             case R.id.action_today:

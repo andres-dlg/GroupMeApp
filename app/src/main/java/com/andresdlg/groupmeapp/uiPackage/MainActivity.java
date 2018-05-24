@@ -3,7 +3,6 @@ package com.andresdlg.groupmeapp.uiPackage;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Typeface;
-import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
@@ -25,7 +24,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.animation.DecelerateInterpolator;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -47,7 +45,9 @@ import com.andresdlg.groupmeapp.uiPackage.login.LoginActivity;
 import com.bumptech.glide.Glide;
 import com.codemybrainsout.ratingdialog.RatingDialog;
 import com.google.android.gms.ads.AdListener;
-import com.google.android.gms.ads.AdSize;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
@@ -65,10 +65,6 @@ import com.takusemba.spotlight.OnSpotlightStateChangedListener;
 import com.takusemba.spotlight.Spotlight;
 import com.takusemba.spotlight.shape.Circle;
 import com.takusemba.spotlight.target.SimpleTarget;
-
-import com.google.android.gms.ads.MobileAds;
-import com.google.android.gms.ads.AdRequest;
-import com.google.android.gms.ads.AdView;
 
 import java.util.ArrayList;
 import java.util.List;

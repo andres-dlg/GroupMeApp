@@ -122,39 +122,41 @@ public class MessagesFragment extends Fragment {
                     dbRef.addValueEventListener(new ValueEventListener() {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
-                            ConversationFirebase c = new ConversationFirebase();
-                            c.setId(dataSnapshot.child("id").getValue().toString());
-                            for(ConversationFirebase conversationFirebase : conversations){
-                                if(conversationFirebase.getId().equals(c.getId())){
-                                    conversations.remove(conversationFirebase);
-                                    break;
+                            if(dataSnapshot.child("id").getValue()!=null){
+                                ConversationFirebase c = new ConversationFirebase();
+                                c.setId(dataSnapshot.child("id").getValue().toString());
+                                for(ConversationFirebase conversationFirebase : conversations){
+                                    if(conversationFirebase.getId().equals(c.getId())){
+                                        conversations.remove(conversationFirebase);
+                                        break;
+                                    }
                                 }
-                            }
 
-                            ArrayList<Message> messages = new ArrayList<>();
-                            int cantidadDeMensajesNoVistos = 0;
-                            for(DataSnapshot data : dataSnapshot.child("messages").getChildren()){
-                                Message m = data.getValue(Message.class);
-                                messages.add(0,m);
-                                if(!checkIfIHaveSeenThisMessage(m)){
-                                    cantidadDeMensajesNoVistos += 1;
+                                ArrayList<Message> messages = new ArrayList<>();
+                                int cantidadDeMensajesNoVistos = 0;
+                                for(DataSnapshot data : dataSnapshot.child("messages").getChildren()){
+                                    Message m = data.getValue(Message.class);
+                                    messages.add(0,m);
+                                    if(!checkIfIHaveSeenThisMessage(m)){
+                                        cantidadDeMensajesNoVistos += 1;
+                                    }
                                 }
-                            }
-                            c.setMessages(messages);
+                                c.setMessages(messages);
 
-                            mOnNewMessageListener.onNewMessage(cantidadDeMensajesNoVistos);
+                                mOnNewMessageListener.onNewMessage(cantidadDeMensajesNoVistos);
 
-                            if(!messages.isEmpty()){
-                                c.setMessage(messages.get(0));
-                                c.setUser1(dataSnapshot.child("user1").getValue().toString());
-                                c.setUser2(dataSnapshot.child("user2").getValue().toString());
-                                conversations.add(c);
-                                adapter.notifyDataSetChanged();
-                                tvNoMessages.setVisibility(View.INVISIBLE);
-                            }
+                                if(!messages.isEmpty()){
+                                    c.setMessage(messages.get(0));
+                                    c.setUser1(dataSnapshot.child("user1").getValue().toString());
+                                    c.setUser2(dataSnapshot.child("user2").getValue().toString());
+                                    conversations.add(c);
+                                    adapter.notifyDataSetChanged();
+                                    tvNoMessages.setVisibility(View.INVISIBLE);
+                                }
                             /*if(cantidadDeMensajesNoVistos>0){
                                 adapter.setNewMessagesIndicator(c.getId(),true);
                             }*/
+                            }
                         }
 
                         @Override

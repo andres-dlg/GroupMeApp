@@ -7,8 +7,8 @@ android {
         applicationId "com.andresdlg.groupmeapp"
         minSdkVersion 22
         targetSdkVersion 27
-        versionCode 7
-        versionName "1.0.6"
+        versionCode 9
+        versionName "1.0.8"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         //multiDexEnabled true
     }

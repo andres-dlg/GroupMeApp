@@ -88,7 +88,7 @@
         -->
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_icon"
-            android:resource="@drawable/app_logo" />
+            android:resource="@drawable/app_logo_2" />
 
         <!--
              Set color used with incoming notificatconversationsages. This is used when no color is set for the incoming
@@ -118,9 +118,11 @@
             android:theme="@style/MyDialogTheme2"
             android:screenOrientation="portrait"/>
         <activity android:name=".uiPackage.TaskWeekViewBaseActivty"
-            android:screenOrientation="portrait"/>
+            android:screenOrientation="portrait"
+            android:theme="@style/MyDialogTheme2"/>
         <activity android:name=".uiPackage.TaskWeekViewActivity"
-            android:screenOrientation="portrait"/>
+            android:screenOrientation="portrait"
+            android:theme="@style/MyDialogTheme2"/>
         <activity android:name=".uiPackage.SearchContactActivity"
             android:screenOrientation="portrait"/>
         <activity

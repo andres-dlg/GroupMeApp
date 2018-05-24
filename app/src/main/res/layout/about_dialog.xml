@@ -16,7 +16,7 @@
         android:cropToPadding="false"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/app_logo" />
+        app:srcCompat="@drawable/app_logo_2" />
 
     <TextView
         android:id="@+id/textView"

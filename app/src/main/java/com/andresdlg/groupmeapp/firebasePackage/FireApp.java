@@ -65,7 +65,6 @@ public class FireApp extends Application {
             //Permite la persistencia offline
             FirebaseDatabase.getInstance().setPersistenceEnabled(true);
         }
-
     }
 
     public String getGroupName() {

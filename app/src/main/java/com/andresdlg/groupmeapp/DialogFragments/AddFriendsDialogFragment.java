@@ -69,6 +69,7 @@ public class AddFriendsDialogFragment extends DialogFragment {
     MaterialSearchView searchView;
     private RecyclerView rvContactsResult;
     DatabaseReference mUserDatabase;
+    TextView tvSearchUsers;
 
     public AddFriendsDialogFragment(){
         setRetainInstance(true);
@@ -79,12 +80,13 @@ public class AddFriendsDialogFragment extends DialogFragment {
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.activity_main_add_friends_dialog, container, false);
 
+        tvSearchUsers = view.findViewById(R.id.tvSearchUsers);
 
         mUserDatabase = FirebaseDatabase.getInstance().getReference("Users");
 
         //TOOLBAR INITIALIZATION
         Toolbar toolbar = view.findViewById(R.id.toolbar);
-        toolbar.setTitle("Buscar alias");
+        toolbar.setTitle("Buscar por alias");
         toolbar.setTitleTextColor(getResources().getColor(R.color.colorAccent));
 
         assert (getActivity()) != null;
@@ -207,13 +209,31 @@ public class AddFriendsDialogFragment extends DialogFragment {
     }
 
 
-    private void firebaseUserSearch(String query){
+    private void firebaseUserSearch(final String query){
 
         //La query funciona bien
         final Query firebaseQuery = mUserDatabase.orderByChild("alias")
                                            .startAt(query)
                                            .endAt(query + "\uf8ff")
                                            .limitToFirst(100);
+
+        //Esto es para esconder o no el textview
+        firebaseQuery.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if(dataSnapshot.hasChildren()){
+                    tvSearchUsers.setVisibility(View.GONE);
+                }else {
+                    tvSearchUsers.setVisibility(View.VISIBLE);
+                    tvSearchUsers.setText("No se encontraron contactos para la búsqueda: \"" + query + "\"" );
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
 
         ClassSnapshotParser<Users> parser = new ClassSnapshotParser<>(Users.class);
         FilterableFirebaseArray filterableFirebaseArray = new FilterableFirebaseArray(firebaseQuery, parser);

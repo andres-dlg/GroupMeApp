@@ -178,7 +178,6 @@ public class SubGroupsFragment extends Fragment {
                 sgf.setTasks(tasks);
                 subGroups.add(sgf);
                 rvSubGroupsAdapter.setCantidadTasks(tasks.size());
-
                 rvSubGroupsAdapter.notifyDataSetChanged();
             }
 
@@ -200,7 +199,6 @@ public class SubGroupsFragment extends Fragment {
                     if(i != -1){
                         subGroups.remove(i);
                         subGroups.add(i,sgf);
-
                     }
 
                     RVSubGroupAdapter.taskTypes type = rvSubGroupsAdapter.checkTasksSize(tasks.size());

@@ -1,7 +1,6 @@
 package com.andresdlg.groupmeapp.firebasePackage;
 
 import android.app.ActivityManager;
-import android.app.AliasActivity;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -14,7 +13,6 @@ import android.support.v4.app.NotificationCompat;
 
 import com.andresdlg.groupmeapp.R;
 import com.andresdlg.groupmeapp.Utils.NotificationTypes;
-import com.andresdlg.groupmeapp.uiPackage.MainActivity;
 import com.google.firebase.messaging.RemoteMessage;
 
 import java.util.List;
@@ -36,7 +34,7 @@ public class FirebaseMessagingService extends com.google.firebase.messaging.Fire
 
         Map<String,String> data = remoteMessage.getData();
         String click_action = data.get("click_action");
-        String dataMessage = data.get("body");
+        String dataMessage = data.get("message");
         String dataTitle = data.get("title");
         String dataType = data.get("type");
 
@@ -45,18 +43,29 @@ public class FirebaseMessagingService extends com.google.firebase.messaging.Fire
                 new NotificationCompat.Builder(this,getString(R.string.default_notification_channel_id))
                         .setColor(getResources().getColor(R.color.colorPrimary))
                         .setDefaults(Notification.DEFAULT_ALL)
-                        .setSmallIcon(R.drawable.app_logo)
+                        .setSmallIcon(R.drawable.app_logo_2)
                         .setContentTitle(dataTitle)
                         .setContentText(dataMessage);
 
         Intent resultIntent = new Intent(click_action);
-
         resultIntent.putExtra("fragment","NotificationFragment");
         if(dataType.equals(NotificationTypes.FRIENDSHIP.toString())){
             resultIntent.putExtra("fragment","NotificationFragment");
         }
-        if(dataType.equals(NotificationTypes.MESSAGE.toString())){
+        else if(dataType.equals(NotificationTypes.GROUP_INVITATION.toString())){
+            resultIntent.putExtra("fragment","GroupsFragment");
+        }
+        else if(dataType.equals(NotificationTypes.SUBGROUP_INVITATION.toString())){
+            resultIntent.putExtra("fragment","GroupsFragment");
+        }
+        else if(dataType.equals(NotificationTypes.MESSAGE.toString())){
             resultIntent.putExtra("fragment","MessagesFragment");
+        }
+        else if(dataType.equals(NotificationTypes.NEW_POST.toString())){
+            resultIntent.putExtra("fragment","NewsFragment");
+        }
+        else if(dataType.equals(NotificationTypes.NEW_FILE.toString())){
+            resultIntent.putExtra("fragment","GroupsFragment");
         }
 
         PendingIntent resultPendingIntent =
@@ -68,7 +77,6 @@ public class FirebaseMessagingService extends com.google.firebase.messaging.Fire
                 );
 
         mBuilder.setContentIntent(resultPendingIntent);
-
 
         int mNotificationId = (int) System.currentTimeMillis();
 

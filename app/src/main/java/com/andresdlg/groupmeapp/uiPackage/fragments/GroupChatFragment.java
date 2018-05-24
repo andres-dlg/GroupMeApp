@@ -142,6 +142,8 @@ public class GroupChatFragment extends Fragment {
 
                     if(!checkIfIHaveSeenThisMessage(newMessage.getSeenBy())&& !isVisibleToUser){
                         cantidadDeMensajesNoVistos += 1;
+                    }else{
+                        cantidadDeMensajesNoVistos = 0;
                     }
 
                     mOnNewMessageListener.onNewMessage(cantidadDeMensajesNoVistos);

@@ -408,7 +408,7 @@ public class GroupDetailActivity extends AppCompatActivity {
             @Override
             public void onSuccess(Void aVoid) {
                 collapsingToolbar.setTitle(newName);
-                //tv.setText(newName);
+
                 ((FireApp) getApplication()).setGroupName(newName);
                 Toast.makeText(GroupDetailActivity.this, "¡Nombre del grupo actualizado!", Toast.LENGTH_SHORT).show();
             }
@@ -416,6 +416,20 @@ public class GroupDetailActivity extends AppCompatActivity {
             @Override
             public void onFailure(@NonNull Exception e) {
                 Toast.makeText(GroupDetailActivity.this, "Error al actualizar nombre del grupo", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        groupRef.child("posts").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for(DataSnapshot data : dataSnapshot.getChildren()){
+                    data.child("groupName").getRef().setValue(newName);
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
             }
         });
     }

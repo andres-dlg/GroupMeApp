@@ -117,7 +117,7 @@ public class RVMessageAdapter extends RecyclerView.Adapter<RVMessageAdapter.Mess
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         Users u = dataSnapshot.getValue(Users.class);
                         messageViewHolder.userAlias.setText(String.format("@%s", u.getAlias()));
-                        messageViewHolder.setPhoto(context, u.getImageURL());//Picasso.with(context).load(u.getImageURL()).into(messageViewHolder.userPhoto);
+                        messageViewHolder.setPhoto(context, u.getImageURL());
                         messageViewHolder.messageText.setText(conversations.get(position).getMessage().getText());
 
                         Calendar calendar = Calendar.getInstance();

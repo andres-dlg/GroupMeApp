@@ -14,7 +14,8 @@
         android:layout_marginTop="4dp"
         android:background="@drawable/date_for_chat_background"
         android:layout_gravity="center"
-        android:textColor="#fff"/>
+        android:textColor="#fff"
+        android:elevation="8dp"/>
 
     <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/layout2"

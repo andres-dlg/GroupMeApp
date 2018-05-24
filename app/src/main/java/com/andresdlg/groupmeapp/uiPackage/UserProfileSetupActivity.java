@@ -313,7 +313,7 @@ public class UserProfileSetupActivity extends AppCompatActivity {
             focusView.requestFocus();
             pass = true;
         }if (TextUtils.isEmpty(userName)) {
-            mAlias.setError("Este campo es necesario");
+            mName.setError("Este campo es necesario");
             focusView = mName;
             focusView.requestFocus();
             pass = true;
@@ -331,7 +331,7 @@ public class UserProfileSetupActivity extends AppCompatActivity {
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     yaPasoPorAca = true;
                     exists = false;
-                    if(iduser.isEmpty()){
+                    if(iduser == null){
                         for(DataSnapshot data : dataSnapshot.getChildren()){
                             if(data.child("alias").exists()){
                                 if (data.child("alias").getValue().equals(alias)) {
@@ -359,7 +359,7 @@ public class UserProfileSetupActivity extends AppCompatActivity {
 
                         if(imageSetted){
 
-                            if(iduser.isEmpty()){
+                            if(iduser == null){
                                 mProgress.setMessage("Subiendo foto de perfil");
                             }else{
                                 mProgress.setMessage("Actualizando perfil");
@@ -376,7 +376,7 @@ public class UserProfileSetupActivity extends AppCompatActivity {
                                 }
                             });
                         }else{
-                            if(iduser.isEmpty()){
+                            if(iduser == null){
                                 imageHoldUri = Uri.parse("android.resource://com.andresdlg.groupmeapp/"+R.drawable.new_user);
                             }else{
                                 imageHoldUri = Uri.parse(u.getImageURL());
@@ -408,7 +408,7 @@ public class UserProfileSetupActivity extends AppCompatActivity {
         mUserDatabase.child("imageUrl").setValue(imageHoldUri.toString());
 
         //ESTO LO HAGO PORQUE SI VENGO DE EDITAR MI PERFIL (ELSE) ME DA ERROR EL CONTEXT DE GLIDE
-        if(iduser.isEmpty()){
+        if(iduser == null){
             Intent intent = new Intent(UserProfileSetupActivity.this, MainActivity.class);
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
             startActivity(intent);

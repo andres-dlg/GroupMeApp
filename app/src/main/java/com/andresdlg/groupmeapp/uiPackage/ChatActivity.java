@@ -8,7 +8,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -16,13 +15,12 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.andresdlg.groupmeapp.Adapters.ListMessageAdapter;
 import com.andresdlg.groupmeapp.Entities.Conversation;
+import com.andresdlg.groupmeapp.Entities.Message;
 import com.andresdlg.groupmeapp.Entities.Users;
 import com.andresdlg.groupmeapp.R;
-import com.andresdlg.groupmeapp.Entities.Message;
 import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
 import com.bumptech.glide.Glide;
 import com.google.firebase.database.ChildEventListener;
@@ -224,18 +222,44 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
 
     private void deleteConversation() {
         new AlertDialog.Builder(this,R.style.MyDialogTheme)
-                .setTitle("¿Desea eliminar la copia existente en su dispositivo?")
-                //.setMessage("Ya no estará disponib")
+                .setTitle("¿Desea eliminar esta conversación?")
                 .setPositiveButton("Si", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
+                        FirebaseDatabase
+                                .getInstance()
+                                .getReference("Users")
+                                .child(currentUser.getUserid())
+                                .child("conversation")
+                                .child(conversationKey)
+                                .removeValue();
 
+                        FirebaseDatabase
+                                .getInstance()
+                                .getReference("Users")
+                                .child(userTo.getUserid())
+                                .child("conversation")
+                                .child(conversationKey)
+                                .addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(DataSnapshot dataSnapshot) {
+                                if(!dataSnapshot.hasChildren()){
+                                    conversationRef.removeValue();
+                                }
+                            }
+
+                            @Override
+                            public void onCancelled(DatabaseError databaseError) {
+
+                            }
+                        });
+                        onBackPressed();
                     }
                 })
                 .setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-
+                        dialog.dismiss();
                     }
                 })
                 .setCancelable(false)
