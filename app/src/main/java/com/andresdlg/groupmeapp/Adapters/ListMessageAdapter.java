@@ -36,7 +36,7 @@ import de.hdodenhof.circleimageview.CircleImageView;
 
 public class ListMessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
-    private DatabaseReference userRef;
+    private DatabaseReference usersRef;
     private ValueEventListener userValueEventListener;
 
     private Context context;
@@ -58,6 +58,8 @@ public class ListMessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
         this.conversationKey = conversationKey;
         datesToDisplay = new ArrayList<>();
         messagesToDisplayDates = new HashMap<>();
+
+        usersRef = FirebaseDatabase.getInstance().getReference("Users");
     }
 
     @NonNull
@@ -74,13 +76,13 @@ public class ListMessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
     }
 
     @Override
-    public void onBindViewHolder(@NonNull final RecyclerView.ViewHolder holder, @SuppressLint("RecyclerView") final int position) {
+    public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, @SuppressLint("RecyclerView") int position) {
 
         //Calendario para mostrar la hora
         long time = conversation.getListMessageData().get(position).getTimestamp();
         Calendar calendar = Calendar.getInstance();
         calendar.setTimeInMillis(time);
-        final String timeToShow = calendar.get(Calendar.HOUR_OF_DAY) + ":" + calendar.get(Calendar.MINUTE);
+        String timeToShow = calendar.get(Calendar.HOUR_OF_DAY) + ":" + (String.valueOf(calendar.get(Calendar.MINUTE)).length() == 1 ? "0"+String.valueOf(calendar.get(Calendar.MINUTE)) :String.valueOf(calendar.get(Calendar.MINUTE)));
 
         Calendar cal = Calendar.getInstance();
         for(Message message : conversation.getListMessageData()){
@@ -109,13 +111,13 @@ public class ListMessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
                 for(Map.Entry<String, String> entry: messagesToDisplayDates.entrySet()) {
                     if(entry.getKey().equals(conversation.getListMessageData().get(position).getId())){
                         ((ItemMessageFriendHolder) holder).date.setText(entry.getValue());
+                        ((ItemMessageFriendHolder) holder).date.setVisibility(View.VISIBLE);
                         exists = true;
                         break;
                     }
                 }
                 if(!exists){
                     ((ItemMessageFriendHolder) holder).date.setVisibility(View.GONE);
-
                 }
                 ((ItemMessageFriendHolder) holder).textTimeFriend.setText(timeToShow);
                 ((ItemMessageFriendHolder) holder).txtContent.setText(conversation.getListMessageData().get(position).getText());
@@ -125,66 +127,53 @@ public class ListMessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
                 for(Map.Entry<String, String> entry: messagesToDisplayDates.entrySet()) {
                     if(entry.getKey().equals(conversation.getListMessageData().get(position).getId())){
                         ((ItemMessageUserHolder) holder).date.setText(entry.getValue());
+                        ((ItemMessageUserHolder) holder).date.setVisibility(View.VISIBLE);
                         exists = true;
                         break;
                     }
                 }
                 if(!exists){
                     ((ItemMessageUserHolder) holder).date.setVisibility(View.GONE);
-
                 }
                 ((ItemMessageUserHolder) holder).textTimeUser.setText(timeToShow);
                 ((ItemMessageUserHolder) holder).txtContent.setText(conversation.getListMessageData().get(position).getText());
                 ((ItemMessageUserHolder) holder).setAvatar(context,currentUserUrl);
             }
         }else{
-            userRef = FirebaseDatabase.getInstance().getReference("Users").child(conversation.getListMessageData().get(position).getIdSender());
-            userValueEventListener = new ValueEventListener() {
-                @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
-                    Users u = dataSnapshot.getValue(Users.class);
-                    if (holder instanceof ItemMessageFriendHolder) {
-                        boolean exists = false;
-                        for(Map.Entry<String, String> entry: messagesToDisplayDates.entrySet()) {
-                            if(entry.getKey().equals(conversation.getListMessageData().get(position).getId())){
-                                ((ItemMessageFriendHolder) holder).date.setText(entry.getValue());
-                                exists = true;
-                                break;
-                            }
-                        }
-                        if(!exists){
-                            ((ItemMessageFriendHolder) holder).date.setVisibility(View.GONE);
-
-                        }
-                        ((ItemMessageFriendHolder) holder).textTimeFriend.setText(timeToShow);
-                        ((ItemMessageFriendHolder) holder).txtContent.setText(conversation.getListMessageData().get(position).getText());
-                        ((ItemMessageFriendHolder) holder).setAvatar(context,u.getImageURL());
-                    } else if (holder instanceof ItemMessageUserHolder) {
-                        boolean exists = false;
-                        for(Map.Entry<String, String> entry: messagesToDisplayDates.entrySet()) {
-                            if(entry.getKey().equals(conversation.getListMessageData().get(position).getId())){
-                                ((ItemMessageUserHolder) holder).date.setText(entry.getValue());
-                                exists = true;
-                                break;
-                            }
-                        }
-                        if(!exists){
-                            ((ItemMessageUserHolder) holder).date.setVisibility(View.GONE);
-
-                        }
-                        ((ItemMessageUserHolder) holder).textTimeUser.setText(timeToShow);
-                        ((ItemMessageUserHolder) holder).txtContent.setText(conversation.getListMessageData().get(position).getText());
-                        ((ItemMessageUserHolder) holder).setAvatar(context,u.getImageURL());
+            if (holder instanceof ItemMessageFriendHolder) {
+                boolean exists = false;
+                for(Map.Entry<String, String> entry: messagesToDisplayDates.entrySet()) {
+                    if(entry.getKey().equals(conversation.getListMessageData().get(position).getId())){
+                        ((ItemMessageFriendHolder) holder).date.setText(entry.getValue());
+                        ((ItemMessageFriendHolder) holder).date.setVisibility(View.VISIBLE);
+                        exists = true;
+                        break;
                     }
-                    removeListener();
                 }
-
-                @Override
-                public void onCancelled(DatabaseError databaseError) {
-
+                if(!exists){
+                    ((ItemMessageFriendHolder) holder).date.setVisibility(View.GONE);
                 }
-            };
-            userRef.addListenerForSingleValueEvent(userValueEventListener);
+                ((ItemMessageFriendHolder) holder).textTimeFriend.setText(timeToShow);
+                ((ItemMessageFriendHolder) holder).txtContent.setText(conversation.getListMessageData().get(position).getText());
+                ((ItemMessageFriendHolder) holder).setAvatarFromId(context,conversation.getListMessageData().get(position).getIdSender());
+            } else if (holder instanceof ItemMessageUserHolder) {
+                boolean exists = false;
+                for(Map.Entry<String, String> entry: messagesToDisplayDates.entrySet()) {
+                    if(entry.getKey().equals(conversation.getListMessageData().get(position).getId())){
+                        ((ItemMessageUserHolder) holder).date.setText(entry.getValue());
+                        ((ItemMessageUserHolder) holder).date.setVisibility(View.VISIBLE);
+                        exists = true;
+                        break;
+                    }
+                }
+                if(!exists){
+                    ((ItemMessageUserHolder) holder).date.setVisibility(View.GONE);
+                }
+                ((ItemMessageUserHolder) holder).textTimeUser.setText(timeToShow);
+                ((ItemMessageUserHolder) holder).txtContent.setText(conversation.getListMessageData().get(position).getText());
+                ((ItemMessageUserHolder) holder).setAvatarFromId(context,conversation.getListMessageData().get(position).getIdSender());
+            }
+            //removeListener();
         }
     }
 
@@ -219,10 +208,6 @@ public class ListMessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
             }
         }
         datesToDisplay.add(date);
-    }
-
-    private void removeListener() {
-        userRef.removeEventListener(userValueEventListener);
     }
 
     @Override
@@ -270,8 +255,25 @@ public class ListMessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
             date = itemView.findViewById(R.id.date);
         }
 
-        public void setAvatar(final Context context, final String currentUserUrl) {
+        public void setAvatar(Context context,String currentUserUrl) {
             Glide.with(context).load(currentUserUrl).into(avatar);
+        }
+
+        public void setAvatarFromId(final Context context, String userId) {
+            usersRef.child(userId).addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    Users u = dataSnapshot.getValue(Users.class);
+                    Glide.with(context)
+                            .load(u.getImageURL())
+                            .into(avatar);
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
+                }
+            });
         }
     }
 
@@ -289,10 +291,27 @@ public class ListMessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
             date = itemView.findViewById(R.id.date);
         }
 
-        public void setAvatar(final Context context, final String userToUrl) {
+        public void setAvatar(Context context,String userToUrl) {
             Glide.with(context)
                     .load(userToUrl)
                     .into(avata);
+        }
+
+        public void setAvatarFromId(final Context context, String userId) {
+            usersRef.child(userId).addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    Users u = dataSnapshot.getValue(Users.class);
+                    Glide.with(context)
+                            .load(u.getImageURL())
+                            .into(avata);
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
+                }
+            });
         }
     }
 

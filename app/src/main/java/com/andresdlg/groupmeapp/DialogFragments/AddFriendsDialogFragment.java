@@ -67,7 +67,7 @@ import static android.app.Activity.RESULT_OK;
 public class AddFriendsDialogFragment extends DialogFragment {
 
     MaterialSearchView searchView;
-    private RecyclerView rvContactsResult;
+    RecyclerView rvContactsResult;
     DatabaseReference mUserDatabase;
     TextView tvSearchUsers;
 
@@ -284,7 +284,7 @@ public class AddFriendsDialogFragment extends DialogFragment {
 
 
             //Reviso si ya se envio la solicitud al usuario. En ese caso cambio el icono y deshabilito envio
-            wasSent(id, context, contactName);
+            wasSent(id, context);
             //mContactAdd = mView.findViewById(R.id.btn_add_contact);
 
             mContactAlias.setText(String.format("@%s", contactAlias));
@@ -310,7 +310,7 @@ public class AddFriendsDialogFragment extends DialogFragment {
                     .into(mContactPhoto);
         }
 
-        private void wasSent(final String id, final Context context, final String contactName) {
+        private void wasSent(final String id, final Context context) {
 
             //Obtengo el reloj de arena y lo pinto
             final Drawable mDrawablePending = context.getResources().getDrawable(R.drawable.timer_sand);
@@ -350,37 +350,54 @@ public class AddFriendsDialogFragment extends DialogFragment {
                     mContactAdd.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View view) {
-                            String userFrom = StaticFirebaseSettings.currentUserId;
 
-                            DatabaseReference userTo = FirebaseDatabase
+                            final String userFrom = StaticFirebaseSettings.currentUserId;
+
+                            FirebaseDatabase
                                     .getInstance()
                                     .getReference("Users")
-                                    .child(id);
-
-                            //Envio y almacenamiento de notificación
-                            DatabaseReference userToNotifications = userTo.child("notifications");
-                            String notificationKey = userToNotifications.push().getKey();
-                            Map<String,Object> notification = new HashMap<>();
-                            notification.put("notificationKey",notificationKey);
-                            notification.put("title","Solicitud de amistad");
-                            notification.put("message","Has recibido una solicitud de amistad de " + contactName);
-                            notification.put("from",userFrom);
-                            notification.put("state", NotificationStatus.UNREAD);
-                            notification.put("date", Calendar.getInstance().getTime());
-                            notification.put("type", NotificationTypes.FRIENDSHIP);
-
-                            userToNotifications.child(notificationKey).setValue(notification).addOnSuccessListener(new OnSuccessListener<Void>() {
+                                    .child(userFrom).addListenerForSingleValueEvent(new ValueEventListener() {
                                 @Override
-                                public void onSuccess(Void aVoid) {
-                                    Toast.makeText(context, "Solicitud enviada", Toast.LENGTH_SHORT).show();
+                                public void onDataChange(DataSnapshot dataSnapshot) {
+                                    Users me = dataSnapshot.getValue(Users.class);
+
+                                    DatabaseReference userTo = FirebaseDatabase
+                                            .getInstance()
+                                            .getReference("Users")
+                                            .child(id);
+
+                                    //Envio y almacenamiento de notificación
+                                    DatabaseReference userToNotifications = userTo.child("notifications");
+                                    String notificationKey = userToNotifications.push().getKey();
+                                    Map<String,Object> notification = new HashMap<>();
+                                    notification.put("notificationKey",notificationKey);
+                                    notification.put("title","Solicitud de amistad");
+                                    notification.put("message","Has recibido una solicitud de amistad de " + me.getName());
+                                    notification.put("from",userFrom);
+                                    notification.put("state", NotificationStatus.UNREAD);
+                                    notification.put("date", Calendar.getInstance().getTimeInMillis());
+                                    notification.put("type", NotificationTypes.FRIENDSHIP);
+
+                                    userToNotifications.child(notificationKey).setValue(notification).addOnSuccessListener(new OnSuccessListener<Void>() {
+                                        @Override
+                                        public void onSuccess(Void aVoid) {
+                                            Toast.makeText(context, "Solicitud enviada", Toast.LENGTH_SHORT).show();
+                                        }
+                                    });
+
+                                    //Almacenamiento de nodo friend
+                                    DatabaseReference userToFriends = userTo.child("friends");
+                                    Map<String,Object> friend = new HashMap<>();
+                                    friend.put("status", FriendshipStatus.PENDING);
+                                    userToFriends.child(userFrom).updateChildren(friend);
+
+                                }
+
+                                @Override
+                                public void onCancelled(DatabaseError databaseError) {
+
                                 }
                             });
-
-                            //Almacenamiento de nodo friend
-                            DatabaseReference userToFriends = userTo.child("friends");
-                            Map<String,Object> friend = new HashMap<>();
-                            friend.put("status", FriendshipStatus.PENDING);
-                            userToFriends.child(userFrom).updateChildren(friend);
                         }
                     });
                 }

@@ -3,13 +3,13 @@ package com.andresdlg.groupmeapp.uiPackage;
 import android.animation.ValueAnimator;
 import android.content.Intent;
 import android.graphics.Color;
-import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.util.Pair;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
@@ -173,8 +173,7 @@ public class GroupActivity extends AppCompatActivity implements GroupChatFragmen
             }
         });
 
-        Typeface customFont = Typeface.createFromAsset(this.getAssets(),"fonts/Simplifica.ttf");
-
+        //Typeface customFont = Typeface.createFromAsset(this.getAssets(),"fonts/Simplifica.ttf");
 
         final String[] colors = getResources().getStringArray(R.array.default_preview);
 
@@ -198,7 +197,7 @@ public class GroupActivity extends AppCompatActivity implements GroupChatFragmen
         models = new ArrayList<>();
         models.add(
                 new NavigationTabBar.Model.Builder(
-                        getResources().getDrawable(R.drawable.newspaper),
+                        ContextCompat.getDrawable(this,R.drawable.newspaper),
                         Color.parseColor(colors[2])
                 ).title("Noticias")
                         .badgeTitle("NTB")
@@ -206,7 +205,7 @@ public class GroupActivity extends AppCompatActivity implements GroupChatFragmen
         );
         models.add(
                 new NavigationTabBar.Model.Builder(
-                        getResources().getDrawable(R.drawable.account_multiple),
+                        ContextCompat.getDrawable(this,R.drawable.account_multiple),
                         Color.parseColor(colors[2])
                 ).title("SubGrupos")
                         .badgeTitle("with")
@@ -214,7 +213,7 @@ public class GroupActivity extends AppCompatActivity implements GroupChatFragmen
         );
         models.add(
                 new NavigationTabBar.Model.Builder(
-                        getResources().getDrawable(R.drawable.message),
+                        ContextCompat.getDrawable(this,R.drawable.message),
                         Color.parseColor(colors[2])
                 ).title("Chat")
                         .badgeTitle("icon")
@@ -227,7 +226,7 @@ public class GroupActivity extends AppCompatActivity implements GroupChatFragmen
         navigationTabBar.setIsTitled(true);
         navigationTabBar.setTitleMode(NavigationTabBar.TitleMode.ACTIVE);
         //navigationTabBar.setTypeface(customFont);
-        navigationTabBar.setTitleSize(25);
+        navigationTabBar.setTitleSize(10 * getResources().getDisplayMetrics().density);
         navigationTabBar.setIconSizeFraction((float) 0.5);
 
         navigationTabBar.setBadgePosition(NavigationTabBar.BadgePosition.RIGHT);

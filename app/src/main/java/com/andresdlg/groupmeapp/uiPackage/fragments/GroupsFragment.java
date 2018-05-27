@@ -71,13 +71,18 @@ public class GroupsFragment extends Fragment implements View.OnClickListener, He
         rv.setHasFixedSize(true); //El tamaño queda fijo, mejora el desempeño
         LinearLayoutManager llm = new LinearLayoutManager(getContext());
         rv.setLayoutManager(llm);
+        rv.setItemViewCacheSize(100);
+        rv.setDrawingCacheEnabled(true);
+        rv.setDrawingCacheQuality(View.DRAWING_CACHE_QUALITY_HIGH);
 
         //Floating action button
         mFloatingActionButton = view.findViewById(R.id.fabGroups);
         mFloatingActionButton.setOnClickListener(this);
 
         groupsRef = FirebaseDatabase.getInstance().getReference("Groups");
+        groupsRef.keepSynced(true);
         mUserGroupsRef = FirebaseDatabase.getInstance().getReference("Users").child(StaticFirebaseSettings.currentUserId).child("groups");
+
     }
 
     private void getAllGroups(){

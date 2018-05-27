@@ -12,6 +12,7 @@ import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.util.Pair;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.view.ViewPager;
@@ -80,7 +81,6 @@ public class MainActivity extends AppCompatActivity
         MessagesFragment.OnNewMessageListener{
 
     //private static final String AD_UNIT_ID = "ca-app-pub-6164739277423889/8658953023";
-    private static final String AD_UNIT_ID = "ca-app-pub-3940256099942544/6300978111";
 
     AdView mAdView;
 
@@ -106,6 +106,8 @@ public class MainActivity extends AppCompatActivity
 
     ArrayList<NavigationTabBar.Model> models;
     NavigationTabBar navigationTabBar;
+
+    TextView ui_hot;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -150,6 +152,12 @@ public class MainActivity extends AppCompatActivity
 
         toolbar = findViewById(R.id.toolbar);
         toolbar.inflateMenu(R.menu.activity_main_menu);
+
+        Menu contactsMenu = toolbar.getMenu();
+        View v = contactsMenu.findItem(R.id.contacts).getActionView();
+        ui_hot = (TextView) v.findViewById(R.id.hotlist_hot);
+        updateHotCount(1);
+
         toolbar.getMenu().getItem(0).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
@@ -157,6 +165,7 @@ public class MainActivity extends AppCompatActivity
                 return false;
             }
         });
+
         toolbar.getMenu().getItem(1).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
@@ -191,11 +200,11 @@ public class MainActivity extends AppCompatActivity
         viewPager.setAdapter(adapter);
         viewPager.setOffscreenPageLimit(3);
 
-        navigationTabBar = (NavigationTabBar) findViewById(R.id.ntb);
+        navigationTabBar = findViewById(R.id.ntb);
         models = new ArrayList<>();
         models.add(
                 new NavigationTabBar.Model.Builder(
-                        getResources().getDrawable(R.drawable.newspaper),
+                        ContextCompat.getDrawable(this,R.drawable.newspaper),
                         Color.parseColor(colors[2])
                 ).title("Noticias")
                         .badgeTitle("NTB")
@@ -203,7 +212,7 @@ public class MainActivity extends AppCompatActivity
         );
         models.add(
                 new NavigationTabBar.Model.Builder(
-                        getResources().getDrawable(R.drawable.account_multiple),
+                        ContextCompat.getDrawable(this,R.drawable.account_multiple),
                         Color.parseColor(colors[2])
                 ).title("Grupos")
                         .badgeTitle("with")
@@ -211,14 +220,13 @@ public class MainActivity extends AppCompatActivity
         );
         models.add(
                 new NavigationTabBar.Model.Builder(
-                        getResources().getDrawable(R.drawable.bell),
+                        ContextCompat.getDrawable(this,R.drawable.bell),
                         Color.parseColor(colors[2])
                 ).title("Notificaciones")
                         .build()
         );
         models.add(
-                new NavigationTabBar.Model.Builder(
-                        getResources().getDrawable(R.drawable.message),
+                new NavigationTabBar.Model.Builder(ContextCompat.getDrawable(this,R.drawable.message),
                         Color.parseColor(colors[2])
                 ).title("Mensajes")
                         .badgeTitle("icon")
@@ -232,7 +240,7 @@ public class MainActivity extends AppCompatActivity
         navigationTabBar.setIsTitled(true);
         navigationTabBar.setTitleMode(NavigationTabBar.TitleMode.ACTIVE);
         //navigationTabBar.setTypeface(customFont);
-        navigationTabBar.setTitleSize(25);
+        navigationTabBar.setTitleSize(10 * getResources().getDisplayMetrics().density);
         navigationTabBar.setIconSizeFraction((float) 0.5);
 
         navigationTabBar.setBadgePosition(NavigationTabBar.BadgePosition.RIGHT);
@@ -483,8 +491,8 @@ public class MainActivity extends AppCompatActivity
     private void letTheFirstPartOfTheShowStart() {
 
         int[] oneLocation;
-        float oneX = 0;
-        float oneY = 0;
+        float oneX;
+        float oneY;
 
         // 1) TARGET PANEL DE NAVEGACIÓN
         oneLocation = new int[2];
@@ -585,8 +593,8 @@ public class MainActivity extends AppCompatActivity
     private void letTheSecondPartOfTheShowStart() {
 
         int[] oneLocation;
-        float oneX = 0;
-        float oneY = 0;
+        float oneX;
+        float oneY;
 
         // 1) TARGET PESTAÑA GRUPOS
         oneLocation = new int[2];
@@ -647,8 +655,8 @@ public class MainActivity extends AppCompatActivity
 
     private void letTheThirdPartOfTheShowStart() {
         int[] oneLocation;
-        float oneX = 0;
-        float oneY = 0;
+        float oneX;
+        float oneY;
 
         oneLocation = new int[2];
         navigationTabBar.getLocationInWindow(oneLocation);
@@ -692,8 +700,8 @@ public class MainActivity extends AppCompatActivity
     private void letTheForthPartOfTheShowStart() {
 
         int[] oneLocation;
-        float oneX = 0;
-        float oneY = 0;
+        float oneX;
+        float oneY;
 
         oneLocation = new int[2];
         navigationTabBar.getLocationInWindow(oneLocation);
@@ -772,12 +780,28 @@ public class MainActivity extends AppCompatActivity
         transaction.add(android.R.id.content, newFragment).addToBackStack(null).commit();
     }
 
+    public void updateHotCount(final int new_hot_number) {
+        if (ui_hot == null) return;
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if (new_hot_number == 0)
+                    ui_hot.setVisibility(View.INVISIBLE);
+                else {
+                    ui_hot.setVisibility(View.VISIBLE);
+                    //ui_hot.setText(String.valueOf(new_hot_number));
+                }
+            }
+        });
+    }
+
     @Override
     public void onNewNotificationSet(int notificationQuantity) {
         NavigationTabBar.Model model = models.get(2);
         if(notificationQuantity > 0){
             model.showBadge();
-            model.setBadgeTitle(String.valueOf(notificationQuantity));
+            //model.setBadgeTitle(String.valueOf(notificationQuantity));
+            model.setBadgeTitle(String.valueOf(1));
         }else{
             model.hideBadge();
         }
@@ -788,7 +812,8 @@ public class MainActivity extends AppCompatActivity
         NavigationTabBar.Model model = models.get(0);
         if(postQuantity > 0){
             model.showBadge();
-            model.setBadgeTitle(String.valueOf(postQuantity));
+            //model.setBadgeTitle(String.valueOf(postQuantity));
+            model.setBadgeTitle(String.valueOf(1));
         }else{
             model.hideBadge();
         }
@@ -799,9 +824,11 @@ public class MainActivity extends AppCompatActivity
         NavigationTabBar.Model model = models.get(3);
         if(messageQuantity > 0){
             model.showBadge();
-            model.setBadgeTitle(String.valueOf(messageQuantity));
+            //model.setBadgeTitle(String.valueOf(messageQuantity));
+            model.setBadgeTitle(String.valueOf(1));
         }else{
             model.hideBadge();
         }
     }
+
 }

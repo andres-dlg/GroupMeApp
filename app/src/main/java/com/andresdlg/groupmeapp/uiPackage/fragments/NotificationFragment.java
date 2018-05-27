@@ -56,6 +56,9 @@ public class NotificationFragment extends Fragment {
 
         RecyclerView rv = v.findViewById(R.id.rvNotifications);
         rv.setHasFixedSize(true);
+        rv.setItemViewCacheSize(100);
+        rv.setDrawingCacheEnabled(true);
+        rv.setDrawingCacheQuality(View.DRAWING_CACHE_QUALITY_HIGH);
 
         LinearLayoutManager llm = new LinearLayoutManager(getContext());
         rv.setLayoutManager(llm);
@@ -66,10 +69,11 @@ public class NotificationFragment extends Fragment {
         tvNoNotifications = v.findViewById(R.id.tvNoNotifications);
 
         firebaseNotifications = FirebaseDatabase.getInstance().getReference("Users").child(StaticFirebaseSettings.currentUserId).child("notifications");
+        firebaseNotifications.keepSynced(true);
         firebaseNotifications.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                notifications.clear();
+                //notifications.clear();
                 int cantNoti = 0;
                 for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
                     //Getting the data from snapshot
@@ -77,8 +81,9 @@ public class NotificationFragment extends Fragment {
                     if(n.getState().equals(NotificationStatus.UNREAD.toString())){
                         cantNoti += 1;
                     }
-                    notifications.add(0,n);
-                    adapter.notifyDataSetChanged();
+                    /*notifications.add(0,n);
+                    adapter.notifyDataSetChanged();*/
+                    updateNotifications(n);
                     tvNoNotifications.setVisibility(View.INVISIBLE);
                 }
 
@@ -93,6 +98,22 @@ public class NotificationFragment extends Fragment {
         });
 
         return v;
+    }
+
+    private void updateNotifications(Notification notification) {
+        boolean exists = false;
+        for(int i=0; i < notifications.size(); i++){
+            if(notifications.get(i).getNotificationKey().equals(notification.getNotificationKey())){
+                exists = true;
+                notifications.remove(i);
+                notifications.add(i,notification);
+                adapter.notifyItemChanged(i);
+            }
+        }
+        if(!exists){
+            notifications.add(0,notification);
+            adapter.notifyDataSetChanged();
+        }
     }
 
 

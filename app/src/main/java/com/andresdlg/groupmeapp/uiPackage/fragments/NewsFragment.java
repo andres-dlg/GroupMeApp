@@ -134,6 +134,9 @@ public class NewsFragment extends Fragment {
         rvPosts = view.findViewById(R.id.rvPosts);
         rvPosts.setLayoutManager(llm);
         rvPosts.setAdapter(rvNewsAdapter);
+        rvPosts.setItemViewCacheSize(100);
+        rvPosts.setDrawingCacheEnabled(true);
+        rvPosts.setDrawingCacheQuality(View.DRAWING_CACHE_QUALITY_HIGH);
 
         groupsRef = FirebaseDatabase.getInstance().getReference("Groups");
 
@@ -229,6 +232,7 @@ public class NewsFragment extends Fragment {
 
         for(int i = 0; i< cantidadDeGrupos ; i++){
             postsRef = FirebaseDatabase.getInstance().getReference("Groups").child(groupKeys.get(i)).child("posts");
+            postsRef.keepSynced(true);
             postsRef.addChildEventListener(new ChildEventListener() {
                 @Override
                 public void onChildAdded(DataSnapshot dataSnapshot, String s) {
@@ -336,7 +340,7 @@ public class NewsFragment extends Fragment {
     public void setUserVisibleHint(boolean isVisibleToUser) {
         super.setUserVisibleHint(isVisibleToUser);
         if(isAdded()){
-            if(isVisibleToUser){
+            if(isVisibleToUser && posts.size() > 0){
                 fabFilter.show();
             }else{
                 for(Post p : posts){

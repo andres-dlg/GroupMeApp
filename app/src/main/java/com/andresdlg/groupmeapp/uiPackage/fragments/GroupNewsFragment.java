@@ -87,6 +87,7 @@ public class GroupNewsFragment extends Fragment {
         //String groupKey = ((FireApp) getContext().getApplicationContext()).getGroupKey();
 
         postsRef = FirebaseDatabase.getInstance().getReference("Groups").child(groupKey).child("posts");
+        postsRef.keepSynced(true);
 
         posts = new ArrayList<>();
 
@@ -97,6 +98,9 @@ public class GroupNewsFragment extends Fragment {
         rvPosts = view.findViewById(R.id.rvPosts);
         rvPosts.setLayoutManager(llm);
         rvPosts.setAdapter(rvNewsAdapter);
+        rvPosts.setItemViewCacheSize(100);
+        rvPosts.setDrawingCacheEnabled(true);
+        rvPosts.setDrawingCacheQuality(View.DRAWING_CACHE_QUALITY_HIGH);
 
         fetchPosts();
 

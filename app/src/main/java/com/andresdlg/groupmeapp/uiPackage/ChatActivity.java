@@ -50,8 +50,12 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
     private Users userTo;
     private Users currentUser;
     private LinearLayout toolbarContainer;
+    private TextView tv;
+    private CircleImageView civ;
 
     DatabaseReference conversationRef;
+    DatabaseReference userToRef;
+    DatabaseReference currentUserRef;
     ValueEventListener valueEventListener;
 
 
@@ -66,8 +70,8 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
 
         toolbarContainer = findViewById(R.id.toolbar_container);
 
-        final TextView tv = toolbar.findViewById(R.id.action_bar_title_1);
-        final CircleImageView civ = toolbar.findViewById(R.id.conversation_contact_photo);
+        tv = toolbar.findViewById(R.id.action_bar_title_1);
+        civ = toolbar.findViewById(R.id.conversation_contact_photo);
         contactIds = getIntent().getStringArrayListExtra("contactIds");
         conversationKey = getIntent().getStringExtra("conversationKey");
 
@@ -113,12 +117,12 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         ImageButton btnSend = findViewById(R.id.btnSend);
         btnSend.setOnClickListener(this);
 
-        DatabaseReference userToRef = FirebaseDatabase.getInstance().getReference("Users").child(contactIds.get(0));
+        userToRef = FirebaseDatabase.getInstance().getReference("Users").child(contactIds.get(0));
         userToRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 userTo = dataSnapshot.getValue(Users.class);
-                DatabaseReference currentUserRef = FirebaseDatabase.getInstance().getReference("Users").child(StaticFirebaseSettings.currentUserId);
+                currentUserRef = FirebaseDatabase.getInstance().getReference("Users").child(StaticFirebaseSettings.currentUserId);
                 tv.setText(userTo.getName());
                 Glide.with(ChatActivity.this)
                         .load(userTo.getImageURL())
@@ -299,6 +303,8 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
                 newMessage.setTimestamp(System.currentTimeMillis());
                 newMessage.setId(dbRef.getKey());
                 dbRef.setValue(newMessage);
+                userToRef.child("conversation").child(conversationKey).child("messages").child(newMessage.getId()).setValue(newMessage);
+                //currentUserRef.child("conversation").child(conversationKey).child("messages").child(newMessage.getId()).setValue(newMessage);
             }
         }
     }

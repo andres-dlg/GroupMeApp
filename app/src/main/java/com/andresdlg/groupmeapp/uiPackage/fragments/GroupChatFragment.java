@@ -22,6 +22,7 @@ import com.andresdlg.groupmeapp.Entities.Message;
 
 import com.andresdlg.groupmeapp.Entities.Users;
 import com.andresdlg.groupmeapp.R;
+import com.andresdlg.groupmeapp.firebasePackage.FireApp;
 import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
@@ -46,6 +47,7 @@ public class GroupChatFragment extends Fragment {
     private LinearLayoutManager linearLayoutManager;
 
     static List<Users> groupUsers;
+    private List<Users> users;
 
     boolean isVisibleToUser;
 
@@ -56,7 +58,7 @@ public class GroupChatFragment extends Fragment {
     public static void setGroupUsers(List<Users> users){
         groupUsers = new ArrayList<>();
         //groupUsers.clear();
-        users.addAll(groupUsers);
+        groupUsers.addAll(users);
     }
 
     @Nullable
@@ -108,6 +110,20 @@ public class GroupChatFragment extends Fragment {
                         newMessage.setTimestamp(System.currentTimeMillis());
                         newMessage.setId(dbRef.getKey());
                         dbRef.setValue(newMessage);
+
+                        /*for(Users u : groupUsers){
+                            if(!u.getUserid().equals(StaticFirebaseSettings.currentUserId)){
+                                FirebaseDatabase
+                                        .getInstance()
+                                        .getReference("Users")
+                                        .child(u.getUserid())
+                                        .child("conversation")
+                                        .child(conversationKey)
+                                        .child("messages")
+                                        .child(dbRef.getKey())
+                                        .setValue(newMessage);
+                            }
+                        }*/
                     }
                 }
             }
