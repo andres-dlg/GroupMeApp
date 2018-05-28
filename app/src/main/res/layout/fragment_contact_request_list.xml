@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
-    android:weightSum="100">
+    android:weightSum="1">
 
     <RelativeLayout
         android:layout_width="0dp"
@@ -13,7 +13,7 @@
         android:focusable="true"
         android:id="@+id/rl"
         android:foreground="?android:attr/selectableItemBackground"
-        android:layout_weight="100">
+        android:layout_weight=".9">
 
         <FrameLayout
             android:layout_width="wrap_content"
@@ -83,21 +83,20 @@
             android:layout_width="match_parent"
             android:layout_height="1dp"
             android:layout_marginLeft="15dp"
-            android:layout_marginRight="15dp"
             android:background="@color/bg_add_photo" />
 
     </RelativeLayout>
 
-    <de.hdodenhof.circleimageview.CircleImageView
+    <ImageButton
         android:clickable="true"
         android:focusable="true"
         android:foreground="?android:attr/selectableItemBackgroundBorderless"
-        android:layout_margin="20dp"
-        android:background="#fff"
+        android:background="#00ffffff"
         android:id="@+id/btn_menu"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
         android:src="@drawable/dots_vertical"
+        android:layout_weight=".1"
         android:layout_gravity="center_vertical|center_horizontal"/>
 
 

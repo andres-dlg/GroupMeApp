@@ -17,6 +17,7 @@ import com.andresdlg.groupmeapp.Adapters.RVContactRequestAdapter;
 import com.andresdlg.groupmeapp.Entities.Users;
 import com.andresdlg.groupmeapp.R;
 import com.andresdlg.groupmeapp.Utils.FriendshipStatus;
+import com.andresdlg.groupmeapp.Utils.NotificationStatus;
 import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -117,5 +118,30 @@ public class FriendRequestsFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
+    }
+
+    @Override
+    public void setUserVisibleHint(boolean isVisibleToUser) {
+        super.setUserVisibleHint(isVisibleToUser);
+        if(isAdded()){
+            if(isVisibleToUser){
+                for(Users u : users){
+                    firebaseContacts.child(u.getUserid()).child("seen").addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+                            if(dataSnapshot.getValue().toString().equals(NotificationStatus.UNREAD.toString())){
+                                dataSnapshot.getRef().setValue(NotificationStatus.READ);
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
+
+                        }
+                    });
+                    //firebaseContacts.child(u.getUserid()).child("seen").setValue(NotificationStatus.READ);
+                }
+            }
+        }
     }
 }

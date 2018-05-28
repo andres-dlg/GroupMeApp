@@ -14,6 +14,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -133,7 +134,7 @@ public class RVGroupDetailAdapter extends RecyclerView.Adapter<RVGroupDetailAdap
             TextView mContactName = mView.findViewById(R.id.tvUserName);
             TextView mContactAlias = mView.findViewById(R.id.tvUserAlias);
             final TextView mContactRol = mView.findViewById(R.id.tvRol);
-            final CircleImageView btnMenu = mView.findViewById(R.id.btn_menu);
+            final ImageButton btnMenu = mView.findViewById(R.id.btn_menu);
 
             btnMenu.setVisibility(View.GONE);
 

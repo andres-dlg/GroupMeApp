@@ -10,6 +10,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -110,7 +111,7 @@ public class RVContactRequestAdapter extends RecyclerView.Adapter<RVContactReque
                     })
                     .into(mContactPhoto);
 
-            CircleImageView btn = mView.findViewById(R.id.btn_menu);
+            ImageButton btn = mView.findViewById(R.id.btn_menu);
             btn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
@@ -181,8 +182,6 @@ public class RVContactRequestAdapter extends RecyclerView.Adapter<RVContactReque
 
                 }
             });
-
-
         }
 
         private void rejectRequest(String iduser) {

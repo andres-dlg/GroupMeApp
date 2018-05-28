@@ -15,6 +15,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Filter;
 import android.widget.Filterable;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 import com.andresdlg.groupmeapp.Entities.Users;
@@ -176,7 +177,7 @@ public class RVSearchContactAdapter extends RecyclerView.Adapter<RVSearchContact
         View mView;
         private List<Users> usersFiltered;
         private UsersAdapterListener listener;
-        CircleImageView btn;
+        ImageButton btn;
 
         ContactsViewHolder(View itemView, List<Users> usersFiltered, UsersAdapterListener listener) {
             super(itemView);

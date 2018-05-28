@@ -389,6 +389,7 @@ public class AddFriendsDialogFragment extends DialogFragment {
                                     DatabaseReference userToFriends = userTo.child("friends");
                                     Map<String,Object> friend = new HashMap<>();
                                     friend.put("status", FriendshipStatus.PENDING);
+                                    friend.put("seen", NotificationStatus.UNREAD);
                                     userToFriends.child(userFrom).updateChildren(friend);
 
                                 }

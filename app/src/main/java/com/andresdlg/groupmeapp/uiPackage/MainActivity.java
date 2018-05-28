@@ -25,17 +25,20 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.animation.DecelerateInterpolator;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.afollestad.materialdialogs.GravityEnum;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.andresdlg.groupmeapp.DialogFragments.AddFriendsDialogFragment;
-import com.andresdlg.groupmeapp.DialogFragments.FriendsDialogFragment;
+import com.andresdlg.groupmeapp.DialogFragments.ContactsDialogFragment;
 import com.andresdlg.groupmeapp.DialogFragments.LibrariesDialogFragment;
 import com.andresdlg.groupmeapp.DialogFragments.TermsAndConditionsDialogFragment;
 import com.andresdlg.groupmeapp.Entities.Users;
 import com.andresdlg.groupmeapp.R;
+import com.andresdlg.groupmeapp.Utils.FriendshipStatus;
+import com.andresdlg.groupmeapp.Utils.NotificationStatus;
 import com.andresdlg.groupmeapp.Utils.RoundRectangle;
 import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
 import com.andresdlg.groupmeapp.uiPackage.fragments.GroupsFragment;
@@ -113,6 +116,20 @@ public class MainActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        //FIREBASE DATABASE REFERENCE
+        mDatabaseRef = FirebaseDatabase.getInstance().getReference().child("Users");
+
+        //FIREBASE INSTANCE INITIALIZATION
+        mAuth = FirebaseAuth.getInstance();
+        user = mAuth.getCurrentUser();
+        StaticFirebaseSettings.setCurrentUserId(user.getUid());
+        mStorageReference = FirebaseStorage.getInstance().getReference();
+
+        //NAVIGATION DRAWER LISTENERS
+        navigationView = findViewById(R.id.nav_view);
+        navigationView.setNavigationItemSelectedListener(this);
+
         
         //MobileAds.initialize(this,"ca-app-pub-3940256099942544~3347511713");
         MobileAds.initialize(this,"ca-app-pub-6164739277423889~7593283366");
@@ -153,11 +170,6 @@ public class MainActivity extends AppCompatActivity
         toolbar = findViewById(R.id.toolbar);
         toolbar.inflateMenu(R.menu.activity_main_menu);
 
-        Menu contactsMenu = toolbar.getMenu();
-        View v = contactsMenu.findItem(R.id.contacts).getActionView();
-        ui_hot = (TextView) v.findViewById(R.id.hotlist_hot);
-        updateHotCount(1);
-
         toolbar.getMenu().getItem(0).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
@@ -173,6 +185,18 @@ public class MainActivity extends AppCompatActivity
                 return false;
             }
         });
+
+        Menu contactsMenu = toolbar.getMenu();
+        View v = contactsMenu.findItem(R.id.contacts).getActionView();
+        ui_hot = v.findViewById(R.id.hotlist_hot);
+        RelativeLayout relativeLayout = v.findViewById(R.id.relativeLayout);
+        relativeLayout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showContactsDialogFragment();
+            }
+        });
+        updateHotCount();
 
         //createBanner();
 
@@ -265,20 +289,6 @@ public class MainActivity extends AppCompatActivity
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.addDrawerListener(toggle);
         toggle.syncState();
-
-
-        //FIREBASE DATABASE REFERENCE
-        mDatabaseRef = FirebaseDatabase.getInstance().getReference().child("Users");
-
-        //FIREBASE INSTANCE INITIALIZATION
-        mAuth = FirebaseAuth.getInstance();
-        user = mAuth.getCurrentUser();
-        StaticFirebaseSettings.setCurrentUserId(user.getUid());
-        mStorageReference = FirebaseStorage.getInstance().getReference();
-
-        //NAVIGATION DRAWER LISTENERS
-        navigationView = findViewById(R.id.nav_view);
-        navigationView.setNavigationItemSelectedListener(this);
     }
 
 
@@ -367,7 +377,9 @@ public class MainActivity extends AppCompatActivity
         // Handle item selection
         switch (item.getItemId()) {
             case R.id.delete:
-
+                return true;
+            case R.id.contacts:
+                showContactsDialogFragment();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -731,7 +743,6 @@ public class MainActivity extends AppCompatActivity
                     }
                 })
                 .start();
-
     }
 
 
@@ -755,7 +766,7 @@ public class MainActivity extends AppCompatActivity
 
     private void showContactsDialogFragment() {
         FragmentManager fragmentManager = getSupportFragmentManager();
-        FriendsDialogFragment newFragment = new FriendsDialogFragment();
+        ContactsDialogFragment newFragment = new ContactsDialogFragment();
         newFragment.setStyle(DialogFragment.STYLE_NORMAL,R.style.AppTheme_DialogFragment);
         FragmentTransaction transaction = fragmentManager.beginTransaction();
         transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
@@ -780,17 +791,29 @@ public class MainActivity extends AppCompatActivity
         transaction.add(android.R.id.content, newFragment).addToBackStack(null).commit();
     }
 
-    public void updateHotCount(final int new_hot_number) {
-        if (ui_hot == null) return;
-        runOnUiThread(new Runnable() {
+    public void updateHotCount() {
+        FirebaseDatabase.getInstance().getReference("Users")
+                .child(StaticFirebaseSettings.currentUserId)
+                .child("friends").addValueEventListener(new ValueEventListener() {
             @Override
-            public void run() {
-                if (new_hot_number == 0)
-                    ui_hot.setVisibility(View.INVISIBLE);
-                else {
-                    ui_hot.setVisibility(View.VISIBLE);
-                    //ui_hot.setText(String.valueOf(new_hot_number));
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                boolean mustBeRed = false;
+                for(DataSnapshot data : dataSnapshot.getChildren()){
+                    if(data.child("status").getValue().toString().equals(FriendshipStatus.PENDING.toString()) && data.child("seen").getValue().toString().equals(NotificationStatus.UNREAD.toString())){
+                        mustBeRed = true;
+                        break;
+                    }
                 }
+                if(mustBeRed){
+                    ui_hot.setVisibility(View.VISIBLE);
+                }else {
+                    ui_hot.setVisibility(View.INVISIBLE);
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
             }
         });
     }

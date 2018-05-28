@@ -45,9 +45,6 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 
-import static com.andresdlg.groupmeapp.Utils.NotificationTypes.FRIENDSHIP;
-import static com.andresdlg.groupmeapp.Utils.NotificationTypes.GROUP_INVITATION;
-
 /**
  * Created by andresdlg on 13/01/18.
  */
@@ -90,10 +87,10 @@ public class RVNotificationAdapter extends RecyclerView.Adapter<RVNotificationAd
         ///TODO: Recuperar información del usuario que envio la notificacion con FirebaseDatabase
 
         NotificationTypes type = null;
-        if(notifications.get(position).getType().equals(FRIENDSHIP.toString())){
-            type = FRIENDSHIP;
-        }else if(notifications.get(position).getType().equals(GROUP_INVITATION.toString())){
-            type = GROUP_INVITATION;
+        if(notifications.get(position).getType().equals(NotificationTypes.FRIENDSHIP.toString())){
+            type = NotificationTypes.FRIENDSHIP;
+        }else if(notifications.get(position).getType().equals(NotificationTypes.GROUP_INVITATION.toString())){
+            type = NotificationTypes.GROUP_INVITATION;
         }else if(notifications.get(position).getType().equals(NotificationTypes.SUBGROUP_INVITATION.toString())){
             type = NotificationTypes.SUBGROUP_INVITATION;
         }else if(notifications.get(position).getType().equals(NotificationTypes.NEW_POST.toString())){
@@ -137,7 +134,7 @@ public class RVNotificationAdapter extends RecyclerView.Adapter<RVNotificationAd
 
                     }
                 };
-                userRef.addValueEventListener(usersEventListener);
+                userRef.addListenerForSingleValueEvent(usersEventListener);
                 break;
 
             case GROUP_INVITATION:
@@ -269,7 +266,7 @@ public class RVNotificationAdapter extends RecyclerView.Adapter<RVNotificationAd
 
                     }
                 };
-                userRef.addValueEventListener(usersEventListener);
+                userRef.addListenerForSingleValueEvent(usersEventListener);
                 break;
 
             case TASK_FINISHED:
@@ -363,7 +360,7 @@ public class RVNotificationAdapter extends RecyclerView.Adapter<RVNotificationAd
     public void updateNotificationStates() {
         for(int i = 0; i<notifications.size() ; i++){
             if(notifications.get(i).getState().equals(NotificationStatus.READ.toString())){
-                notifyItemChanged(i);
+                //notifyItemChanged(i);
             }
         }
     }
@@ -424,10 +421,10 @@ public class RVNotificationAdapter extends RecyclerView.Adapter<RVNotificationAd
         void hideBtn(final Context context, String type) {
 
             NotificationTypes notiType = null;
-            if(type.equals(FRIENDSHIP.toString())){
-                notiType = FRIENDSHIP;
-            }else if(type.equals(GROUP_INVITATION.toString())){
-                notiType = GROUP_INVITATION;
+            if(type.equals(NotificationTypes.FRIENDSHIP.toString())){
+                notiType = NotificationTypes.FRIENDSHIP;
+            }else if(type.equals(NotificationTypes.GROUP_INVITATION.toString())){
+                notiType = NotificationTypes.GROUP_INVITATION;
             }else if(type.equals(NotificationTypes.SUBGROUP_INVITATION.toString())){
                 notiType = NotificationTypes.SUBGROUP_INVITATION;
             }else if(type.equals(NotificationTypes.NEW_POST.toString())){

@@ -44,13 +44,13 @@ import com.theartofdev.edmodo.cropper.CropImageView;
  * Created by andresdlg on 13/07/17.
  */
 
-public class FriendsDialogFragment extends DialogFragment {
+public class ContactsDialogFragment extends DialogFragment {
     /** The system calls this to get the DialogFragment's layout, regardless
      of whether it's being displayed as a dialog or an embedded fragment. */
     FragmentPagerItemAdapter adapter;
     ViewPager viewPager;
 
-    public FriendsDialogFragment(){
+    public ContactsDialogFragment(){
         setRetainInstance(true);
     }
 
