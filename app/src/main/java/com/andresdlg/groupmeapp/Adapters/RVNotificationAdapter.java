@@ -360,7 +360,7 @@ public class RVNotificationAdapter extends RecyclerView.Adapter<RVNotificationAd
     public void updateNotificationStates() {
         for(int i = 0; i<notifications.size() ; i++){
             if(notifications.get(i).getState().equals(NotificationStatus.READ.toString())){
-                //notifyItemChanged(i);
+                notifyItemChanged(i);
             }
         }
     }

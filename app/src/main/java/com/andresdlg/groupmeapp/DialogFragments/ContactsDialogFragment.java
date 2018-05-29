@@ -1,54 +1,43 @@
 package com.andresdlg.groupmeapp.DialogFragments;
 
-import android.Manifest;
-import android.app.Activity;
 import android.app.Dialog;
-import android.content.Intent;
-import android.content.res.Resources;
-import android.net.Uri;
-import android.os.Build;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.annotation.RequiresApi;
-import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.content.ContextCompat;
-import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.Window;
-import android.view.WindowManager;
-import android.widget.ImageView;
-import android.widget.TextView;
 
 import com.andresdlg.groupmeapp.R;
-import com.andresdlg.groupmeapp.uiPackage.MainActivity;
 import com.andresdlg.groupmeapp.uiPackage.fragments.FriendListFragment;
 import com.andresdlg.groupmeapp.uiPackage.fragments.FriendRequestsFragment;
-import com.ogaclejapan.smarttablayout.SmartTabLayout;
 import com.ogaclejapan.smarttablayout.utils.v4.FragmentPagerItemAdapter;
 import com.ogaclejapan.smarttablayout.utils.v4.FragmentPagerItems;
-import com.theartofdev.edmodo.cropper.CropImage;
-import com.theartofdev.edmodo.cropper.CropImageView;
+
+import java.util.ArrayList;
+
+import devlight.io.library.ntb.NavigationTabBar;
 
 /**
  * Created by andresdlg on 13/07/17.
  */
 
-public class ContactsDialogFragment extends DialogFragment {
+public class ContactsDialogFragment extends DialogFragment implements FriendRequestsFragment.OnNewContactRequestSetListener {
     /** The system calls this to get the DialogFragment's layout, regardless
      of whether it's being displayed as a dialog or an embedded fragment. */
     FragmentPagerItemAdapter adapter;
     ViewPager viewPager;
+
+    ArrayList<NavigationTabBar.Model> models;
 
     public ContactsDialogFragment(){
         setRetainInstance(true);
@@ -88,38 +77,42 @@ public class ContactsDialogFragment extends DialogFragment {
         viewPager = view.findViewById(R.id.friendviewpager);
         viewPager.setAdapter(adapter);
 
-        final LayoutInflater inflater2 = LayoutInflater.from(getContext());
-        final Resources res = getResources();
+        final String[] colors = getResources().getStringArray(R.array.default_preview);
 
-        final SmartTabLayout viewPagerTab =  view.findViewById(R.id.friendviewpagertab);
-        viewPagerTab.setCustomTabView(new SmartTabLayout.TabProvider() {
-            @Override
-            public View createTabView(ViewGroup container, int position, PagerAdapter adapter) {
-                View itemView = inflater2.inflate(R.layout.tab_text, container, false);
-                TextView text = itemView.findViewById(R.id.custom_tab_text);
+        NavigationTabBar navigationTabBar = view.findViewById(R.id.ntb);
+        models = new ArrayList<>();
+        models.add(
+                new NavigationTabBar.Model.Builder(
+                        ContextCompat.getDrawable(getContext(),R.drawable.account_multiple),
+                        Color.parseColor(colors[2])
+                ).title("Contactos")
+                        .badgeTitle("NTB")
+                        .build()
+        );
+        models.add(
+                new NavigationTabBar.Model.Builder(ContextCompat.getDrawable(getContext(),R.drawable.telegram),
+                        Color.parseColor(colors[2])
+                ).title("Solicitudes")
+                        .badgeTitle("icon")
+                        .build()
+        );
 
-                //Obtengo las metricas de la pantalla
-                DisplayMetrics metrics = new DisplayMetrics();
-                getActivity().getWindowManager().getDefaultDisplay().getMetrics(metrics);
+        navigationTabBar.setModels(models);
+        navigationTabBar.setViewPager(viewPager, 0);
+        navigationTabBar.setInactiveColor(getResources().getColor(R.color.cardview_dark_background));
+        navigationTabBar.setIsSwiped(true);
+        navigationTabBar.setIsTitled(true);
+        navigationTabBar.setTitleMode(NavigationTabBar.TitleMode.ACTIVE);
+        //navigationTabBar.setTypeface(customFont);
+        navigationTabBar.setTitleSize(10 * getResources().getDisplayMetrics().density);
+        navigationTabBar.setIconSizeFraction((float) 0.5);
 
-                //Divido por la cantidad de fragmentos y determino el ancho del imageview que va en
-                // cada tab
-                text.getLayoutParams().width = metrics.widthPixels / 2;
+        navigationTabBar.setBadgePosition(NavigationTabBar.BadgePosition.RIGHT);
+        navigationTabBar.setIsBadged(true);
+        navigationTabBar.setBadgeBgColor(Color.RED);
+        navigationTabBar.setBadgeTitleColor(Color.RED);
+        navigationTabBar.setBadgeSize(20);
 
-                switch (position) {
-                    case 0:
-                        text.setText("CONTACTOS");
-                        break;
-                    case 1:
-                        text.setText("SOLICITUDES");
-                        break;
-                    default:
-                        throw new IllegalStateException("Invalid position: " + position);
-                }
-                return itemView;
-            }
-        });
-        viewPagerTab.setViewPager(viewPager);
         return view;
     }
 
@@ -175,5 +168,17 @@ public class ContactsDialogFragment extends DialogFragment {
         }
         adapter = null;
         viewPager = null;
+    }
+
+    @Override
+    public void onNewContactRequestSet(int requestQuantity) {
+        NavigationTabBar.Model model = models.get(1);
+        if(requestQuantity > 0){
+            model.showBadge();
+            //model.setBadgeTitle(String.valueOf(notificationQuantity));
+            model.setBadgeTitle(String.valueOf(1));
+        }else{
+            model.hideBadge();
+        }
     }
 }

@@ -39,6 +39,10 @@ public class FriendRequestsFragment extends Fragment {
     DatabaseReference firebaseContacts;
     TextView tvRequests;
 
+    OnNewContactRequestSetListener mOnNewContactRequestSetListener;
+
+    int requestQuantity;
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -77,12 +81,19 @@ public class FriendRequestsFragment extends Fragment {
             public void onDataChange(DataSnapshot dataSnapshot) {
                 users.clear();
                 adapter.notifyDataSetChanged();
+
+                boolean hide = false;
                 for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
                     //Getting the data from snapshot
                     if(postSnapshot.child("status").getValue().equals(FriendshipStatus.PENDING.toString())){
-                        getUser(postSnapshot.getKey());
-                        tvRequests.setVisibility(View.INVISIBLE);
+                        getUser(postSnapshot.getKey(),postSnapshot.child("seen").getValue().toString());
+                        hide = true;
                     }
+                }
+                if(hide){
+                    tvRequests.setVisibility(View.INVISIBLE);
+                }else {
+                    tvRequests.setVisibility(View.VISIBLE);
                 }
             }
 
@@ -94,7 +105,7 @@ public class FriendRequestsFragment extends Fragment {
         return v;
     }
 
-    private void getUser(String key) {
+    private void getUser(String key, final String requestSeen) {
 
         DatabaseReference user = FirebaseDatabase.getInstance().getReference("Users").child(key);
         user.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -104,6 +115,10 @@ public class FriendRequestsFragment extends Fragment {
                 if(!users.contains(u)){
                     users.add(u);
                     adapter.notifyDataSetChanged();
+                    if(requestSeen.equals(NotificationStatus.UNREAD.toString())){
+                        requestQuantity += 1;
+                        mOnNewContactRequestSetListener.onNewContactRequestSet(requestQuantity);
+                    }
                 }
             }
 
@@ -118,6 +133,10 @@ public class FriendRequestsFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
+
+        onAttachToParentFragment(getParentFragment());
+
+        requestQuantity = 0;
     }
 
     @Override
@@ -141,7 +160,23 @@ public class FriendRequestsFragment extends Fragment {
                     });
                     //firebaseContacts.child(u.getUserid()).child("seen").setValue(NotificationStatus.READ);
                 }
+            }else{
+                requestQuantity = 0;
+                mOnNewContactRequestSetListener.onNewContactRequestSet(0);
             }
+        }
+    }
+
+    public interface OnNewContactRequestSetListener{
+        void onNewContactRequestSet(int requestQuantity);
+    }
+
+    public void onAttachToParentFragment(Fragment fragment){
+        try {
+            mOnNewContactRequestSetListener = (OnNewContactRequestSetListener) fragment;
+        }
+        catch (ClassCastException e){
+            throw new ClassCastException(fragment.toString() + " must implement OnUserSelectionSetListener");
         }
     }
 }

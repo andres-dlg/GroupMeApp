@@ -18,7 +18,6 @@ import com.andresdlg.groupmeapp.Entities.Users;
 import com.andresdlg.groupmeapp.R;
 import com.andresdlg.groupmeapp.Utils.FriendshipStatus;
 import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
-import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -73,19 +72,24 @@ public class FriendListFragment extends Fragment {
         //tvNoNotifications = v.findViewById(R.id.tvNoNotifications);
         //checkNotificationsQuantity();
 
-
         firebaseContacts = FirebaseDatabase.getInstance().getReference("Users").child(StaticFirebaseSettings.currentUserId).child("friends");
         firebaseContacts.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 users.clear();
                 adapter.notifyDataSetChanged();
+                boolean hide = false;
                 for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
                     //Getting the data from snapshot
                     if(postSnapshot.child("status").getValue().equals(FriendshipStatus.ACCEPTED.toString())){
                         getUser(postSnapshot.getKey());
-                        tvFriends.setVisibility(View.INVISIBLE);
+                        hide = true;
                     }
+                }
+                if(hide){
+                    tvFriends.setVisibility(View.INVISIBLE);
+                }else{
+                    tvFriends.setVisibility(View.VISIBLE);
                 }
             }
 

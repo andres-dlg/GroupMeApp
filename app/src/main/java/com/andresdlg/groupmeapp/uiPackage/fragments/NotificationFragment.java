@@ -107,12 +107,13 @@ public class NotificationFragment extends Fragment {
                 exists = true;
                 notifications.remove(i);
                 notifications.add(i,notification);
-                adapter.notifyItemChanged(i);
+                //adapter.notifyItemChanged(i);
             }
         }
         if(!exists){
             notifications.add(0,notification);
-            adapter.notifyItemInserted(0);
+            adapter.notifyDataSetChanged();
+            //adapter.notifyItemInserted(0);
         }
     }
 
