@@ -245,7 +245,6 @@ public class TaskWeekViewActivity extends TaskWeekViewBaseActivty {
         List<WeekViewEvent> eventos = ((FireApp)getApplication()).getEvents();
         List<WeekViewEvent> eventosAgregados = new ArrayList<>();
         for (WeekViewEvent myEvent: eventos) {
-            //TODO: this is your comparison
             if (myEvent.getStartTime().get(Calendar.MONTH) == (newMonth-1) && myEvent.getStartTime().get(Calendar.YEAR) == newYear ) {
                 Calendar startTime = myEvent.getStartTime();
                 Calendar endTime = myEvent.getEndTime();

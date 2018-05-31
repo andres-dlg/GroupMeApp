@@ -7,7 +7,7 @@
         app:actionLayout="@layout/feed_update_count"
         app:showAsAction="ifRoom"/>
     <item android:id="@+id/add_contact"
-        android:icon="@drawable/ic_account_plus_white_24dp"
+        android:icon="@drawable/ic_account_search_white_24dp"
         android:title="Buscar"
         app:showAsAction="ifRoom"/>
 </menu>

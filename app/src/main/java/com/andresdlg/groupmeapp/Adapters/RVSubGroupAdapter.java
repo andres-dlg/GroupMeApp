@@ -490,7 +490,7 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
                                 Toast.makeText(context,"Horarios guardados",Toast.LENGTH_SHORT).show();
 
 
-                                // POR AHORA SOLO SE GUARDARAN LAS FECHAS PARA TODO EL DIA
+                                // POR AHORA SOLO SE GUARDARAN LAS FECHAS PARA ALL EL DIA
                                 //setTime2(timeListener);
                                 //Toast.makeText(context,"Ahora elije a que hora comenzará la primer tarea y a que hora terminará la ultima",Toast.LENGTH_SHORT).show();
                             }

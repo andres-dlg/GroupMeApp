@@ -40,6 +40,7 @@ import com.andresdlg.groupmeapp.R;
 import com.andresdlg.groupmeapp.Utils.FriendshipStatus;
 import com.andresdlg.groupmeapp.Utils.NotificationStatus;
 import com.andresdlg.groupmeapp.Utils.RoundRectangle;
+import com.andresdlg.groupmeapp.firebasePackage.FireApp;
 import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
 import com.andresdlg.groupmeapp.uiPackage.fragments.GroupsFragment;
 import com.andresdlg.groupmeapp.uiPackage.fragments.MessagesFragment;
@@ -112,10 +113,14 @@ public class MainActivity extends AppCompatActivity
 
     TextView ui_hot;
 
+    int value;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        value = 0;
 
         //FIREBASE DATABASE REFERENCE
         mDatabaseRef = FirebaseDatabase.getInstance().getReference().child("Users");
@@ -289,6 +294,28 @@ public class MainActivity extends AppCompatActivity
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.addDrawerListener(toggle);
         toggle.syncState();
+
+        //PARA NOTIFICACIONES
+        fillContactIdsMap();
+    }
+
+    private void fillContactIdsMap() {
+
+        mDatabaseRef.child(StaticFirebaseSettings.currentUserId).child("friends").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for(DataSnapshot data : dataSnapshot.getChildren()){
+                    ((FireApp) getApplicationContext()).getContactsIds().put(data.getKey(),value);
+                    value += 1;
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
     }
 
 

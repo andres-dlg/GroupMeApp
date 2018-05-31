@@ -5,7 +5,10 @@ import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -15,10 +18,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.PopupMenu;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.andresdlg.groupmeapp.DialogFragments.ContactsDialogFragment;
 import com.andresdlg.groupmeapp.Entities.Group;
 import com.andresdlg.groupmeapp.Entities.Notification;
 import com.andresdlg.groupmeapp.Entities.Users;
@@ -27,6 +33,7 @@ import com.andresdlg.groupmeapp.Utils.GroupStatus;
 import com.andresdlg.groupmeapp.Utils.NotificationStatus;
 import com.andresdlg.groupmeapp.Utils.NotificationTypes;
 import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
+import com.andresdlg.groupmeapp.uiPackage.MainActivity;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.DataSource;
 import com.bumptech.glide.load.engine.GlideException;
@@ -84,7 +91,6 @@ public class RVNotificationAdapter extends RecyclerView.Adapter<RVNotificationAd
 
     @Override
     public void onBindViewHolder(@NonNull final NotificationViewHolder notificationViewHolder, @SuppressLint("RecyclerView") final int position) {
-        ///TODO: Recuperar información del usuario que envio la notificacion con FirebaseDatabase
 
         NotificationTypes type = null;
         if(notifications.get(position).getType().equals(NotificationTypes.FRIENDSHIP.toString())){
@@ -376,6 +382,10 @@ public class RVNotificationAdapter extends RecyclerView.Adapter<RVNotificationAd
         private String notificationKey;
         private int position;
         DatabaseReference userRef;
+        RelativeLayout rl;
+
+        String imageURL;
+
 
         NotificationViewHolder(View itemView) {
             super(itemView);
@@ -387,6 +397,7 @@ public class RVNotificationAdapter extends RecyclerView.Adapter<RVNotificationAd
             notificationMessage.setSelected(true);
             notificationDate = itemView.findViewById(R.id.date);
             menuBtn = itemView.findViewById(R.id.menu_btn);
+            rl = itemView.findViewById(R.id.rl);
             userRef = FirebaseDatabase.getInstance().getReference("Users").child(StaticFirebaseSettings.currentUserId);
         }
 
@@ -395,6 +406,9 @@ public class RVNotificationAdapter extends RecyclerView.Adapter<RVNotificationAd
         }
 
         void setImage(final Context context, final String imageURL) {
+
+            this.imageURL = imageURL;
+
             Glide.with(context)
                     .load(imageURL)
                     .listener(new RequestListener<Drawable>() {
@@ -420,6 +434,12 @@ public class RVNotificationAdapter extends RecyclerView.Adapter<RVNotificationAd
 
         void hideBtn(final Context context, String type) {
 
+            LinearLayout.LayoutParams param = new LinearLayout.LayoutParams(
+                    RelativeLayout.LayoutParams.MATCH_PARENT,
+                    RelativeLayout.LayoutParams.MATCH_PARENT,
+                    1.0f
+            );
+
             NotificationTypes notiType = null;
             if(type.equals(NotificationTypes.FRIENDSHIP.toString())){
                 notiType = NotificationTypes.FRIENDSHIP;
@@ -439,6 +459,7 @@ public class RVNotificationAdapter extends RecyclerView.Adapter<RVNotificationAd
 
             switch (notiType){
                 case GROUP_INVITATION:
+                    menuBtn.setVisibility(View.VISIBLE);
                     menuBtn.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View view) {
@@ -472,26 +493,67 @@ public class RVNotificationAdapter extends RecyclerView.Adapter<RVNotificationAd
 
                 case FRIENDSHIP:
                     menuBtn.setVisibility(View.GONE);
+                    rl.setLayoutParams(param);
+
+                    rl.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            FragmentManager fragmentManager = ((MainActivity)context).getSupportFragmentManager();
+                            ContactsDialogFragment newFragment = new ContactsDialogFragment(true);
+                            newFragment.setStyle(DialogFragment.STYLE_NORMAL,R.style.AppTheme_DialogFragment);
+                            FragmentTransaction transaction = fragmentManager.beginTransaction();
+                            transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
+                            transaction.add(android.R.id.content, newFragment).addToBackStack(null).commit();
+                        }
+                    });
                     break;
 
                 case FRIENDSHIP_ACCEPTED:
                     menuBtn.setVisibility(View.GONE);
+                    rl.setLayoutParams(param);
+
+                    rl.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            FragmentManager fragmentManager = ((MainActivity)context).getSupportFragmentManager();
+                            ContactsDialogFragment newFragment = new ContactsDialogFragment();
+                            newFragment.setStyle(DialogFragment.STYLE_NORMAL,R.style.AppTheme_DialogFragment);
+                            FragmentTransaction transaction = fragmentManager.beginTransaction();
+                            transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
+                            transaction.add(android.R.id.content, newFragment).addToBackStack(null).commit();
+                        }
+                    });
+
                     break;
 
                 case SUBGROUP_INVITATION:
                     menuBtn.setVisibility(View.GONE);
+                    rl.setLayoutParams(param);
                     break;
 
                 case NEW_POST:
                     menuBtn.setVisibility(View.GONE);
+                    rl.setLayoutParams(param);
+                    /*rl.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            Intent i = new Intent(context, GroupActivity.class);
+                            i.putExtra("groupImage", imageURL);
+                            i.putExtra("groupName",userAlias.getText().toString());
+                            i.putExtra("groupKey",groupKey);
+                            context.startActivity(i);
+                        }
+                    });*/
                     break;
 
                 case TASK_FINISHED:
                     menuBtn.setVisibility(View.GONE);
+                    rl.setLayoutParams(param);
                     break;
 
                 case NEW_FILE:
                     menuBtn.setVisibility(View.GONE);
+                    rl.setLayoutParams(param);
                     break;
             }
         }

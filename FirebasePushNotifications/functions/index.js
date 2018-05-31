@@ -150,6 +150,7 @@ exports.sendMessageWithNotification = functions.database.ref("/Users/{user_id}/c
         const to_user_id = notification.idReceiver;
         const from_message = notification.text;
         const notification_title = "Nuevo mensaje de ";
+        const time_message = notification.timestamp;
 
         const fromDataPromise = admin.database().ref("/Users/" + from_user_id).once('value');
         const toDataPromise = admin.database().ref("/Users/"+ to_user_id).once('value');
@@ -167,6 +168,8 @@ exports.sendMessageWithNotification = functions.database.ref("/Users/{user_id}/c
                     click_action: "com.andresdlg.groupmeapp.firebasepushnotifications.TARGETNOTIFICATION",
                     type: "MESSAGE",
                     from_user_id: from_user_id,
+                    userName: from_name,
+                    timeMessage: time_message + '',
                 }
             };
 
@@ -192,9 +195,13 @@ exports.sendMessageWithNotificationForGroups = functions.database.ref("/Conversa
         const from_user_id = notification.idSender;
         const to_user_id = notification.idReceiver;
         const from_message = notification.text;
+        const time_message = notification.timestamp;
 
-        //PARA GRUPOS
-        if(to_user_id === undefined || to_user_id === null){
+        var iPromise = admin.database().ref("/Users/"+ from_user_id).once('value');
+        
+        return iPromise.then(userSnapshot => {
+
+            var userName = userSnapshot.val().name;
 
             const notification_title = "Nuevo mensaje en ";
 
@@ -203,6 +210,8 @@ exports.sendMessageWithNotificationForGroups = functions.database.ref("/Conversa
             return groupPromise.then(groupSnapshot => {
                 
                 var groupName = groupSnapshot.val().name;
+
+                var groupKey = groupSnapshot.val().groupKey;
                 
                 var groupMembersPromise = admin.database().ref("/Groups/"+ conversation_id + "/members/").once('value');
 
@@ -235,10 +244,14 @@ exports.sendMessageWithNotificationForGroups = functions.database.ref("/Conversa
                                         data:{
                                             title: notification_title + groupName,
                                             message: from_message,
+                                            timeMessage: time_message + '',
                                             icon: "default",
                                             click_action: "com.andresdlg.groupmeapp.firebasepushnotifications.TARGETNOTIFICATION",
                                             type: "MESSAGE",
                                             from_user_id: from_user_id,
+                                            userName: userName,
+                                            groupKey: groupKey,
+                                            groupName: groupName
                                         }
                                     };
                     
@@ -247,10 +260,10 @@ exports.sendMessageWithNotificationForGroups = functions.database.ref("/Conversa
                                     });
                                 }
                             });
-                        }
+                        } 
                     });                
                 });
             });
-        }
+        })
     });
 });

@@ -8,6 +8,7 @@ import com.andresdlg.groupmeapp.Entities.WeekViewEventGroupMeApp;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.database.FirebaseDatabase;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -23,6 +24,10 @@ public class FireApp extends Application {
     private String groupName;
     private String downloadUrl;
     private Map<String, String> members;
+
+    //PARA NOTIFICACIONES
+    private Map<String, Integer> groupsIds;
+    private Map<String, Integer> contactsIds;
 
     public String getGroupKey() {
         return groupKey;
@@ -65,6 +70,8 @@ public class FireApp extends Application {
             //Permite la persistencia offline
             FirebaseDatabase.getInstance().setPersistenceEnabled(true);
         }
+        groupsIds = new HashMap<>();
+        contactsIds = new HashMap<>();
     }
 
     public String getGroupName() {
@@ -89,5 +96,13 @@ public class FireApp extends Application {
 
     public void setMembers(Map<String, String> members) {
         this.members = members;
+    }
+
+    public Map<String, Integer> getGroupsIds() {
+        return groupsIds;
+    }
+
+    public Map<String, Integer> getContactsIds() {
+        return contactsIds;
     }
 }

@@ -22,6 +22,7 @@ import com.andresdlg.groupmeapp.Entities.Group;
 import com.andresdlg.groupmeapp.R;
 import com.andresdlg.groupmeapp.Utils.GroupStatus;
 import com.andresdlg.groupmeapp.Utils.GroupType;
+import com.andresdlg.groupmeapp.firebasePackage.FireApp;
 import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -31,6 +32,7 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by andresdlg on 02/05/17.
@@ -47,12 +49,14 @@ public class GroupsFragment extends Fragment implements View.OnClickListener, He
     FloatingActionButton mFloatingActionButton;
 
     View view;
+    private int value;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_groups,container,false);
         setRetainInstance(true);
+        value = 0;
         return v;
     }
 
@@ -194,6 +198,11 @@ public class GroupsFragment extends Fragment implements View.OnClickListener, He
         if(!exists){
             groups.add(group);
             adapter.notifyDataSetChanged();
+
+            //PARA NOTIFICACIONES
+            Map<String,Integer> map = ((FireApp) getContext().getApplicationContext()).getGroupsIds();
+            map.put(group.getGroupKey(),value);
+            value += 1;
         }
     }
 }

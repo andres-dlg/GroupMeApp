@@ -39,8 +39,15 @@ public class ContactsDialogFragment extends DialogFragment implements FriendRequ
 
     ArrayList<NavigationTabBar.Model> models;
 
+    boolean goToRequestsTab = false;
+
     public ContactsDialogFragment(){
         setRetainInstance(true);
+    }
+
+    public ContactsDialogFragment(boolean goToRequestsTab) {
+        setRetainInstance(true);
+        this.goToRequestsTab = goToRequestsTab;
     }
 
     @Override
@@ -112,6 +119,11 @@ public class ContactsDialogFragment extends DialogFragment implements FriendRequ
         navigationTabBar.setBadgeBgColor(Color.RED);
         navigationTabBar.setBadgeTitleColor(Color.RED);
         navigationTabBar.setBadgeSize(20);
+
+
+        if(goToRequestsTab){
+            viewPager.setCurrentItem(1);
+        }
 
         return view;
     }

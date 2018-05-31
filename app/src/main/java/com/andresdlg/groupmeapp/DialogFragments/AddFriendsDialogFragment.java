@@ -124,10 +124,6 @@ public class AddFriendsDialogFragment extends DialogFragment {
                     if(!results.contains(alias)){
                         results.add(alias);
                     }
-                            /*if(data.child("alias").getValue().toString().startsWith(newText)){
-                                results.add(data.child("alias").getValue().toString());
-                                searchView.setSuggestions(results.toArray(new String[0]));
-                            }*/
                 }
 
                 searchView.setSuggestions(results.toArray(new String[0]));
@@ -139,8 +135,6 @@ public class AddFriendsDialogFragment extends DialogFragment {
             }
         });
 
-
-        //searchView.setSuggestions(getResources().getStringArray(R.array.query_suggestions));
         searchView.setHint("Buscar");
         searchView.setOnQueryTextListener(new MaterialSearchView.OnQueryTextListener() {
             @Override

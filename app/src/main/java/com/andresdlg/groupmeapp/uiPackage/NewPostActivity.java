@@ -107,7 +107,7 @@ public class NewPostActivity extends AppCompatActivity {
                                 String notificationKey = userToNotifications.push().getKey();
                                 Map<String,Object> notification = new HashMap<>();
                                 notification.put("notificationKey",notificationKey);
-                                notification.put("title","Nueva publicación");
+                                notification.put("title","Nueva publicación en " + groupName);
                                 notification.put("message","Nuevo post de " + user.getName());
                                 notification.put("from", groupKey);
                                 notification.put("state", NotificationStatus.UNREAD);

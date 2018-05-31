@@ -227,7 +227,7 @@ public class RegisterActivity extends AppCompatActivity {
     }
 
     private boolean isEmailValid(String email) {
-        //TODO: Replace this with your own logic
+
         boolean response = false;
         if (email.contains("@") && email.contains(".com")) {
             response = true;
