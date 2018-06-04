@@ -5,12 +5,12 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
-    android:theme="@style/AppTheme.DialogFragment">
+    android:theme="@style/AppTheme.DialogFragment"
+    android:layout_marginTop="48dp">
 
     <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginTop="24dp">
+        android:layout_height="match_parent">
 
         <ProgressBar
             android:id="@+id/progressBar"
@@ -54,6 +54,7 @@
         android:tint="@color/common_google_signin_btn_text_dark"
         android:src="@drawable/ic_create_post"
         app:backgroundTint="@color/colorPrimaryDark"
-        app:fabSize="normal" />
+        app:fabSize="normal"
+        android:focusable="true" />
 
 </RelativeLayout>

@@ -9,6 +9,8 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.DisplayMetrics;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -101,6 +103,24 @@ public class GroupNewsFragment extends Fragment {
         rvPosts.setItemViewCacheSize(100);
         rvPosts.setDrawingCacheEnabled(true);
         rvPosts.setDrawingCacheQuality(View.DRAWING_CACHE_QUALITY_HIGH);
+
+        DisplayMetrics metrics = getResources().getDisplayMetrics();
+        ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams)rvPosts.getLayoutParams();
+
+        if(bundle.getBoolean("fromNotificationSubGroupInvitation")){
+            int newMarginDp = 8;
+            params.topMargin = (int) (TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, newMarginDp, metrics));
+        }
+
+        if(bundle.getBoolean("fromNotificationNewPost")){
+            int newMarginDp = 32;
+            params.topMargin = (int) (TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, newMarginDp, metrics));
+        }
+
+        if(!bundle.getBoolean("fromNotificationSubGroupInvitation") && !bundle.getBoolean("fromNotificationNewPost")){
+            int newMarginDp = 32;
+            params.topMargin = (int) (TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, newMarginDp, metrics));
+        }
 
         fetchPosts();
 

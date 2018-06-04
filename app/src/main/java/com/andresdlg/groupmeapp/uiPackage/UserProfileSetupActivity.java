@@ -24,7 +24,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.andresdlg.groupmeapp.Entities.Users;
 import com.andresdlg.groupmeapp.R;
@@ -377,7 +376,7 @@ public class UserProfileSetupActivity extends AppCompatActivity {
                             });
                         }else{
                             if(iduser == null){
-                                imageHoldUri = Uri.parse("android.resource://com.andresdlg.groupmeapp/"+R.drawable.new_user);
+                                imageHoldUri = Uri.parse("https://firebasestorage.googleapis.com/v0/b/groupmeapp-5aaf6.appspot.com/o/new_user.png?alt=media&token=8875556e-566a-4717-9654-6a2c27fa7cc6");
                             }else{
                                 imageHoldUri = Uri.parse(u.getImageURL());
                             }
@@ -424,8 +423,6 @@ public class UserProfileSetupActivity extends AppCompatActivity {
             if (mCropImageUri != null && grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 // required permissions granted, start crop image activity
                 startCropImageActivity(mCropImageUri);
-            } else {
-                Toast.makeText(this, "Cancelling, required permissions are not granted", Toast.LENGTH_LONG).show();
             }
         }
     }

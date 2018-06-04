@@ -27,7 +27,6 @@ import android.view.animation.DecelerateInterpolator;
 import android.view.animation.Transformation;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.alamkanak.weekview.WeekViewEvent;
 import com.andresdlg.groupmeapp.Entities.Task;
@@ -108,7 +107,7 @@ public class GroupActivity extends AppCompatActivity implements GroupChatFragmen
 
             @Override
             public void onAdFailedToLoad(int errorCode) {
-                Toast.makeText(GroupActivity.this, "Fallo al cargar anuncio", Toast.LENGTH_SHORT).show();
+                //Toast.makeText(GroupActivity.this, "Fallo al cargar anuncio", Toast.LENGTH_SHORT).show();
             }
 
             @Override
@@ -179,8 +178,11 @@ public class GroupActivity extends AppCompatActivity implements GroupChatFragmen
 
         //StaticFirebaseSettings.currentUserId = FirebaseAuth.getInstance().getUid();
 
+
         Bundle bundle = new Bundle();
         bundle.putString("groupKey",groupKey);
+        bundle.putBoolean("fromNotificationSubGroupInvitation",getIntent().getBooleanExtra("fromNotificationSubGroupInvitation",false));
+        bundle.putBoolean("fromNotificationNewPost",getIntent().getBooleanExtra("fromNotificationNewPost",false));
 
         FragmentPagerItemAdapter adapter = new FragmentPagerItemAdapter(
                 getSupportFragmentManager(), FragmentPagerItems.with(this)
@@ -300,6 +302,20 @@ public class GroupActivity extends AppCompatActivity implements GroupChatFragmen
             }
         });
 
+        boolean setSubGroupTab = getIntent().getBooleanExtra("setSubGroupTab",false);
+        boolean setChatTab = getIntent().getBooleanExtra("setChatTab",false);
+        boolean setNewsTab = getIntent().getBooleanExtra("setNewsTab",false);
+
+
+        if(setSubGroupTab){
+            viewPager.setCurrentItem(0);
+            viewPager.setCurrentItem(1);
+        }else if(setChatTab){
+            viewPager.setCurrentItem(1);
+            viewPager.setCurrentItem(2);
+        }else if(setNewsTab){
+            viewPager.setCurrentItem(0);
+        }
 
         groupUsers = new ArrayList<>();
 

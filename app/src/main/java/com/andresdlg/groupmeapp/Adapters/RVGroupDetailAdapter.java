@@ -208,7 +208,7 @@ public class RVGroupDetailAdapter extends RecyclerView.Adapter<RVGroupDetailAdap
                                                     notifyDataSetChanged();
                                                 }
                                             });
-                                            Toast.makeText(context,"Revoke admin", Toast.LENGTH_SHORT).show();
+                                            Toast.makeText(context,"Este usuario ya no es administrador", Toast.LENGTH_SHORT).show();
                                             break;
                                         }else{
                                             Toast.makeText(context,"Debe haber por lo menos un administrador", Toast.LENGTH_SHORT).show();

@@ -27,6 +27,8 @@ import android.widget.Toast;
 import com.andresdlg.groupmeapp.DialogFragments.ContactsDialogFragment;
 import com.andresdlg.groupmeapp.Entities.Group;
 import com.andresdlg.groupmeapp.Entities.Notification;
+import com.andresdlg.groupmeapp.Entities.SubGroup;
+import com.andresdlg.groupmeapp.Entities.Task;
 import com.andresdlg.groupmeapp.Entities.Users;
 import com.andresdlg.groupmeapp.R;
 import com.andresdlg.groupmeapp.Utils.GroupStatus;
@@ -34,6 +36,7 @@ import com.andresdlg.groupmeapp.Utils.NotificationStatus;
 import com.andresdlg.groupmeapp.Utils.NotificationTypes;
 import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
 import com.andresdlg.groupmeapp.uiPackage.MainActivity;
+import com.andresdlg.groupmeapp.uiPackage.fragments.GroupsFragment;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.DataSource;
 import com.bumptech.glide.load.engine.GlideException;
@@ -48,9 +51,11 @@ import com.google.firebase.database.ValueEventListener;
 
 import org.ocpsoft.prettytime.PrettyTime;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 /**
  * Created by andresdlg on 13/01/18.
@@ -181,12 +186,12 @@ public class RVNotificationAdapter extends RecyclerView.Adapter<RVNotificationAd
                 groupRef = groupsRef.child(notifications.get(position).getFrom());
                 groupsEventListener = new ValueEventListener() {
                     @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        Group g = dataSnapshot.getValue(Group.class);
+                    public void onDataChange(DataSnapshot data) {
+                        Group sgf = data.getValue(Group.class);
                         notificationViewHolder.setPosition(position);
                         notificationViewHolder.hideBtn(context, notifications.get(position).getType());
-                        notificationViewHolder.userAlias.setText(g.getName());
-                        notificationViewHolder.setImage(context, g.getImageUrl());
+                        notificationViewHolder.userAlias.setText(sgf.getName());
+                        notificationViewHolder.setImage(context, sgf.getImageUrl());
                         notificationViewHolder.notificationMessage.setText(notifications.get(position).getMessage());
                         notificationViewHolder.setNewNotification(notifications.get(position).getState());
                         //String date = dateDifference(notifications.get(position).getDate());
@@ -196,7 +201,7 @@ public class RVNotificationAdapter extends RecyclerView.Adapter<RVNotificationAd
                         String date = prettyTime.format(calendar);
 
                         notificationViewHolder.notificationDate.setText(date);
-                        notificationViewHolder.setGroupKey(g.getGroupKey());
+                        notificationViewHolder.setGroupKey(sgf.getGroupKey());
                         notificationViewHolder.setNotificationKey(notifications.get(position).getNotificationKey());
 
                         removeGroupsListener();
@@ -571,7 +576,9 @@ public class RVNotificationAdapter extends RecyclerView.Adapter<RVNotificationAd
             notifyItemRemoved(position);
             notifyItemRangeChanged(position, notifications.size());
 
-            mOnSaveGroupListener.onSavedGroup(true);
+            if(mOnSaveGroupListener!=null){
+                mOnSaveGroupListener.onSavedGroup(true);
+            }
         }
 
         private void rejectInvitation(String groupKey, int position) {
@@ -609,10 +616,12 @@ public class RVNotificationAdapter extends RecyclerView.Adapter<RVNotificationAd
 
     private void onAttachToParentFragment(Fragment fragment){
         try {
-            mOnSaveGroupListener = (OnSaveGroupListener) fragment;
+            if (fragment instanceof GroupsFragment) {
+                mOnSaveGroupListener = (OnSaveGroupListener) fragment;
+            }
         }
         catch (ClassCastException e){
-            throw new ClassCastException(fragment.toString() + " must implement OnUserSelectionSetListener");
+            throw new ClassCastException();
         }
     }
 }

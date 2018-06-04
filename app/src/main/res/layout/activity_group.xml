@@ -21,6 +21,6 @@
         </android.support.v7.widget.Toolbar>
     </android.support.design.widget.AppBarLayout>
 
-    <include layout="@layout/content_group" />
+    <include layout="@layout/content_group"/>
 
 </android.support.design.widget.CoordinatorLayout>

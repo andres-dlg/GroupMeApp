@@ -135,7 +135,7 @@ public class GroupChatFragment extends Fragment {
 
         DisplayMetrics metrics = getResources().getDisplayMetrics();
         ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams)recyclerChat.getLayoutParams();
-        int newMarginDp = 20;
+        int newMarginDp = 32;
         params.topMargin = (int) (TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, newMarginDp, metrics));
 
         adapter = new ListMessageAdapter(getContext(), conversation, null, null,"Group",conversationKey);

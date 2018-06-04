@@ -11,14 +11,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.andresdlg.groupmeapp.Adapters.RVNotificationAdapter;
 import com.andresdlg.groupmeapp.Entities.Notification;
 import com.andresdlg.groupmeapp.R;
 import com.andresdlg.groupmeapp.Utils.NotificationStatus;
 import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -129,12 +127,7 @@ public class NotificationFragment extends Fragment {
                         firebaseNotifications
                                 .child(notification.getNotificationKey())
                                 .child("state")
-                                .setValue(NotificationStatus.READ).addOnSuccessListener(new OnSuccessListener<Void>() {
-                            @Override
-                            public void onSuccess(Void aVoid) {
-                                Toast.makeText(getContext(), "Actualizado", Toast.LENGTH_SHORT).show();
-                            }
-                        });
+                                .setValue(NotificationStatus.READ);
                     }
                 }
             }else {

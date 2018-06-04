@@ -14,8 +14,15 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.ContextCompat;
 
+import com.andresdlg.groupmeapp.Entities.Group;
 import com.andresdlg.groupmeapp.R;
 import com.andresdlg.groupmeapp.Utils.NotificationTypes;
+import com.andresdlg.groupmeapp.uiPackage.GroupActivity;
+import com.andresdlg.groupmeapp.uiPackage.MainActivity;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.messaging.RemoteMessage;
 
 import java.util.List;
@@ -26,6 +33,14 @@ import java.util.Map;
  */
 
 public class FirebaseMessagingService extends com.google.firebase.messaging.FirebaseMessagingService {
+
+    NotificationCompat.Builder mBuilder;
+    NotificationManager mNotifyMgr;
+
+    String groupKey;
+    String dataType;
+    String from_user_id;
+    Uri alarmSound;
 
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
@@ -43,18 +58,19 @@ public class FirebaseMessagingService extends com.google.firebase.messaging.Fire
             timeMessage = Long.parseLong(data.get("timeMessage"));
         }
         String dataTitle = data.get("title");
-        String dataType = data.get("type");
-        String groupKey = data.get("groupKey");
+        dataType = data.get("type");
+        groupKey = data.get("groupKey");
         String groupName = data.get("groupName");
+        String groupImageUrl = data.get("groupImageUrl");
         String userName = data.get("userName");
-        String from_user_id = data.get("from_user_id");
+        from_user_id = data.get("from_user_id");
 
 
-        Uri alarmSound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+        alarmSound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
 
-        NotificationCompat.Builder mBuilder = null;
+        mBuilder = null;
 
-        NotificationManager mNotifyMgr = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        mNotifyMgr = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 
         //ESTO SOLO LO USO CUANDO SON NOTIICACIONES DE MENSAJES
         NotificationCompat.MessagingStyle.Message message =
@@ -105,8 +121,7 @@ public class FirebaseMessagingService extends com.google.firebase.messaging.Fire
                             .setContentText(dataMessage)
                             .setGroupSummary(true)
                             .setStyle(new NotificationCompat.MessagingStyle(userName)
-                                    .addMessage(message)
-                                    .setConversationTitle("Nuevo mensaje"));
+                                    .addMessage(message));
                 }
             }
             //SI LA NOTIFICACION NO ES UN MENSAJE
@@ -145,8 +160,7 @@ public class FirebaseMessagingService extends com.google.firebase.messaging.Fire
                             .setContentText(dataMessage)
                             .setGroupSummary(true)
                             .setStyle(new NotificationCompat.MessagingStyle(userName)
-                                    .addMessage(message)
-                                    .setConversationTitle("Nuevo mensaje"));
+                                    .addMessage(message));
                 }
             }else{
                 mBuilder = new NotificationCompat.Builder(this,getString(R.string.default_notification_channel_id))
@@ -162,40 +176,209 @@ public class FirebaseMessagingService extends com.google.firebase.messaging.Fire
 
         //TODO: IMPLEMENTAR LOS CLICKS PARA CADA OPCIÓN
         //DEFINO LOS RESULT INTENT PARA CUANDO SE HAGA CLICK EN LA NOTIFICACION
-        Intent resultIntent = new Intent(click_action);
+        //Intent resultIntent = new Intent(click_action);
+        Intent resultIntent = null;
         //resultIntent.putExtra("fragment","NotificationFragment");
         if(dataType.equals(NotificationTypes.FRIENDSHIP.toString())){
-            resultIntent.putExtra("dialogFragment","NotificationFragment");
+            resultIntent = new Intent(this, MainActivity.class);
+            resultIntent.putExtra("notification",NotificationTypes.FRIENDSHIP.toString());
+
+            PendingIntent resultPendingIntent =
+                    PendingIntent.getActivity(
+                            this,
+                            0,
+                            resultIntent,
+                            PendingIntent.FLAG_UPDATE_CURRENT
+                    );
+            mBuilder.setContentIntent(resultPendingIntent);
+
+            showNotification();
+
         }
         else if(dataType.equals(NotificationTypes.GROUP_INVITATION.toString())){
-            resultIntent.putExtra("fragment","GroupsFragment");
+            resultIntent = new Intent(this, MainActivity.class);
+            resultIntent.putExtra("notification",NotificationTypes.GROUP_INVITATION.toString());
+            resultIntent.putExtra("groupKey",from_user_id);
+
+            PendingIntent resultPendingIntent =
+                    PendingIntent.getActivity(
+                            this,
+                            0,
+                            resultIntent,
+                            PendingIntent.FLAG_UPDATE_CURRENT
+                    );
+            mBuilder.setContentIntent(resultPendingIntent);
+
+            showNotification();
         }
         else if(dataType.equals(NotificationTypes.SUBGROUP_INVITATION.toString())){
-            resultIntent.putExtra("fragment","GroupsFragment");
+            FirebaseDatabase.getInstance().getReference("Groups").child(from_user_id).addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    Group group = dataSnapshot.getValue(Group.class);
+                    Intent i = new Intent(FirebaseMessagingService.this, GroupActivity.class);
+                    i.putExtra("groupImage", group.getImageUrl());
+                    i.putExtra("groupName",group.getName());
+                    i.putExtra("groupKey",group.getGroupKey());
+                    i.putExtra("setSubGroupTab",true);
+                    i.putExtra("fromNotificationSubGroupInvitation",true);
+
+                    PendingIntent resultPendingIntent =
+                            PendingIntent.getActivity(
+                                    FirebaseMessagingService.this,
+                                    0,
+                                    i,
+                                    PendingIntent.FLAG_UPDATE_CURRENT
+                            );
+                    mBuilder.setContentIntent(resultPendingIntent);
+
+                    showNotification();
+
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
+                }
+            });
+           /* resultIntent = new Intent(this, MainActivity.class);
+            resultIntent.putExtra("notification",NotificationTypes.SUBGROUP_INVITATION.toString());*/
         }
         else if(dataType.equals(NotificationTypes.MESSAGE.toString())){
-            resultIntent.putExtra("fragment","MessagesFragment");
+            if(groupKey == null){
+                resultIntent = new Intent(this, MainActivity.class);
+                resultIntent.putExtra("notification",NotificationTypes.MESSAGE.toString());
+
+                PendingIntent resultPendingIntent =
+                        PendingIntent.getActivity(
+                                this,
+                                0,
+                                resultIntent,
+                                PendingIntent.FLAG_UPDATE_CURRENT
+                        );
+                mBuilder.setContentIntent(resultPendingIntent);
+
+                showNotification();
+
+            }else{
+                Intent i = new Intent(FirebaseMessagingService.this, GroupActivity.class);
+                i.putExtra("groupImage", groupImageUrl);
+                i.putExtra("groupName",groupName);
+                i.putExtra("groupKey",groupKey);
+                i.putExtra("setChatTab",true);
+                i.putExtra("fromNotificationSubGroupInvitation",true);
+
+                PendingIntent resultPendingIntent =
+                        PendingIntent.getActivity(
+                                FirebaseMessagingService.this,
+                                0,
+                                i,
+                                PendingIntent.FLAG_UPDATE_CURRENT
+                        );
+                mBuilder.setContentIntent(resultPendingIntent);
+
+                showNotification();
+
+            }
         }
         else if(dataType.equals(NotificationTypes.NEW_POST.toString())){
-            resultIntent.putExtra("fragment","NewsFragment");
+            FirebaseDatabase.getInstance().getReference("Groups").child(from_user_id).addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    Group group = dataSnapshot.getValue(Group.class);
+                    Intent i = new Intent(FirebaseMessagingService.this, GroupActivity.class);
+                    i.putExtra("groupImage", group.getImageUrl());
+                    i.putExtra("groupName",group.getName());
+                    i.putExtra("groupKey",group.getGroupKey());
+                    i.putExtra("setNewsTab",true);
+                    i.putExtra("fromNotificationNewPost",true);
+
+                    PendingIntent resultPendingIntent =
+                            PendingIntent.getActivity(
+                                    FirebaseMessagingService.this,
+                                    0,
+                                    i,
+                                    PendingIntent.FLAG_UPDATE_CURRENT
+                            );
+                    mBuilder.setContentIntent(resultPendingIntent);
+
+                    showNotification();
+
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
+                }
+            });
+            /*resultIntent = new Intent(this, MainActivity.class);
+            resultIntent.putExtra("notification",NotificationTypes.NEW_POST.toString());*/
         }
         else if(dataType.equals(NotificationTypes.NEW_FILE.toString())){
-            resultIntent.putExtra("fragment","GroupsFragment");
+            FirebaseDatabase.getInstance().getReference("Groups").child(from_user_id).addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    Group group = dataSnapshot.getValue(Group.class);
+                    Intent i = new Intent(FirebaseMessagingService.this, GroupActivity.class);
+                    i.putExtra("groupImage", group.getImageUrl());
+                    i.putExtra("groupName",group.getName());
+                    i.putExtra("groupKey",group.getGroupKey());
+                    i.putExtra("setSubGroupTab",true);
+                    i.putExtra("fromNotificationSubGroupInvitation",true);
+
+                    PendingIntent resultPendingIntent =
+                            PendingIntent.getActivity(
+                                    FirebaseMessagingService.this,
+                                    0,
+                                    i,
+                                    PendingIntent.FLAG_UPDATE_CURRENT
+                            );
+                    mBuilder.setContentIntent(resultPendingIntent);
+
+                    showNotification();
+
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
+                }
+            });
+            /*resultIntent = new Intent(this, MainActivity.class);
+            resultIntent.putExtra("notification",NotificationTypes.NEW_FILE.toString());*/
         }
         else if(dataType.equals(NotificationTypes.FRIENDSHIP_ACCEPTED.toString())){
-            resultIntent.putExtra("dialogFragment","GroupsFragment");
+            resultIntent = new Intent(this, MainActivity.class);
+            resultIntent.putExtra("notification",NotificationTypes.FRIENDSHIP_ACCEPTED.toString());
+
+            PendingIntent resultPendingIntent =
+                    PendingIntent.getActivity(
+                            this,
+                            0,
+                            resultIntent,
+                            PendingIntent.FLAG_UPDATE_CURRENT
+                    );
+            mBuilder.setContentIntent(resultPendingIntent);
+
+            showNotification();
+
         }
 
         //ASIGNO EL INTENT PARA CUANDO SE HAGA EL CLICK
-        PendingIntent resultPendingIntent =
-                PendingIntent.getActivity(
-                        this,
-                        0,
-                        resultIntent,
-                        PendingIntent.FLAG_UPDATE_CURRENT
-                );
-        mBuilder.setContentIntent(resultPendingIntent);
+        /*if(!dataType.equals(NotificationTypes.SUBGROUP_INVITATION.toString())){
+            PendingIntent resultPendingIntent =
+                    PendingIntent.getActivity(
+                            this,
+                            0,
+                            resultIntent,
+                            PendingIntent.FLAG_UPDATE_CURRENT
+                    );
+            mBuilder.setContentIntent(resultPendingIntent);
+        }*/
 
+    }
+
+    private void showNotification(){
         //ASIGNO UN NOTIFICATION ID | ESTO LO USO PARA LAS NOTIFICACIONES QUE NO SON MENSAJES
         int mNotificationId = (int) System.currentTimeMillis();
 
@@ -213,6 +396,7 @@ public class FirebaseMessagingService extends com.google.firebase.messaging.Fire
                             mNotifyMgr.notify(entry.getValue(),
                                     mBuilder.setVibrate(new long[] { 1000, 1000, 1000, 1000, 1000 })
                                             .setSound(alarmSound)
+                                            .setAutoCancel(true)
                                             .build());
                         }
                         break;

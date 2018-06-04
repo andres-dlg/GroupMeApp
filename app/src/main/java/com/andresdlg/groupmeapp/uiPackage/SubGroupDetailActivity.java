@@ -473,7 +473,7 @@ public class SubGroupDetailActivity extends AppCompatActivity {
                         .load(imageHoldUri)
                         .into(iv);
 
-                Toast.makeText(SubGroupDetailActivity.this, "¡Imagen actualizada en el Storage!", Toast.LENGTH_SHORT).show();
+                //Toast.makeText(SubGroupDetailActivity.this, "¡Imagen actualizada en el Storage!", Toast.LENGTH_SHORT).show();
             }
         });
 

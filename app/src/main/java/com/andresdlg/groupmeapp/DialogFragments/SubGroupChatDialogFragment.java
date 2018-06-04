@@ -86,6 +86,7 @@ public class SubGroupChatDialogFragment extends DialogFragment {
             }
         });
 
+
         TextView tv = toolbar.findViewById(R.id.action_bar_title_1);
         tv.setText(subGroupName);
 
@@ -121,7 +122,7 @@ public class SubGroupChatDialogFragment extends DialogFragment {
         });
 
         linearLayoutManager = new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false);
-        RecyclerView recyclerChat = (RecyclerView) v.findViewById(R.id.recyclerChat);
+        RecyclerView recyclerChat = v.findViewById(R.id.recyclerChat);
         recyclerChat.setLayoutManager(linearLayoutManager);
         adapter = new ListMessageAdapter(getContext(), conversation, null, null,"Group", conversationKey);
 

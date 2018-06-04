@@ -127,11 +127,11 @@ public class RVContactRequestAdapter extends RecyclerView.Adapter<RVContactReque
                             switch (id){
                                 case R.id.accept:
                                     acceptRequest(iduser);
-                                    Toast.makeText(context,"aceptar "+contactName, Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(context,"Has aceptado la invitación de "+contactName, Toast.LENGTH_SHORT).show();
                                     break;
                                 case R.id.reject:
                                     rejectRequest(iduser);
-                                    Toast.makeText(context,"rechazar"+contactName, Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(context,"Has rechazado la invitación de"+contactName, Toast.LENGTH_SHORT).show();
                                     break;
                             }
                             return true;

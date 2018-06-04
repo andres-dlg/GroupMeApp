@@ -47,14 +47,10 @@ public class SubGroupMembersDialogFragment extends DialogFragment {
 
     DatabaseReference usersRef;
 
-    private String subGroupName;
-    private String subGroupUrlPhoto;
     private String subGroupKey;
     private String groupKey;
 
     public SubGroupMembersDialogFragment(String subGroupName, String subGroupUrlPhoto, String subGroupKey, String groupKey) {
-        this.subGroupName = subGroupName;
-        this.subGroupUrlPhoto = subGroupUrlPhoto;
         this.subGroupKey = subGroupKey;
         this.groupKey = groupKey;
     }
@@ -78,29 +74,13 @@ public class SubGroupMembersDialogFragment extends DialogFragment {
                 dismiss();
             }
         });
-
-        TextView tv = toolbar.findViewById(R.id.action_bar_title_1);
-        tv.setText(subGroupName);
-
-        CircleImageView civ = toolbar.findViewById(R.id.conversation_contact_photo);
-        Glide.with(getContext())
-                .load(subGroupUrlPhoto)
-                .into(civ);
-        //Picasso.with(getContext()).load(subGroupUrlPhoto).into(civ);
+        toolbar.setTitle("Miembros");
 
         final RecyclerView rv = v.findViewById(R.id.rvMembers);
         rv.setHasFixedSize(true);
 
         LinearLayoutManager llm = new LinearLayoutManager(getContext());
         rv.setLayoutManager(llm);
-
-        /*adapter = new RVContactAdapter(users, getContext());
-        rv.setAdapter(adapter);*/
-
-
-
-        //tvNoNotifications = v.findViewById(R.id.tvNoNotifications);
-        //checkNotificationsQuantity();
 
         firebaseContacts = FirebaseDatabase.getInstance().getReference("Groups").child(groupKey).child("subgroups").child(subGroupKey);
         firebaseContacts.addValueEventListener(new ValueEventListener() {

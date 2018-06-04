@@ -308,7 +308,7 @@ public class RVFilesAdapter extends RecyclerView.Adapter<RVFilesAdapter.FilesVie
                 .setPositiveButton("Si", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        Toast.makeText(context, "Borrando...", Toast.LENGTH_SHORT).show();
+                        //Toast.makeText(context, "Borrando...", Toast.LENGTH_SHORT).show();
                         //ELIMINO DE FIREBASE
                         StorageReference fileStorageRef = FirebaseStorage.getInstance().getReferenceFromUrl(fileUrl);
                         fileStorageRef.delete().addOnSuccessListener(new OnSuccessListener<Void>() {

@@ -1,5 +1,6 @@
 package com.andresdlg.groupmeapp.uiPackage;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Typeface;
@@ -35,10 +36,12 @@ import com.andresdlg.groupmeapp.DialogFragments.AddFriendsDialogFragment;
 import com.andresdlg.groupmeapp.DialogFragments.ContactsDialogFragment;
 import com.andresdlg.groupmeapp.DialogFragments.LibrariesDialogFragment;
 import com.andresdlg.groupmeapp.DialogFragments.TermsAndConditionsDialogFragment;
+import com.andresdlg.groupmeapp.Entities.Group;
 import com.andresdlg.groupmeapp.Entities.Users;
 import com.andresdlg.groupmeapp.R;
 import com.andresdlg.groupmeapp.Utils.FriendshipStatus;
 import com.andresdlg.groupmeapp.Utils.NotificationStatus;
+import com.andresdlg.groupmeapp.Utils.NotificationTypes;
 import com.andresdlg.groupmeapp.Utils.RoundRectangle;
 import com.andresdlg.groupmeapp.firebasePackage.FireApp;
 import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
@@ -151,7 +154,7 @@ public class MainActivity extends AppCompatActivity
 
             @Override
             public void onAdFailedToLoad(int errorCode) {
-                Toast.makeText(MainActivity.this, "Fallo al cargar anuncio", Toast.LENGTH_SHORT).show();
+                //Toast.makeText(MainActivity.this, "Fallo al cargar anuncio", Toast.LENGTH_SHORT).show();
             }
 
             @Override
@@ -178,7 +181,7 @@ public class MainActivity extends AppCompatActivity
         toolbar.getMenu().getItem(0).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
-                showContactsDialogFragment();
+                showContactsDialogFragment(false);
                 return false;
             }
         });
@@ -198,7 +201,7 @@ public class MainActivity extends AppCompatActivity
         relativeLayout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                showContactsDialogFragment();
+                showContactsDialogFragment(false);
             }
         });
         updateHotCount();
@@ -279,12 +282,15 @@ public class MainActivity extends AppCompatActivity
         navigationTabBar.setBadgeSize(20);
 
         //Posiciono mi activity en el fragment
-        String fragment = getIntent().getStringExtra("fragment");
-        if(fragment!=null){
-            if(fragment.equals("NotificationFragment")){
+        String notification = getIntent().getStringExtra("notification");
+        if(notification!=null){
+            if(notification.equals(NotificationTypes.FRIENDSHIP.toString())){
+                showContactsDialogFragment(true);
+            } else if (notification.equals(NotificationTypes.FRIENDSHIP_ACCEPTED.toString())){
+                showContactsDialogFragment(false);
+            } else if (notification.equals(NotificationTypes.GROUP_INVITATION.toString())){
                 viewPager.setCurrentItem(2);
-            }
-            if (fragment.equals("MessagesFragment")){
+            } else if (notification.equals(NotificationTypes.MESSAGE.toString())){
                 viewPager.setCurrentItem(3);
             }
         }
@@ -406,7 +412,7 @@ public class MainActivity extends AppCompatActivity
             case R.id.delete:
                 return true;
             case R.id.contacts:
-                showContactsDialogFragment();
+                showContactsDialogFragment(false);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -442,11 +448,11 @@ public class MainActivity extends AppCompatActivity
                         .formHint("¿Cómo podemos mejorar?")
                         .formSubmitText("Enviar")
                         .formCancelText("Cancelar")
-                        //.playstoreUrl("YOUR_URL")
+                        .playstoreUrl("https://play.google.com/store/apps/details?id=com.andresdlg.groupmeapp")
                         .onRatingBarFormSumbit(new RatingDialog.Builder.RatingDialogFormListener() {
                             @Override
                             public void onFormSubmitted(String feedback) {
-
+                                Toast.makeText(MainActivity.this, feedback, Toast.LENGTH_SHORT).show();
                             }
                         }).build();
                 ratingDialog.show();
@@ -791,9 +797,14 @@ public class MainActivity extends AppCompatActivity
         transaction.add(android.R.id.content, newFragment).addToBackStack(null).commit();
     }
 
-    private void showContactsDialogFragment() {
+    private void showContactsDialogFragment(boolean setRequestTab) {
         FragmentManager fragmentManager = getSupportFragmentManager();
-        ContactsDialogFragment newFragment = new ContactsDialogFragment();
+        ContactsDialogFragment newFragment;
+        if(setRequestTab){
+            newFragment = new ContactsDialogFragment(setRequestTab);
+        }else {
+            newFragment = new ContactsDialogFragment();
+        }
         newFragment.setStyle(DialogFragment.STYLE_NORMAL,R.style.AppTheme_DialogFragment);
         FragmentTransaction transaction = fragmentManager.beginTransaction();
         transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);

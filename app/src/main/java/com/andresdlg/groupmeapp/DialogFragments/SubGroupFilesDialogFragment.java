@@ -119,16 +119,7 @@ public class SubGroupFilesDialogFragment extends DialogFragment {
                 dismiss();
             }
         });
-
-        TextView tv = toolbar.findViewById(R.id.action_bar_title_1);
-        tv.setText(subGroupName);
-
-        CircleImageView civ = toolbar.findViewById(R.id.conversation_contact_photo);
-        Glide.with(getContext())
-                .load(subGroupUrlPhoto)
-                .into(civ);
-        //Picasso.with(getContext()).load(subGroupUrlPhoto).into(civ);
-
+        toolbar.setTitle("Archivos compartidos");
 
         Button addFileBtn = v.findViewById(R.id.add_file);
         addFileBtn.setOnClickListener(new View.OnClickListener() {
@@ -221,7 +212,7 @@ public class SubGroupFilesDialogFragment extends DialogFragment {
                 notificationChannel++;
             }
         }else if(requestCode == 9999 && resultCode == RESULT_OK){
-            Toast.makeText(getContext(), "Directorio "+data.getData(), Toast.LENGTH_SHORT).show();
+            //Toast.makeText(getContext(), "Directorio "+data.getData(), Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -348,8 +339,10 @@ public class SubGroupFilesDialogFragment extends DialogFragment {
                         fileDbRef.setValue(map).addOnSuccessListener(new OnSuccessListener<Void>() {
                             @Override
                             public void onSuccess(Void aVoid) {
-                                Toast.makeText(getContext(), "Archivo DB: " + fileData[0] + " agregado.", Toast.LENGTH_SHORT).show();
-                                Toast.makeText(getContext(), "Archivo ST: " + fileData[0] + " agregado.", Toast.LENGTH_SHORT).show();
+                                //Toast.makeText(getContext(), "Archivo DB: " + fileData[0] + " agregado.", Toast.LENGTH_SHORT).show();
+                               // Toast.makeText(getContext(), "Archivo ST: " + fileData[0] + " agregado.", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(getContext(), fileData[0] + " agregado al repositorio", Toast.LENGTH_SHORT).show();
+
                                 files.add(file);
                             }
                         });

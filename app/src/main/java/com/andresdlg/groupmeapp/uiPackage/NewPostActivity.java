@@ -117,7 +117,7 @@ public class NewPostActivity extends AppCompatActivity {
                                 userToNotifications.child(notificationKey).setValue(notification).addOnSuccessListener(new OnSuccessListener<Void>() {
                                     @Override
                                     public void onSuccess(Void aVoid) {
-                                        Toast.makeText(NewPostActivity.this, "Notificacion enviada", Toast.LENGTH_SHORT).show();
+                                        //Toast.makeText(NewPostActivity.this, "Notificacion enviada", Toast.LENGTH_SHORT).show();
                                     }
                                 });
                             }

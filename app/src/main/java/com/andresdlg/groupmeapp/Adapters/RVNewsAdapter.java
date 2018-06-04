@@ -261,7 +261,7 @@ public class RVNewsAdapter extends RecyclerView.Adapter<RVNewsAdapter.NewsViewHo
                 .removeValue().addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void aVoid) {
-                Toast.makeText(context, "Publicación eliminada!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(context, "Publicación eliminada", Toast.LENGTH_SHORT).show();
                 posts.remove(position);
                 notifyItemRemoved(position);
                 notifyItemRangeChanged(position,posts.size());

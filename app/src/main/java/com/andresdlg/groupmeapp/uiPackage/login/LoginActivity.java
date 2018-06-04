@@ -384,7 +384,7 @@ public class LoginActivity extends AppCompatActivity {
                         //permission is denied (and never ask again is  checked)
                         //shouldShowRequestPermissionRationale will return false
                         else {
-                            Toast.makeText(this, "Sorry you can't use the application", Toast.LENGTH_LONG)
+                            Toast.makeText(this, "Perdón, no puedes usar la aplicación si no nos das estos permisos. Mejoraremos esto en un futuro no muy lejano ;)", Toast.LENGTH_LONG)
                                     .show();
                             finish();
                             //                            //proceed with logic by disabling the related features or quit the app.
@@ -451,7 +451,7 @@ public class LoginActivity extends AppCompatActivity {
                     if (task.isSuccessful()) {
                         saveTokenAndLogin();
                     } else {
-                        Toast.makeText(LoginActivity.this, "No se ha podido loguear", Toast.LENGTH_LONG).show();
+                        Toast.makeText(LoginActivity.this, "Revisa el correo y la contraseña ingresados", Toast.LENGTH_LONG).show();
                         mProgressBar.setVisibility(View.INVISIBLE);
                     }
                 }

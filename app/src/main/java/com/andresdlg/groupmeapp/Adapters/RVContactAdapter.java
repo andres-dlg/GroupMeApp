@@ -149,12 +149,9 @@ public class RVContactAdapter extends RecyclerView.Adapter<RVContactAdapter.Cont
                                 case R.id.message:
                                     //ENVIAR MENSAJE
                                     sendMessage(iduser, context);
-                                    //Toast.makeText(context,"aceptar "+contactName, Toast.LENGTH_SHORT).show();
                                     break;
                                 case R.id.add_to_group:
                                     //AGREGAR A GRUPO
-                                    //rejectRequest(iduser);
-                                    //Toast.makeText(context,"rechazar"+contactName, Toast.LENGTH_SHORT).show();
                                     break;
                                 case R.id.delete:
                                     //ELIMINAR CONTACTO

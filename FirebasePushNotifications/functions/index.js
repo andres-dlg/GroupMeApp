@@ -212,6 +212,8 @@ exports.sendMessageWithNotificationForGroups = functions.database.ref("/Conversa
                 var groupName = groupSnapshot.val().name;
 
                 var groupKey = groupSnapshot.val().groupKey;
+
+                var groupImageUrl = groupSnapshot.val().imageUrl;
                 
                 var groupMembersPromise = admin.database().ref("/Groups/"+ conversation_id + "/members/").once('value');
 
@@ -251,7 +253,8 @@ exports.sendMessageWithNotificationForGroups = functions.database.ref("/Conversa
                                             from_user_id: from_user_id,
                                             userName: userName,
                                             groupKey: groupKey,
-                                            groupName: groupName
+                                            groupName: groupName,
+                                            groupImageUrl: groupImageUrl
                                         }
                                     };
                     

@@ -162,7 +162,7 @@ public class SearchContactActivity extends AppCompatActivity {
                 mUsersDatabase.child(id).child("groups").child(groupKey).updateChildren(map2).addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
-                        Toast.makeText(SearchContactActivity.this,"Grupo guardado en "+id,Toast.LENGTH_SHORT).show();
+                        //Toast.makeText(SearchContactActivity.this,"Grupo guardado en "+id,Toast.LENGTH_SHORT).show();
                     }
                 });
 
@@ -180,7 +180,7 @@ public class SearchContactActivity extends AppCompatActivity {
                 userToNotifications.child(notificationKey).setValue(notification).addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
-                        Toast.makeText(SearchContactActivity.this, "Invitación de grupo enviada", Toast.LENGTH_SHORT).show();
+                        //Toast.makeText(SearchContactActivity.this, "Invitación de grupo enviada", Toast.LENGTH_SHORT).show();
                     }
                 });
             }
@@ -200,7 +200,7 @@ public class SearchContactActivity extends AppCompatActivity {
                 mUsersDatabase.child(id).child("groups").child(groupKey).child("subgroups").child(subGroupKey).updateChildren(map2).addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
-                        Toast.makeText( SearchContactActivity.this,"Subgrupo guardado en "+id,Toast.LENGTH_SHORT).show();
+                        //Toast.makeText( SearchContactActivity.this,"Subgrupo guardado en "+id,Toast.LENGTH_SHORT).show();
                     }
                 });
 
@@ -210,15 +210,15 @@ public class SearchContactActivity extends AppCompatActivity {
                 notification.put("notificationKey",notificationKey);
                 notification.put("title","Nuevo miembro de subgrupo");
                 notification.put("message","Has sido incorporado al subgrupo " + name);
-                notification.put("from", subGroupKey);
+                notification.put("from", groupKey);
                 notification.put("state", NotificationStatus.UNREAD);
                 notification.put("date", Calendar.getInstance().getTimeInMillis());
-                notification.put("type", NotificationTypes.GROUP_INVITATION);
+                notification.put("type", NotificationTypes.SUBGROUP_INVITATION);
 
                 userToNotifications.child(notificationKey).setValue(notification).addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
-                        Toast.makeText(SearchContactActivity.this, "Notificación de subgrupo enviada", Toast.LENGTH_SHORT).show();
+                        //Toast.makeText(SearchContactActivity.this, "Notificación de subgrupo enviada", Toast.LENGTH_SHORT).show();
                     }
                 });
             }

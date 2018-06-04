@@ -11,6 +11,8 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.DisplayMetrics;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -41,7 +43,7 @@ import java.util.Map;
 
 public class SubGroupsFragment extends Fragment {
 
-    SwipeRefreshLayout swipeContainer;
+    //SwipeRefreshLayout swipeContainer;
 
     FloatingActionButton fab;
     String groupKey;
@@ -57,11 +59,13 @@ public class SubGroupsFragment extends Fragment {
 
     DatabaseReference subGroupsRef;
 
+    Bundle bundle;
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
 
-        Bundle bundle = getArguments();
+        bundle = getArguments();
 
         groupKey = bundle.getString("groupKey");
 
@@ -95,7 +99,7 @@ public class SubGroupsFragment extends Fragment {
         });
 
         rvSubGroups = view.findViewById(R.id.rvSubGroups);
-        rvSubGroups.setHasFixedSize(false); //El tamaño queda fijo, mejora el desempeño
+        //rvSubGroups.setHasFixedSize(false); //El tamaño queda fijo, mejora el desempeño
         llm = new LinearLayoutManager(getContext(),LinearLayoutManager.VERTICAL,false);
         rvSubGroups.setLayoutManager(llm);
         rvSubGroupsAdapter = new RVSubGroupAdapter(subGroups,groupKey,getContext());
@@ -119,11 +123,30 @@ public class SubGroupsFragment extends Fragment {
             }
         });
 
+
+        DisplayMetrics metrics = getResources().getDisplayMetrics();
+        ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams)rvSubGroups.getLayoutParams();
+
+        if(bundle.getBoolean("fromNotificationSubGroupInvitation")){
+            int newMarginDp = 32;
+            params.topMargin = (int) (TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, newMarginDp, metrics));
+        }
+
+        if(bundle.getBoolean("fromNotificationNewPost")){
+            int newMarginDp = 8;
+            params.topMargin = (int) (TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, newMarginDp, metrics));
+        }
+
+        if(!bundle.getBoolean("fromNotificationSubGroupInvitation") && !bundle.getBoolean("fromNotificationNewPost")){
+            int newMarginDp = 8;
+            params.topMargin = (int) (TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, newMarginDp, metrics));
+        }
+
         fillSubGroups();
 
-        swipeContainer = view.findViewById(R.id.swipeContainer);
+        //swipeContainer = view.findViewById(R.id.swipeContainer);
         // Setup refresh listener which triggers new data loading
-        swipeContainer.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+        /*swipeContainer.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
                 // Your code to refresh the list here.
@@ -131,15 +154,15 @@ public class SubGroupsFragment extends Fragment {
                 // once the network request has completed successfully.
                 //fetchTimelineAsync(0);
                 //fillSubGroups(view);
-                swipeContainer.setRefreshing(false);
+                //swipeContainer.setRefreshing(false);
             }
-        });
+        });*/
 
         // Configure the refreshing colors
-        swipeContainer.setColorSchemeResources(android.R.color.holo_blue_bright,
+        /*swipeContainer.setColorSchemeResources(android.R.color.holo_blue_bright,
                 android.R.color.holo_green_light,
                 android.R.color.holo_orange_light,
-                android.R.color.holo_red_light);
+                android.R.color.holo_red_light);*/
 
         //swipeContainer.setRefreshing(true);
     }
@@ -214,7 +237,7 @@ public class SubGroupsFragment extends Fragment {
                         rvSubGroupsAdapter.notifyDataSetChanged();
                     }
 
-                    swipeContainer.setRefreshing(false);
+                    //Container.setRefreshing(false);
                 }
             }
 
