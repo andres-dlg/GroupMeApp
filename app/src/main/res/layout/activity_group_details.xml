@@ -139,8 +139,6 @@
 
             </LinearLayout>
 
-
-
             <View
                 android:id="@+id/objetiveDivisor"
                 android:layout_width="match_parent"

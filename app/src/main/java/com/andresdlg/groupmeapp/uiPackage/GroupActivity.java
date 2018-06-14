@@ -509,6 +509,11 @@ public class GroupActivity extends AppCompatActivity implements GroupChatFragmen
 
                 //startActivity(intent);
                 return true;
+
+            case R.id.files:
+                Intent i =  new Intent(this,GroupFilesActivity.class);
+                startActivity(i);
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }

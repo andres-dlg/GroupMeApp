@@ -19,7 +19,7 @@
 
     <!-- Optional permissions. Will pass Lat/Lon values when available. Choose either Coarse or Fine -->
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 
     <application
         android:name=".firebasePackage.FireApp"
@@ -30,10 +30,11 @@
         android:theme="@style/AppTheme">
         <activity
             android:name=".uiPackage.SplashScreenAcivity"
-            android:theme="@style/AppTheme.NoActionBar"
-            android:screenOrientation="portrait">
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
@@ -41,38 +42,39 @@
             android:name=".uiPackage.MainActivity"
             android:configChanges="orientation|screenSize"
             android:label=""
+            android:screenOrientation="portrait"
             android:theme="@style/MyDialogTheme2"
-            android:windowSoftInputMode="adjustPan"
-            android:screenOrientation="portrait">
+            android:windowSoftInputMode="adjustPan">
             <intent-filter>
                 <action android:name="com.andresdlg.groupmeapp.firebasepushnotifications.TARGETNOTIFICATION" />
+
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
         <activity
             android:name=".uiPackage.login.LoginActivity"
             android:configChanges="orientation|screenSize"
-            android:theme="@style/AppTheme.NoActionBar"
-            android:screenOrientation="portrait"/>
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".uiPackage.login.RegisterActivity"
             android:configChanges="orientation|screenSize"
-            android:theme="@style/AppTheme.NoActionBar"
-            android:screenOrientation="portrait"/>
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".uiPackage.UserProfileSetupActivity"
             android:configChanges="orientation|screenSize"
             android:label="Datos personales"
-            android:theme="@style/AppTheme.NoActionBar2"
-            android:screenOrientation="portrait"/>
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.NoActionBar2" />
         <activity
             android:name="com.theartofdev.edmodo.cropper.CropImageActivity"
-            android:theme="@style/Base.Theme.AppCompat"
-            android:screenOrientation="portrait"/>
+            android:screenOrientation="portrait"
+            android:theme="@style/Base.Theme.AppCompat" />
         <activity
             android:name=".uiPackage.ChatActivity"
-            android:theme="@style/AppTheme.ChatNoActionBar"
-            android:screenOrientation="portrait"/>
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.ChatNoActionBar" />
 
         <service
             android:name=".firebasePackage.FirebaseMessagingService"
@@ -102,7 +104,6 @@
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_channel_id"
             android:value="@string/default_notification_channel_id" />
-
         <meta-data
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />
@@ -110,33 +111,36 @@
         <activity
             android:name=".uiPackage.GroupActivity"
             android:label="@string/title_activity_group"
+            android:screenOrientation="portrait"
             android:theme="@style/MyDialogTheme2"
-            android:windowSoftInputMode="adjustPan"
-            android:screenOrientation="portrait"/>
+            android:windowSoftInputMode="adjustPan" />
         <activity
             android:name=".uiPackage.GroupDetailActivity"
-            android:theme="@style/MyDialogTheme2"
-            android:screenOrientation="portrait"/>
-        <activity android:name=".uiPackage.TaskWeekViewBaseActivty"
             android:screenOrientation="portrait"
-            android:theme="@style/MyDialogTheme2"/>
-        <activity android:name=".uiPackage.TaskWeekViewActivity"
+            android:theme="@style/MyDialogTheme2" />
+        <activity
+            android:name=".uiPackage.TaskWeekViewBaseActivty"
             android:screenOrientation="portrait"
-            android:theme="@style/MyDialogTheme2"/>
-        <activity android:name=".uiPackage.SearchContactActivity"
-            android:screenOrientation="portrait"/>
+            android:theme="@style/MyDialogTheme2" />
+        <activity
+            android:name=".uiPackage.TaskWeekViewActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/MyDialogTheme2" />
+        <activity
+            android:name=".uiPackage.SearchContactActivity"
+            android:screenOrientation="portrait" />
         <activity
             android:name=".uiPackage.SubGroupDetailActivity"
-            android:theme="@style/MyDialogTheme2"
-            android:screenOrientation="portrait"/>
-        <activity android:name=".uiPackage.NewPostActivity"
-            android:theme="@style/MyDialogTheme2"
-            android:screenOrientation="portrait"/>
-
+            android:screenOrientation="portrait"
+            android:theme="@style/MyDialogTheme2" />
+        <activity
+            android:name=".uiPackage.NewPostActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/MyDialogTheme2" />
         <activity
             android:name="com.google.android.gms.ads.AdActivity"
             android:configChanges="keyboard|keyboardHidden|orientation|screenLayout|uiMode|screenSize|smallestScreenSize" />
-
+        <activity android:name=".uiPackage.GroupFilesActivity"></activity>
     </application>
 
 </manifest>

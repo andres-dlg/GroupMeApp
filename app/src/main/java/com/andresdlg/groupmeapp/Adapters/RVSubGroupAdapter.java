@@ -338,7 +338,7 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
 
             //subGroupBg.setTag(target);
             //if(imageUrl.equals("https://firebasestorage.googleapis.com/v0/b/groupmeapp-5aaf6.appspot.com/o/ic_launcher.png?alt=media&token=9740457d-49b7-4463-b78c-4c3513d768a7")){
-            if(imageUrl.equals("https://firebasestorage.googleapis.com/v0/b/groupmeapp-5aaf6.appspot.com/o/default_subgroup_photo.png?alt=media&token=4ced609e-39f9-411d-9ca9-f8e8848849ae")){
+            if(imageUrl.equals("https://firebasestorage.googleapis.com/v0/b/groupmeapp-5aaf6.appspot.com/o/default_subgroup_photo.png?alt=media&token=db96a4ee-b336-4e94-9f74-6ef0e7d5c00e")){
                 Glide.with(contexto)
                         .load("")
                         .apply(requestOptions)
