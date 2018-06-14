@@ -1,12 +1,12 @@
 package com.andresdlg.groupmeapp.uiPackage;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
+import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.app.DialogFragment;
@@ -24,7 +24,9 @@ import android.support.v7.widget.Toolbar;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -36,7 +38,6 @@ import com.andresdlg.groupmeapp.DialogFragments.AddFriendsDialogFragment;
 import com.andresdlg.groupmeapp.DialogFragments.ContactsDialogFragment;
 import com.andresdlg.groupmeapp.DialogFragments.LibrariesDialogFragment;
 import com.andresdlg.groupmeapp.DialogFragments.TermsAndConditionsDialogFragment;
-import com.andresdlg.groupmeapp.Entities.Group;
 import com.andresdlg.groupmeapp.Entities.Users;
 import com.andresdlg.groupmeapp.R;
 import com.andresdlg.groupmeapp.Utils.FriendshipStatus;
@@ -116,7 +117,10 @@ public class MainActivity extends AppCompatActivity
 
     TextView ui_hot;
 
+    CoordinatorLayout mainLayout;
+
     int value;
+    View contactsIcon;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -138,7 +142,8 @@ public class MainActivity extends AppCompatActivity
         navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-        
+        mainLayout = findViewById(R.id.mainLayout);
+
         //MobileAds.initialize(this,"ca-app-pub-3940256099942544~3347511713");
         MobileAds.initialize(this,"ca-app-pub-6164739277423889~7593283366");
 
@@ -195,9 +200,9 @@ public class MainActivity extends AppCompatActivity
         });
 
         Menu contactsMenu = toolbar.getMenu();
-        View v = contactsMenu.findItem(R.id.contacts).getActionView();
-        ui_hot = v.findViewById(R.id.hotlist_hot);
-        RelativeLayout relativeLayout = v.findViewById(R.id.relativeLayout);
+        contactsIcon = contactsMenu.findItem(R.id.contacts).getActionView();
+        ui_hot = contactsIcon.findViewById(R.id.hotlist_hot);
+        RelativeLayout relativeLayout = contactsIcon.findViewById(R.id.relativeLayout);
         relativeLayout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -564,11 +569,11 @@ public class MainActivity extends AppCompatActivity
                 .build();
 
         // 3) TARGET CONTACTOS
-        View contacts = toolbar.findViewById(R.id.contacts);
+        //View contacts = toolbar.findViewById(R.id.contacts);
         oneLocation = new int[2];
-        contacts.getLocationInWindow(oneLocation);
-        oneX = oneLocation[0] + contacts.getWidth() / 2f;
-        oneY = oneLocation[1] + contacts.getHeight() / 2f;
+        contactsIcon.getLocationInWindow(oneLocation);
+        oneX = oneLocation[0] + contactsIcon.getWidth() / 2f;
+        oneY = oneLocation[1] + contactsIcon.getHeight() / 2f;
         SimpleTarget contactsTarget = new SimpleTarget.Builder(this)
                 .setPoint(oneX, oneY)
                 .setShape(new Circle(100f))
@@ -679,18 +684,20 @@ public class MainActivity extends AppCompatActivity
                 .setOnSpotlightStateListener(new OnSpotlightStateChangedListener() {
                     @Override
                     public void onStarted() {
+
                     }
 
                     @Override
                     public void onEnded() {
                         viewPager.setCurrentItem(2);
-                        final Handler handler = new Handler();
+                        letTheThirdPartOfTheShowStart();
+                        /*final Handler handler = new Handler();
                         handler.postDelayed(new Runnable() {
                             @Override
                             public void run() {
                                 letTheThirdPartOfTheShowStart();
                             }
-                        }, 1000);
+                        }, 1000);*/
 
                     }
                 })
@@ -724,6 +731,13 @@ public class MainActivity extends AppCompatActivity
                 .setOnSpotlightStateListener(new OnSpotlightStateChangedListener() {
                     @Override
                     public void onStarted() {
+                        final Handler handler = new Handler();
+                        handler.postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                letTheThirdPartOfTheShowStart();
+                            }
+                        }, 1000);
                     }
 
                     @Override

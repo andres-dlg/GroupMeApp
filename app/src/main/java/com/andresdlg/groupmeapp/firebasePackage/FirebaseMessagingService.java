@@ -46,100 +46,127 @@ public class FirebaseMessagingService extends com.google.firebase.messaging.Fire
     public void onMessageReceived(RemoteMessage remoteMessage) {
         super.onMessageReceived(remoteMessage);
 
-        //RECIBO LOS DATOS DE CLOUD
-        Map<String,String> data = remoteMessage.getData();
+        //LAS NOTIFICACIONES SOLO SE MUESTRAN SI LA APP ESTA EN BACKGROUND
+        if(appInForeGround(this)){
 
-        //OBTENGO LOS DATOS
-        String click_action = data.get("click_action");
-        String dataMessage = data.get("message");
-        String s = data.get("timeMessage");
-        long timeMessage = System.currentTimeMillis();
-        if(s!=null){
-            timeMessage = Long.parseLong(data.get("timeMessage"));
-        }
-        String dataTitle = data.get("title");
-        dataType = data.get("type");
-        groupKey = data.get("groupKey");
-        String groupName = data.get("groupName");
-        String groupImageUrl = data.get("groupImageUrl");
-        String userName = data.get("userName");
-        from_user_id = data.get("from_user_id");
+            //RECIBO LOS DATOS DE CLOUD
+            Map<String,String> data = remoteMessage.getData();
 
-
-        alarmSound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-
-        mBuilder = null;
-
-        mNotifyMgr = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-
-        //ESTO SOLO LO USO CUANDO SON NOTIICACIONES DE MENSAJES
-        NotificationCompat.MessagingStyle.Message message =
-                new NotificationCompat.MessagingStyle.Message(dataMessage,
-                        timeMessage,
-                        userName);
-
-        //SI ANDROID ES OREO O MAYOR TENGO QUE USAR LOS NOTIFICATION CHANNEL NUEVOS
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-
-            //DEFINO EL CHANNEL
-            int importance = NotificationManager.IMPORTANCE_HIGH;
-            NotificationChannel mChannel = mNotifyMgr.getNotificationChannel(getString(R.string.default_notification_channel_id));
-            if (mChannel == null) {
-                mChannel = new NotificationChannel(getString(R.string.default_notification_channel_id), getString(R.string.default_notification_channel_id), importance);
-                mChannel.setDescription(getString(R.string.default_notification_channel_id));
-                mChannel.enableVibration(true);
-                mChannel.setVibrationPattern(new long[]{100, 200, 300, 400, 500, 400, 300, 200, 400});
-                mNotifyMgr.createNotificationChannel(mChannel);
+            //OBTENGO LOS DATOS
+            //String click_action = data.get("click_action");
+            String dataMessage = data.get("message");
+            String s = data.get("timeMessage");
+            long timeMessage = System.currentTimeMillis();
+            if(s!=null){
+                timeMessage = Long.parseLong(data.get("timeMessage"));
             }
+            String dataTitle = data.get("title");
+            dataType = data.get("type");
+            groupKey = data.get("groupKey");
+            String groupName = data.get("groupName");
+            String groupImageUrl = data.get("groupImageUrl");
+            String userName = data.get("userName");
+            from_user_id = data.get("from_user_id");
 
-            //CREO UN CONTRUCTOR PARA LA NOTIFICACION
-            mBuilder = new NotificationCompat.Builder(this, getString(R.string.default_notification_channel_id));
 
-            //SI LA NOTIFICACION ES UN MENSAJE
-            if(dataType.equals(NotificationTypes.MESSAGE.toString())){
+            alarmSound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
 
-                //SI LA NOTIFICACION ES UN MENSAJE DE GRUPO
-                if(groupKey!= null){
+            mBuilder = null;
+
+            mNotifyMgr = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+
+            //ESTO SOLO LO USO CUANDO SON NOTIICACIONES DE MENSAJES
+            NotificationCompat.MessagingStyle.Message message =
+                    new NotificationCompat.MessagingStyle.Message(dataMessage,
+                            timeMessage,
+                            userName);
+
+            //SI ANDROID ES OREO O MAYOR TENGO QUE USAR LOS NOTIFICATION CHANNEL NUEVOS
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+
+                //DEFINO EL CHANNEL
+                int importance = NotificationManager.IMPORTANCE_HIGH;
+                NotificationChannel mChannel = mNotifyMgr.getNotificationChannel(getString(R.string.default_notification_channel_id));
+                if (mChannel == null) {
+                    mChannel = new NotificationChannel(getString(R.string.default_notification_channel_id), getString(R.string.default_notification_channel_id), importance);
+                    mChannel.setDescription(getString(R.string.default_notification_channel_id));
+                    mChannel.enableVibration(true);
+                    mChannel.setVibrationPattern(new long[]{100, 200, 300, 400, 500, 400, 300, 200, 400});
+                    mNotifyMgr.createNotificationChannel(mChannel);
+                }
+
+                //CREO UN CONTRUCTOR PARA LA NOTIFICACION
+                mBuilder = new NotificationCompat.Builder(this, getString(R.string.default_notification_channel_id));
+
+                //SI LA NOTIFICACION ES UN MENSAJE
+                if(dataType.equals(NotificationTypes.MESSAGE.toString())){
+
+                    //SI LA NOTIFICACION ES UN MENSAJE DE GRUPO
+                    if(groupKey!= null){
+                        mBuilder.setColor(ContextCompat.getColor(this,R.color.colorPrimary))
+                                .setDefaults(Notification.DEFAULT_ALL)
+                                .setSmallIcon(R.drawable.app_logo_2)
+                                .setContentTitle(dataTitle)
+                                .setGroup(dataType) // AGRUPO LAS NOTIFICACIONES DEL MISMO TIPO
+                                .setContentText(dataMessage)
+                                .setGroupSummary(true)
+                                .setStyle(new NotificationCompat.MessagingStyle(userName)
+                                        .addMessage(message)
+                                        .setConversationTitle("Nuevos mensajes en " + groupName));
+                    }
+                    //SI LA NOTIFICACION ES UN MENSAJE INDIVIDUAL
+                    else {
+                        mBuilder.setColor(ContextCompat.getColor(this,R.color.colorPrimary))
+                                .setDefaults(Notification.DEFAULT_ALL)
+                                .setSmallIcon(R.drawable.app_logo_2)
+                                .setContentTitle(dataTitle)
+                                .setGroup(dataType) // AGRUPO LAS NOTIFICACIONES DEL MISMO TIPO
+                                .setContentText(dataMessage)
+                                .setGroupSummary(true)
+                                .setStyle(new NotificationCompat.MessagingStyle(userName)
+                                        .addMessage(message));
+                    }
+                }
+                //SI LA NOTIFICACION NO ES UN MENSAJE
+                else{
                     mBuilder.setColor(ContextCompat.getColor(this,R.color.colorPrimary))
                             .setDefaults(Notification.DEFAULT_ALL)
                             .setSmallIcon(R.drawable.app_logo_2)
                             .setContentTitle(dataTitle)
-                            .setGroup(dataType) // AGRUPO LAS NOTIFICACIONES DEL MISMO TIPO
+                            .setGroup(dataType)
                             .setContentText(dataMessage)
-                            .setGroupSummary(true)
-                            .setStyle(new NotificationCompat.MessagingStyle(userName)
-                                    .addMessage(message)
-                                    .setConversationTitle("Nuevos mensajes en " + groupName));
-                }
-                //SI LA NOTIFICACION ES UN MENSAJE INDIVIDUAL
-                else {
-                    mBuilder.setColor(ContextCompat.getColor(this,R.color.colorPrimary))
-                            .setDefaults(Notification.DEFAULT_ALL)
-                            .setSmallIcon(R.drawable.app_logo_2)
-                            .setContentTitle(dataTitle)
-                            .setGroup(dataType) // AGRUPO LAS NOTIFICACIONES DEL MISMO TIPO
-                            .setContentText(dataMessage)
-                            .setGroupSummary(true)
-                            .setStyle(new NotificationCompat.MessagingStyle(userName)
-                                    .addMessage(message));
+                            .setGroupSummary(true);
                 }
             }
-            //SI LA NOTIFICACION NO ES UN MENSAJE
+
+            //SI LA VERSION ES NOUGAT O MENOR
             else{
-                mBuilder.setColor(ContextCompat.getColor(this,R.color.colorPrimary))
-                        .setDefaults(Notification.DEFAULT_ALL)
-                        .setSmallIcon(R.drawable.app_logo_2)
-                        .setContentTitle(dataTitle)
-                        .setGroup(dataType)
-                        .setContentText(dataMessage)
-                        .setGroupSummary(true);
-            }
-        }
-
-        //SI LA VERSION ES NOUGAT O MENOR
-        else{
-            if(dataType.equals(NotificationTypes.MESSAGE.toString())){
-                if(groupKey!= null){
+                if(dataType.equals(NotificationTypes.MESSAGE.toString())){
+                    if(groupKey!= null){
+                        mBuilder = new NotificationCompat.Builder(this,getString(R.string.default_notification_channel_id))
+                                .setColor(getResources().getColor(R.color.colorPrimary))
+                                .setDefaults(Notification.DEFAULT_ALL)
+                                .setSmallIcon(R.drawable.app_logo_2)
+                                .setContentTitle(dataTitle)
+                                .setGroup(dataType) // AGRUPO LAS NOTIFICACIONES DEL MISMO TIPO
+                                .setContentText(dataMessage)
+                                .setGroupSummary(true)
+                                .setStyle(new NotificationCompat.MessagingStyle(userName)
+                                        .addMessage(message)
+                                        .setConversationTitle("Nuevos mensajes en " + groupName));
+                    }else{
+                        mBuilder = new NotificationCompat.Builder(this,getString(R.string.default_notification_channel_id))
+                                .setColor(ContextCompat.getColor(this,R.color.colorPrimary))
+                                .setDefaults(Notification.DEFAULT_ALL)
+                                .setSmallIcon(R.drawable.app_logo_2)
+                                .setContentTitle(dataTitle)
+                                .setGroup(dataType)
+                                .setContentText(dataMessage)
+                                .setGroupSummary(true)
+                                .setStyle(new NotificationCompat.MessagingStyle(userName)
+                                        .addMessage(message));
+                    }
+                }else{
                     mBuilder = new NotificationCompat.Builder(this,getString(R.string.default_notification_channel_id))
                             .setColor(getResources().getColor(R.color.colorPrimary))
                             .setDefaults(Notification.DEFAULT_ALL)
@@ -147,107 +174,18 @@ public class FirebaseMessagingService extends com.google.firebase.messaging.Fire
                             .setContentTitle(dataTitle)
                             .setGroup(dataType) // AGRUPO LAS NOTIFICACIONES DEL MISMO TIPO
                             .setContentText(dataMessage)
-                            .setGroupSummary(true)
-                            .setStyle(new NotificationCompat.MessagingStyle(userName)
-                                    .addMessage(message)
-                                    .setConversationTitle("Nuevos mensajes en " + groupName));
-                }else{
-                    mBuilder.setColor(ContextCompat.getColor(this,R.color.colorPrimary))
-                            .setDefaults(Notification.DEFAULT_ALL)
-                            .setSmallIcon(R.drawable.app_logo_2)
-                            .setContentTitle(dataTitle)
-                            .setGroup(dataType)
-                            .setContentText(dataMessage)
-                            .setGroupSummary(true)
-                            .setStyle(new NotificationCompat.MessagingStyle(userName)
-                                    .addMessage(message));
+                            .setGroupSummary(true);
                 }
-            }else{
-                mBuilder = new NotificationCompat.Builder(this,getString(R.string.default_notification_channel_id))
-                        .setColor(getResources().getColor(R.color.colorPrimary))
-                        .setDefaults(Notification.DEFAULT_ALL)
-                        .setSmallIcon(R.drawable.app_logo_2)
-                        .setContentTitle(dataTitle)
-                        .setGroup(dataType) // AGRUPO LAS NOTIFICACIONES DEL MISMO TIPO
-                        .setContentText(dataMessage)
-                        .setGroupSummary(true);
             }
-        }
 
-        //TODO: IMPLEMENTAR LOS CLICKS PARA CADA OPCIÓN
-        //DEFINO LOS RESULT INTENT PARA CUANDO SE HAGA CLICK EN LA NOTIFICACION
-        //Intent resultIntent = new Intent(click_action);
-        Intent resultIntent = null;
-        //resultIntent.putExtra("fragment","NotificationFragment");
-        if(dataType.equals(NotificationTypes.FRIENDSHIP.toString())){
-            resultIntent = new Intent(this, MainActivity.class);
-            resultIntent.putExtra("notification",NotificationTypes.FRIENDSHIP.toString());
-
-            PendingIntent resultPendingIntent =
-                    PendingIntent.getActivity(
-                            this,
-                            0,
-                            resultIntent,
-                            PendingIntent.FLAG_UPDATE_CURRENT
-                    );
-            mBuilder.setContentIntent(resultPendingIntent);
-
-            showNotification();
-
-        }
-        else if(dataType.equals(NotificationTypes.GROUP_INVITATION.toString())){
-            resultIntent = new Intent(this, MainActivity.class);
-            resultIntent.putExtra("notification",NotificationTypes.GROUP_INVITATION.toString());
-            resultIntent.putExtra("groupKey",from_user_id);
-
-            PendingIntent resultPendingIntent =
-                    PendingIntent.getActivity(
-                            this,
-                            0,
-                            resultIntent,
-                            PendingIntent.FLAG_UPDATE_CURRENT
-                    );
-            mBuilder.setContentIntent(resultPendingIntent);
-
-            showNotification();
-        }
-        else if(dataType.equals(NotificationTypes.SUBGROUP_INVITATION.toString())){
-            FirebaseDatabase.getInstance().getReference("Groups").child(from_user_id).addListenerForSingleValueEvent(new ValueEventListener() {
-                @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
-                    Group group = dataSnapshot.getValue(Group.class);
-                    Intent i = new Intent(FirebaseMessagingService.this, GroupActivity.class);
-                    i.putExtra("groupImage", group.getImageUrl());
-                    i.putExtra("groupName",group.getName());
-                    i.putExtra("groupKey",group.getGroupKey());
-                    i.putExtra("setSubGroupTab",true);
-                    i.putExtra("fromNotificationSubGroupInvitation",true);
-
-                    PendingIntent resultPendingIntent =
-                            PendingIntent.getActivity(
-                                    FirebaseMessagingService.this,
-                                    0,
-                                    i,
-                                    PendingIntent.FLAG_UPDATE_CURRENT
-                            );
-                    mBuilder.setContentIntent(resultPendingIntent);
-
-                    showNotification();
-
-                }
-
-                @Override
-                public void onCancelled(DatabaseError databaseError) {
-
-                }
-            });
-           /* resultIntent = new Intent(this, MainActivity.class);
-            resultIntent.putExtra("notification",NotificationTypes.SUBGROUP_INVITATION.toString());*/
-        }
-        else if(dataType.equals(NotificationTypes.MESSAGE.toString())){
-            if(groupKey == null){
+            //TODO: IMPLEMENTAR LOS CLICKS PARA CADA OPCIÓN
+            //DEFINO LOS RESULT INTENT PARA CUANDO SE HAGA CLICK EN LA NOTIFICACION
+            //Intent resultIntent = new Intent(click_action);
+            Intent resultIntent;
+            //resultIntent.putExtra("fragment","NotificationFragment");
+            if(dataType.equals(NotificationTypes.FRIENDSHIP.toString())){
                 resultIntent = new Intent(this, MainActivity.class);
-                resultIntent.putExtra("notification",NotificationTypes.MESSAGE.toString());
+                resultIntent.putExtra("notification",NotificationTypes.FRIENDSHIP.toString());
 
                 PendingIntent resultPendingIntent =
                         PendingIntent.getActivity(
@@ -260,70 +198,78 @@ public class FirebaseMessagingService extends com.google.firebase.messaging.Fire
 
                 showNotification();
 
-            }else{
-                Intent i = new Intent(FirebaseMessagingService.this, GroupActivity.class);
-                i.putExtra("groupImage", groupImageUrl);
-                i.putExtra("groupName",groupName);
-                i.putExtra("groupKey",groupKey);
-                i.putExtra("setChatTab",true);
-                i.putExtra("fromNotificationSubGroupInvitation",true);
+            }
+            else if(dataType.equals(NotificationTypes.GROUP_INVITATION.toString())){
+                resultIntent = new Intent(this, MainActivity.class);
+                resultIntent.putExtra("notification",NotificationTypes.GROUP_INVITATION.toString());
+                resultIntent.putExtra("groupKey",from_user_id);
 
                 PendingIntent resultPendingIntent =
                         PendingIntent.getActivity(
-                                FirebaseMessagingService.this,
+                                this,
                                 0,
-                                i,
+                                resultIntent,
                                 PendingIntent.FLAG_UPDATE_CURRENT
                         );
                 mBuilder.setContentIntent(resultPendingIntent);
 
                 showNotification();
-
             }
-        }
-        else if(dataType.equals(NotificationTypes.NEW_POST.toString())){
-            FirebaseDatabase.getInstance().getReference("Groups").child(from_user_id).addListenerForSingleValueEvent(new ValueEventListener() {
-                @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
-                    Group group = dataSnapshot.getValue(Group.class);
-                    Intent i = new Intent(FirebaseMessagingService.this, GroupActivity.class);
-                    i.putExtra("groupImage", group.getImageUrl());
-                    i.putExtra("groupName",group.getName());
-                    i.putExtra("groupKey",group.getGroupKey());
-                    i.putExtra("setNewsTab",true);
-                    i.putExtra("fromNotificationNewPost",true);
+            else if(dataType.equals(NotificationTypes.SUBGROUP_INVITATION.toString())){
+                FirebaseDatabase.getInstance().getReference("Groups").child(from_user_id).addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        Group group = dataSnapshot.getValue(Group.class);
+                        Intent i = new Intent(FirebaseMessagingService.this, GroupActivity.class);
+                        i.putExtra("groupImage", group.getImageUrl());
+                        i.putExtra("groupName",group.getName());
+                        i.putExtra("groupKey",group.getGroupKey());
+                        i.putExtra("setSubGroupTab",true);
+                        i.putExtra("fromNotificationSubGroupInvitation",true);
+
+                        PendingIntent resultPendingIntent =
+                                PendingIntent.getActivity(
+                                        FirebaseMessagingService.this,
+                                        0,
+                                        i,
+                                        PendingIntent.FLAG_UPDATE_CURRENT
+                                );
+                        mBuilder.setContentIntent(resultPendingIntent);
+
+                        showNotification();
+
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
+           /* resultIntent = new Intent(this, MainActivity.class);
+            resultIntent.putExtra("notification",NotificationTypes.SUBGROUP_INVITATION.toString());*/
+            }
+            else if(dataType.equals(NotificationTypes.MESSAGE.toString())){
+                if(groupKey == null){
+                    resultIntent = new Intent(this, MainActivity.class);
+                    resultIntent.putExtra("notification",NotificationTypes.MESSAGE.toString());
 
                     PendingIntent resultPendingIntent =
                             PendingIntent.getActivity(
-                                    FirebaseMessagingService.this,
+                                    this,
                                     0,
-                                    i,
+                                    resultIntent,
                                     PendingIntent.FLAG_UPDATE_CURRENT
                             );
                     mBuilder.setContentIntent(resultPendingIntent);
 
                     showNotification();
 
-                }
-
-                @Override
-                public void onCancelled(DatabaseError databaseError) {
-
-                }
-            });
-            /*resultIntent = new Intent(this, MainActivity.class);
-            resultIntent.putExtra("notification",NotificationTypes.NEW_POST.toString());*/
-        }
-        else if(dataType.equals(NotificationTypes.NEW_FILE.toString())){
-            FirebaseDatabase.getInstance().getReference("Groups").child(from_user_id).addListenerForSingleValueEvent(new ValueEventListener() {
-                @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
-                    Group group = dataSnapshot.getValue(Group.class);
+                }else{
                     Intent i = new Intent(FirebaseMessagingService.this, GroupActivity.class);
-                    i.putExtra("groupImage", group.getImageUrl());
-                    i.putExtra("groupName",group.getName());
-                    i.putExtra("groupKey",group.getGroupKey());
-                    i.putExtra("setSubGroupTab",true);
+                    i.putExtra("groupImage", groupImageUrl);
+                    i.putExtra("groupName",groupName);
+                    i.putExtra("groupKey",groupKey);
+                    i.putExtra("setChatTab",true);
                     i.putExtra("fromNotificationSubGroupInvitation",true);
 
                     PendingIntent resultPendingIntent =
@@ -338,33 +284,91 @@ public class FirebaseMessagingService extends com.google.firebase.messaging.Fire
                     showNotification();
 
                 }
+            }
+            else if(dataType.equals(NotificationTypes.NEW_POST.toString())){
+                FirebaseDatabase.getInstance().getReference("Groups").child(from_user_id).addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        Group group = dataSnapshot.getValue(Group.class);
+                        Intent i = new Intent(FirebaseMessagingService.this, GroupActivity.class);
+                        i.putExtra("groupImage", group.getImageUrl());
+                        i.putExtra("groupName",group.getName());
+                        i.putExtra("groupKey",group.getGroupKey());
+                        i.putExtra("setNewsTab",true);
+                        i.putExtra("fromNotificationNewPost",true);
 
-                @Override
-                public void onCancelled(DatabaseError databaseError) {
+                        PendingIntent resultPendingIntent =
+                                PendingIntent.getActivity(
+                                        FirebaseMessagingService.this,
+                                        0,
+                                        i,
+                                        PendingIntent.FLAG_UPDATE_CURRENT
+                                );
+                        mBuilder.setContentIntent(resultPendingIntent);
 
-                }
-            });
+                        showNotification();
+
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
+            /*resultIntent = new Intent(this, MainActivity.class);
+            resultIntent.putExtra("notification",NotificationTypes.NEW_POST.toString());*/
+            }
+            else if(dataType.equals(NotificationTypes.NEW_FILE.toString())){
+                FirebaseDatabase.getInstance().getReference("Groups").child(from_user_id).addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        Group group = dataSnapshot.getValue(Group.class);
+                        Intent i = new Intent(FirebaseMessagingService.this, GroupActivity.class);
+                        i.putExtra("groupImage", group.getImageUrl());
+                        i.putExtra("groupName",group.getName());
+                        i.putExtra("groupKey",group.getGroupKey());
+                        i.putExtra("setSubGroupTab",true);
+                        i.putExtra("fromNotificationSubGroupInvitation",true);
+
+                        PendingIntent resultPendingIntent =
+                                PendingIntent.getActivity(
+                                        FirebaseMessagingService.this,
+                                        0,
+                                        i,
+                                        PendingIntent.FLAG_UPDATE_CURRENT
+                                );
+                        mBuilder.setContentIntent(resultPendingIntent);
+
+                        showNotification();
+
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
             /*resultIntent = new Intent(this, MainActivity.class);
             resultIntent.putExtra("notification",NotificationTypes.NEW_FILE.toString());*/
-        }
-        else if(dataType.equals(NotificationTypes.FRIENDSHIP_ACCEPTED.toString())){
-            resultIntent = new Intent(this, MainActivity.class);
-            resultIntent.putExtra("notification",NotificationTypes.FRIENDSHIP_ACCEPTED.toString());
+            }
+            else if(dataType.equals(NotificationTypes.FRIENDSHIP_ACCEPTED.toString())){
+                resultIntent = new Intent(this, MainActivity.class);
+                resultIntent.putExtra("notification",NotificationTypes.FRIENDSHIP_ACCEPTED.toString());
 
-            PendingIntent resultPendingIntent =
-                    PendingIntent.getActivity(
-                            this,
-                            0,
-                            resultIntent,
-                            PendingIntent.FLAG_UPDATE_CURRENT
-                    );
-            mBuilder.setContentIntent(resultPendingIntent);
+                PendingIntent resultPendingIntent =
+                        PendingIntent.getActivity(
+                                this,
+                                0,
+                                resultIntent,
+                                PendingIntent.FLAG_UPDATE_CURRENT
+                        );
+                mBuilder.setContentIntent(resultPendingIntent);
 
-            showNotification();
+                showNotification();
 
-        }
+            }
 
-        //ASIGNO EL INTENT PARA CUANDO SE HAGA EL CLICK
+            //ASIGNO EL INTENT PARA CUANDO SE HAGA EL CLICK
         /*if(!dataType.equals(NotificationTypes.SUBGROUP_INVITATION.toString())){
             PendingIntent resultPendingIntent =
                     PendingIntent.getActivity(
@@ -375,6 +379,10 @@ public class FirebaseMessagingService extends com.google.firebase.messaging.Fire
                     );
             mBuilder.setContentIntent(resultPendingIntent);
         }*/
+
+        }
+
+
 
     }
 
@@ -409,6 +417,7 @@ public class FirebaseMessagingService extends com.google.firebase.messaging.Fire
                     mNotifyMgr.notify(mNotificationId,
                             mBuilder.setVibrate(new long[] { 1000, 1000, 1000, 1000, 1000 })
                                     .setSound(alarmSound)
+                                    .setAutoCancel(true)
                                     .build());
                 }
             }
@@ -422,6 +431,7 @@ public class FirebaseMessagingService extends com.google.firebase.messaging.Fire
                         mNotifyMgr.notify(entry.getValue(),
                                 mBuilder.setVibrate(new long[] { 1000, 1000, 1000, 1000, 1000 })
                                         .setSound(alarmSound)
+                                        .setAutoCancel(true)
                                         .build());
                     }
                     break;

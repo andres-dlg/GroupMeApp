@@ -54,14 +54,13 @@ public class GroupNewsFragment extends Fragment {
     int postQuantity ;
 
     OnNewPostSetListener mOnNewPostSetListener;
+    private boolean isVisibleToUser;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         onAttachToParentFragment(getActivity());
-
         postRevised = new ArrayList<>();
-
         postQuantity = 0;
     }
 
@@ -161,7 +160,9 @@ public class GroupNewsFragment extends Fragment {
                     postQuantity += 1;
                 }
 
-                mOnNewPostSetListener.onNewPostSet(postQuantity);
+                if(!isVisibleToUser){
+                    mOnNewPostSetListener.onNewPostSet(postQuantity);
+                }
 
                 rvNewsAdapter.notifyDataSetChanged();
             }
@@ -225,6 +226,7 @@ public class GroupNewsFragment extends Fragment {
     @Override
     public void setUserVisibleHint(boolean isVisibleToUser) {
         super.setUserVisibleHint(isVisibleToUser);
+        this.isVisibleToUser = isVisibleToUser;
         if(isAdded()){
             if(isVisibleToUser){
                 fab.show();

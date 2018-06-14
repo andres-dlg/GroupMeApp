@@ -10,7 +10,6 @@ import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
 import android.support.v7.widget.Toolbar;
-import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -22,6 +21,7 @@ import android.view.WindowManager;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import com.andresdlg.groupmeapp.R;
 import com.andresdlg.groupmeapp.Utils.GroupStatus;
 import com.andresdlg.groupmeapp.Utils.GroupType;
@@ -31,6 +31,7 @@ import com.andresdlg.groupmeapp.Utils.Roles;
 import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
 import com.andresdlg.groupmeapp.uiPackage.fragments.GroupAddMembersFragment;
 import com.andresdlg.groupmeapp.uiPackage.fragments.GroupSetupFragment;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -123,7 +124,6 @@ public class HeaderDialogFragment extends DialogFragment implements GroupAddMemb
                 saveGroup();
             }
         });
-
 
         //toolbar.setNavigationIcon(android.R.drawable.ic_menu_close_clear_cancel);
 
@@ -231,7 +231,7 @@ public class HeaderDialogFragment extends DialogFragment implements GroupAddMemb
 
         fragments = new ArrayList<>();
         fragments = getChildFragmentManager().getFragments();
-        mProgressBar.setVisibility(View.VISIBLE);
+        //mProgressBar.setVisibility(View.VISIBLE);
         if(validateFields()){
             String groupKey = null;
             String subGroupKey = null;
@@ -262,6 +262,11 @@ public class HeaderDialogFragment extends DialogFragment implements GroupAddMemb
                                 createSubGroupData(finalSubGroupKey,nameText.getText().toString(), objetiveText.getText().toString(), map);
                                 mProgressBar.setVisibility(View.INVISIBLE);
                                 dismiss();
+                            }
+                        }).addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                                mProgressBar.setVisibility(View.INVISIBLE);
                             }
                         });
                     }else{
@@ -454,7 +459,7 @@ public class HeaderDialogFragment extends DialogFragment implements GroupAddMemb
 
         if(type == GroupType.GROUP){
 
-            if(TextUtils.isEmpty(nameText.getText())){
+            if(nameText.getText().toString().trim().isEmpty()){
                 Toast.makeText(getContext(),"Ingrese un nombre para el grupo",Toast.LENGTH_SHORT).show();
                 focusView = nameText;
                 focusView.requestFocus();
@@ -540,7 +545,7 @@ public class HeaderDialogFragment extends DialogFragment implements GroupAddMemb
 
             //PARA LOS SUBGRUPOS SOLO VALIDO QUE PONGA UN NOMBRE. NO IMPORTA SI SON REPETIDOS
         }else{
-            if(TextUtils.isEmpty(nameText.getText())){
+            if(nameText.getText().toString().trim().isEmpty()){
                 Toast.makeText(getContext(),"Ingrese un nombre para el grupo",Toast.LENGTH_SHORT).show();
                 focusView = nameText;
                 focusView.requestFocus();

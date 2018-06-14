@@ -5,7 +5,7 @@
         android:icon="@drawable/ic_account_multiple_white_24dp"
         android:title="Amigos"
         app:actionLayout="@layout/feed_update_count"
-        app:showAsAction="ifRoom"/>
+        app:showAsAction="ifRoom" />
     <item android:id="@+id/add_contact"
         android:icon="@drawable/ic_account_search_white_24dp"
         android:title="Buscar"

@@ -194,11 +194,17 @@ public class RVContactAdapter extends RecyclerView.Adapter<RVContactAdapter.Cont
 
                     Map<String,Object> map2 = new HashMap<>();
                     map2.put("status",ConversationStatus.UNSEEN);
+                    map2.put("user1",currentUserId);
+                    map2.put("user2",iduser);
+                    map2.put("id",conversationKey);
                     DatabaseReference userToRef = FirebaseDatabase.getInstance().getReference("Users").child(iduser).child("conversation");
                     userToRef.child(conversationKey).updateChildren(map2);
 
                     Map<String,Object> map3 = new HashMap<>();
                     map3.put("status",ConversationStatus.SEEN);
+                    map3.put("user1",currentUserId);
+                    map3.put("user2",iduser);
+                    map3.put("id",conversationKey);
                     DatabaseReference currentUserRef = FirebaseDatabase.getInstance().getReference("Users").child(StaticFirebaseSettings.currentUserId).child("conversation");
                     currentUserRef.child(conversationKey).updateChildren(map3);
 

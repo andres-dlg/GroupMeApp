@@ -22,8 +22,11 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -99,32 +102,41 @@ public class NewPostActivity extends AppCompatActivity {
                     });
 
                     if(groupUsers.size() > 0){
+                        mUsersDatabase.child(StaticFirebaseSettings.currentUserId).addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(DataSnapshot dataSnapshot) {
 
-                        for(Users user : groupUsers){
+                                Users u = dataSnapshot.getValue(Users.class);
 
-                            if(!user.getUserid().equals(StaticFirebaseSettings.currentUserId)){
-                                DatabaseReference userToNotifications = mUsersDatabase.child(user.getUserid()).child("notifications");
-                                String notificationKey = userToNotifications.push().getKey();
-                                Map<String,Object> notification = new HashMap<>();
-                                notification.put("notificationKey",notificationKey);
-                                notification.put("title","Nueva publicación en " + groupName);
-                                notification.put("message","Nuevo post de " + user.getName());
-                                notification.put("from", groupKey);
-                                notification.put("state", NotificationStatus.UNREAD);
-                                notification.put("date", Calendar.getInstance().getTimeInMillis());
-                                notification.put("type", NotificationTypes.NEW_POST);
+                                for(Users user : groupUsers){
+                                    if(!user.getUserid().equals(StaticFirebaseSettings.currentUserId)){
+                                        DatabaseReference userToNotifications = mUsersDatabase.child(user.getUserid()).child("notifications");
+                                        String notificationKey = userToNotifications.push().getKey();
+                                        Map<String,Object> notification = new HashMap<>();
+                                        notification.put("notificationKey",notificationKey);
+                                        notification.put("title","Nueva publicación en " + groupName);
+                                        notification.put("message","Nuevo post de " + u.getName());
+                                        notification.put("from", groupKey);
+                                        notification.put("state", NotificationStatus.UNREAD);
+                                        notification.put("date", Calendar.getInstance().getTimeInMillis());
+                                        notification.put("type", NotificationTypes.NEW_POST);
 
-                                userToNotifications.child(notificationKey).setValue(notification).addOnSuccessListener(new OnSuccessListener<Void>() {
-                                    @Override
-                                    public void onSuccess(Void aVoid) {
-                                        //Toast.makeText(NewPostActivity.this, "Notificacion enviada", Toast.LENGTH_SHORT).show();
+                                        userToNotifications.child(notificationKey).setValue(notification).addOnSuccessListener(new OnSuccessListener<Void>() {
+                                            @Override
+                                            public void onSuccess(Void aVoid) {
+                                                //Toast.makeText(NewPostActivity.this, "Notificacion enviada", Toast.LENGTH_SHORT).show();
+                                            }
+                                        });
                                     }
-                                });
+                                }
                             }
-                        }
+
+                            @Override
+                            public void onCancelled(DatabaseError databaseError) {
+
+                            }
+                        });
                     }
-
-
                     finish();
                 }
             }

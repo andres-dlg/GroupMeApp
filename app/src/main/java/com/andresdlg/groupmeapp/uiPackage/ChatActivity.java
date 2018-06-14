@@ -75,7 +75,8 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         contactIds = getIntent().getStringArrayListExtra("contactIds");
         conversationKey = getIntent().getStringExtra("conversationKey");
 
-        conversationRef = FirebaseDatabase.getInstance().getReference("Conversations").child(conversationKey);
+        //conversationRef = FirebaseDatabase.getInstance().getReference("Conversations").child(conversationKey);
+        conversationRef = FirebaseDatabase.getInstance().getReference("Users").child(StaticFirebaseSettings.currentUserId).child("conversation").child(conversationKey);
         valueEventListener = new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -146,7 +147,8 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
                             recyclerChat = findViewById(R.id.recyclerChat);
                             recyclerChat.setLayoutManager(linearLayoutManager);
                             adapter = new ListMessageAdapter(getBaseContext(), conversation, userTo.getImageURL(), currentUser.getImageURL(),"User", conversationKey);
-                            FirebaseDatabase.getInstance().getReference().child("Conversations").child(conversationKey).child("messages").addChildEventListener(new ChildEventListener() {
+                            //FirebaseDatabase.getInstance().getReference().child("Conversations").child(conversationKey).child("messages").addChildEventListener(new ChildEventListener() {
+                            FirebaseDatabase.getInstance().getReference("Users").child(StaticFirebaseSettings.currentUserId).child("conversation").child(conversationKey).child("messages").addChildEventListener(new ChildEventListener() {
                                 @Override
                                 public void onChildAdded(DataSnapshot dataSnapshot, String s) {
                                     if (dataSnapshot.getValue() != null) {
@@ -302,6 +304,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
                 newMessage.setIdReceiver(contactIds.get(0));
                 newMessage.setTimestamp(System.currentTimeMillis());
                 newMessage.setId(dbRef.getKey());
+                FirebaseDatabase.getInstance().getReference("Conversations").child(conversationKey).child("messages").child(newMessage.getId()).setValue(newMessage);
                 dbRef.setValue(newMessage);
                 userToRef.child("conversation").child(conversationKey).child("messages").child(newMessage.getId()).setValue(newMessage);
                 //currentUserRef.child("conversation").child(conversationKey).child("messages").child(newMessage.getId()).setValue(newMessage);

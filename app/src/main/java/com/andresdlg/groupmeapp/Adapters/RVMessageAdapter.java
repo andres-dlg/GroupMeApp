@@ -126,7 +126,6 @@ public class RVMessageAdapter extends RecyclerView.Adapter<RVMessageAdapter.Mess
                         messageViewHolder.messageDate.setText(date);
 
                         messageViewHolder.setNewMessageIndicator(conversations.get(position));
-
                         //removeUsersListener();
                         //removeConversationListener();
                     }
@@ -137,7 +136,6 @@ public class RVMessageAdapter extends RecyclerView.Adapter<RVMessageAdapter.Mess
                     }
                 };
                 userRef.addValueEventListener(userValueEventListener);
-
             }
 
             @Override
@@ -183,7 +181,7 @@ public class RVMessageAdapter extends RecyclerView.Adapter<RVMessageAdapter.Mess
             newMessagesIndicator = itemView.findViewById(R.id.newMessageIndicator);
         }
 
-        public void setPhoto(final Context context, final String imageURL) {
+        public void setPhoto(Context context, final String imageURL) {
             Glide.with(context)
                     .load(imageURL)
                     .listener(new RequestListener<Drawable>() {

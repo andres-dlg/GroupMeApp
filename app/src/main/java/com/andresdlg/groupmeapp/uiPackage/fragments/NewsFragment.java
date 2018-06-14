@@ -65,6 +65,7 @@ public class NewsFragment extends Fragment {
     OnNewPostSetListener mOnNewPostSetListener;
 
     int postQuantity ;
+    private boolean isVisibleToUser;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -265,7 +266,7 @@ public class NewsFragment extends Fragment {
                         postQuantity += 1;
                     }
 
-                    if(cantidadDeGrupos == groupKeys.size()){
+                    if(cantidadDeGrupos == groupKeys.size() && !isVisibleToUser){
                         mOnNewPostSetListener.onNewPostSet(postQuantity);
                     }
 
@@ -339,9 +340,11 @@ public class NewsFragment extends Fragment {
     @Override
     public void setUserVisibleHint(boolean isVisibleToUser) {
         super.setUserVisibleHint(isVisibleToUser);
+        this.isVisibleToUser = isVisibleToUser;
         if(isAdded()){
             if(isVisibleToUser && posts.size() > 0){
                 fabFilter.show();
+                mOnNewPostSetListener.onNewPostSet(0);
             }else{
                 for(Post p : posts){
                     List<String> seenBy = p.getSeenBy();

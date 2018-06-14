@@ -662,7 +662,7 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
                     break;
 
                 case DIALOG_FILES:
-                    SubGroupFilesDialogFragment newFragment3 = new SubGroupFilesDialogFragment(textView_parentName.getText().toString(),imageUrl,subGroups.get(position).getSubGroupKey(),groupKey,((FireApp) context.getApplicationContext()).getGroupName());
+                    SubGroupFilesDialogFragment newFragment3 = new SubGroupFilesDialogFragment(textView_parentName.getText().toString(),subGroups.get(position).getSubGroupKey(),groupKey,((FireApp) context.getApplicationContext()).getGroupName());
                     newFragment3.setCancelable(false);
                     newFragment3.setStyle(DialogFragment.STYLE_NORMAL,R.style.AppTheme_DialogFragment);
                     FragmentTransaction transaction3 = fragmentManager.beginTransaction();

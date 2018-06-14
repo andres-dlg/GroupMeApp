@@ -43,6 +43,7 @@ public class MessagesFragment extends Fragment {
     RecyclerView rv;
 
     OnNewMessageListener mOnNewMessageListener;
+    private boolean isVisibleToUser;
 
     @Nullable
     @Override
@@ -109,61 +110,77 @@ public class MessagesFragment extends Fragment {
 
         tvNoMessages = v.findViewById(R.id.tvNoMessages);
 
+        //fillConversationsRecyclerView();
+
+        return v;
+    }
+
+    private void fillConversationsRecyclerView() {
+        conversations.clear();
+        adapter.notifyDataSetChanged();
         firebaseConversations = FirebaseDatabase.getInstance().getReference("Users").child(StaticFirebaseSettings.currentUserId).child("conversation");
         firebaseConversations.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                conversations.clear();
-                for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
-                    //Getting the data from snapshot
-                    String idConversation = postSnapshot.getKey();
 
-                    DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference("Conversations").child(idConversation);
-                    dbRef.addValueEventListener(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(DataSnapshot dataSnapshot) {
-                            if(dataSnapshot.child("id").getValue()!=null){
-                                ConversationFirebase c = new ConversationFirebase();
-                                c.setId(dataSnapshot.child("id").getValue().toString());
-                                for(ConversationFirebase conversationFirebase : conversations){
-                                    if(conversationFirebase.getId().equals(c.getId())){
-                                        conversations.remove(conversationFirebase);
-                                        break;
+                if(!dataSnapshot.hasChildren()){
+                    tvNoMessages.setVisibility(View.VISIBLE);
+                }else{
+                    //conversations.clear();
+                    for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
+
+                        //Getting the data from snapshot
+                        String idConversation = postSnapshot.getKey();
+                        //DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference("Conversations").child(idConversation);
+                        DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference("Users").child(StaticFirebaseSettings.currentUserId).child("conversation").child(idConversation);
+                        dbRef.addValueEventListener(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(DataSnapshot dataSnapshot) {
+                                if(dataSnapshot.child("id").getValue()!=null && dataSnapshot.child("messages").hasChildren()){
+                                    ConversationFirebase c = new ConversationFirebase();
+                                    c.setId(dataSnapshot.child("id").getValue().toString());
+                                    for(ConversationFirebase conversationFirebase : conversations){
+                                        if(conversationFirebase.getId().equals(c.getId())){
+                                            conversations.remove(conversationFirebase);
+                                            break;
+                                        }
                                     }
-                                }
 
-                                ArrayList<Message> messages = new ArrayList<>();
-                                int cantidadDeMensajesNoVistos = 0;
-                                for(DataSnapshot data : dataSnapshot.child("messages").getChildren()){
-                                    Message m = data.getValue(Message.class);
-                                    messages.add(0,m);
-                                    if(!checkIfIHaveSeenThisMessage(m)){
-                                        cantidadDeMensajesNoVistos += 1;
+                                    ArrayList<Message> messages = new ArrayList<>();
+                                    int cantidadDeMensajesNoVistos = 0;
+                                    for(DataSnapshot data : dataSnapshot.child("messages").getChildren()){
+                                        Message m = data.getValue(Message.class);
+                                        messages.add(0,m);
+                                        if(!checkIfIHaveSeenThisMessage(m)){
+                                            cantidadDeMensajesNoVistos += 1;
+                                        }
                                     }
-                                }
-                                c.setMessages(messages);
+                                    c.setMessages(messages);
 
-                                mOnNewMessageListener.onNewMessage(cantidadDeMensajesNoVistos);
+                                    if(!isVisibleToUser){
+                                        mOnNewMessageListener.onNewMessage(cantidadDeMensajesNoVistos);
+                                    }
 
-                                if(!messages.isEmpty()){
-                                    c.setMessage(messages.get(0));
-                                    c.setUser1(dataSnapshot.child("user1").getValue().toString());
-                                    c.setUser2(dataSnapshot.child("user2").getValue().toString());
-                                    conversations.add(c);
-                                    adapter.notifyDataSetChanged();
-                                    tvNoMessages.setVisibility(View.INVISIBLE);
-                                }
+                                    if(!messages.isEmpty()){
+                                        c.setMessage(messages.get(0));
+                                        c.setUser1(dataSnapshot.child("user1").getValue().toString());
+                                        c.setUser2(dataSnapshot.child("user2").getValue().toString());
+                                        conversations.add(c);
+                                        adapter.notifyDataSetChanged();
+                                        tvNoMessages.setVisibility(View.INVISIBLE);
+                                    }
                             /*if(cantidadDeMensajesNoVistos>0){
                                 adapter.setNewMessagesIndicator(c.getId(),true);
                             }*/
+                                }
                             }
-                        }
 
-                        @Override
-                        public void onCancelled(DatabaseError databaseError) {
+                            @Override
+                            public void onCancelled(DatabaseError databaseError) {
 
-                        }
-                    });
+                            }
+                        });
+                    }
                 }
             }
 
@@ -172,8 +189,6 @@ public class MessagesFragment extends Fragment {
 
             }
         });
-
-        return v;
     }
 
     private boolean checkIfIHaveSeenThisMessage(Message m) {
@@ -191,6 +206,23 @@ public class MessagesFragment extends Fragment {
         setRetainInstance(true);
 
         onAttachToParentFragment(getActivity());
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        fillConversationsRecyclerView();
+    }
+
+    @Override
+    public void setUserVisibleHint(boolean isVisibleToUser) {
+        super.setUserVisibleHint(isVisibleToUser);
+        this.isVisibleToUser = isVisibleToUser;
+        if(isAdded()){
+            if(isVisibleToUser){
+                mOnNewMessageListener.onNewMessage(0);
+            }
+        }
     }
 
     public interface OnNewMessageListener{
