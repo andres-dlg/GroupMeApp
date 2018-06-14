@@ -37,7 +37,6 @@ import de.hdodenhof.circleimageview.CircleImageView;
 public class ListMessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     private DatabaseReference usersRef;
-    private ValueEventListener userValueEventListener;
 
     private Context context;
     private Conversation conversation;

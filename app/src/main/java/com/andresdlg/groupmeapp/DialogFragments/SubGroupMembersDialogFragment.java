@@ -87,7 +87,7 @@ public class SubGroupMembersDialogFragment extends DialogFragment {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 //users.clear();
-                SubGroup sg = new SubGroup();
+                SubGroup sg = new SubGroup(dataSnapshot.child("name").getValue().toString(),null,null);
                 sg.setName(dataSnapshot.child("name").getValue().toString());
                 sg.setImageUrl(dataSnapshot.child("imageUrl").getValue().toString());
                 sg.setMembers((Map<String,String>) dataSnapshot.child("members").getValue());

@@ -1,6 +1,8 @@
 package com.andresdlg.groupmeapp.Entities;
 
 
+import com.thoughtbot.expandablerecyclerview.models.ExpandableGroup;
+
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
@@ -9,7 +11,7 @@ import java.util.Map;
  * Created by andresdlg on 17/02/18.
  */
 
-public class SubGroup implements Serializable{
+public class SubGroup extends ExpandableGroup<File> implements Serializable{
 
     private String name;
     private String objetive;
@@ -17,8 +19,10 @@ public class SubGroup implements Serializable{
     private String subGroupKey;
     private Map<String,String> members;
     private List<Task> tasks;
+    private List<File> files;
 
     public SubGroup(String name,String objetive, String imageUrl, String subGroupKey, Map<String,String> members, List<Task> tasks) {
+        super(name,null);
         this.name = name;
         this.objetive = objetive;
         this.imageUrl = imageUrl;
@@ -27,7 +31,13 @@ public class SubGroup implements Serializable{
         this.tasks = tasks;
     }
 
-    public SubGroup(){}
+    public SubGroup(String name, List<File> files, String imageUrl){
+        super(name,files);
+        this.name = name;
+        this.imageUrl = imageUrl;
+        this.files = files;
+    }
+
 
     public String getName() {
         return name;
@@ -75,5 +85,13 @@ public class SubGroup implements Serializable{
 
     public void setObjetive(String objective) {
         this.objetive = objective;
+    }
+
+    public List<File> getFiles() {
+        return files;
+    }
+
+    public void setFiles(List<File> files) {
+        this.files = files;
     }
 }

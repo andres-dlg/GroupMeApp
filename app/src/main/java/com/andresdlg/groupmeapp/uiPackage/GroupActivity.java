@@ -512,6 +512,8 @@ public class GroupActivity extends AppCompatActivity implements GroupChatFragmen
 
             case R.id.files:
                 Intent i =  new Intent(this,GroupFilesActivity.class);
+                i.putExtra("groupKey",groupKey);
+                i.putExtra("groupName",groupName);
                 startActivity(i);
                 return true;
             default:

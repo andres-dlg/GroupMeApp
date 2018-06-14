@@ -180,7 +180,7 @@ public class SubGroupDetailActivity extends AppCompatActivity {
             public void onDataChange(DataSnapshot data) {
                 //SI ES NULL ES PORQUE FUE ELIMINADO
                 if(data.child("members").getValue()!=null) {
-                    final SubGroup sgf = new SubGroup();
+                    final SubGroup sgf = new SubGroup(data.child("name").getValue().toString(),null,null);
                     sgf.setName(data.child("name").getValue().toString());
                     sgf.setImageUrl(data.child("imageUrl").getValue().toString());
                     sgf.setMembers((Map<String,String>) data.child("members").getValue());

@@ -8,7 +8,6 @@ import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
-import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.DisplayMetrics;
@@ -22,7 +21,6 @@ import android.widget.TextView;
 import com.andresdlg.groupmeapp.Adapters.RVSubGroupAdapter;
 import com.andresdlg.groupmeapp.DialogFragments.HeaderDialogFragment;
 import com.andresdlg.groupmeapp.Entities.SubGroup;
-
 import com.andresdlg.groupmeapp.Entities.Task;
 import com.andresdlg.groupmeapp.R;
 import com.andresdlg.groupmeapp.Utils.GroupType;
@@ -188,7 +186,7 @@ public class SubGroupsFragment extends Fragment {
         subGroupsRef.addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(DataSnapshot data, String s) {
-                SubGroup sgf = new SubGroup();
+                SubGroup sgf = new SubGroup(data.child("name").getValue().toString(),null,null);
                 sgf.setName(data.child("name").getValue().toString());
                 sgf.setImageUrl(data.child("imageUrl").getValue().toString());
                 sgf.setMembers((Map<String,String>) data.child("members").getValue());
@@ -207,7 +205,7 @@ public class SubGroupsFragment extends Fragment {
             @Override
             public void onChildChanged(DataSnapshot data, String s) {
                 if(data.child("members").getValue()!=null){
-                    SubGroup sgf = new SubGroup();
+                    SubGroup sgf = new SubGroup(data.child("name").getValue().toString(),null,null);
                     sgf.setName(data.child("name").getValue().toString());
                     sgf.setImageUrl(data.child("imageUrl").getValue().toString());
                     sgf.setMembers((Map<String,String>) data.child("members").getValue());

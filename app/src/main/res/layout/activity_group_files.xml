@@ -3,8 +3,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".uiPackage.GroupFilesActivity">
-    
+    tools:context=".uiPackage.GroupFilesActivity"
+    android:background="#fff">
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -28,6 +29,7 @@
             android:background="@color/bg_add_photo" />
 
         <android.support.v7.widget.RecyclerView
+            android:id="@+id/rvGroupFiles"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
         </android.support.v7.widget.RecyclerView>
@@ -50,6 +52,7 @@
             android:background="@color/bg_add_photo" />
 
         <android.support.v7.widget.RecyclerView
+            android:id="@+id/rvSubGroupFiles"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
