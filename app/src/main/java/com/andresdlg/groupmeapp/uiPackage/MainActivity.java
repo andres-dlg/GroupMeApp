@@ -690,15 +690,13 @@ public class MainActivity extends AppCompatActivity
                     @Override
                     public void onEnded() {
                         viewPager.setCurrentItem(2);
-                        letTheThirdPartOfTheShowStart();
-                        /*final Handler handler = new Handler();
+                        final Handler handler = new Handler();
                         handler.postDelayed(new Runnable() {
                             @Override
                             public void run() {
                                 letTheThirdPartOfTheShowStart();
                             }
-                        }, 1000);*/
-
+                        }, 1000);
                     }
                 })
                 .start();
@@ -731,13 +729,6 @@ public class MainActivity extends AppCompatActivity
                 .setOnSpotlightStateListener(new OnSpotlightStateChangedListener() {
                     @Override
                     public void onStarted() {
-                        final Handler handler = new Handler();
-                        handler.postDelayed(new Runnable() {
-                            @Override
-                            public void run() {
-                                letTheThirdPartOfTheShowStart();
-                            }
-                        }, 1000);
                     }
 
                     @Override

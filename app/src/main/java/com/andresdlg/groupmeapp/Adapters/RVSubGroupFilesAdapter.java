@@ -176,6 +176,10 @@ public class RVSubGroupFilesAdapter extends RecyclerView.Adapter<RVSubGroupFiles
                                     shareFile(fileFromPhone);
                                     //saveFileToDrive(fileFromPhone);
                                     break;
+                                case R.id.publish:
+                                    //PUBLICAR
+                                    publishFile(fileKey);
+                                    break;
                                 case R.id.delete:
                                     //ELIMINAR
                                     deleteFile(fileKey,fileUrl,fileFromPhone,fileFromPhone.exists());
@@ -500,6 +504,26 @@ public class RVSubGroupFilesAdapter extends RecyclerView.Adapter<RVSubGroupFiles
                         Log.e("Error: ","File: "+storageRef.getPath()+" ||| " +exception.toString());
                     }
                 });
+    }
+
+    private void publishFile(String fileKey){
+        FirebaseDatabase.getInstance().getReference("Groups")
+                .child(groupKey)
+                .child("subgroups")
+                .child(subGroupKey)
+                .child("files")
+                .child(fileKey)
+                .child("published").setValue(true).addOnSuccessListener(new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void aVoid) {
+                Toast.makeText(context, "Este archivo ahora es visible para el resto del grupo", Toast.LENGTH_LONG).show();
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Toast.makeText(context, "Error al publicar archivo", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 }
 

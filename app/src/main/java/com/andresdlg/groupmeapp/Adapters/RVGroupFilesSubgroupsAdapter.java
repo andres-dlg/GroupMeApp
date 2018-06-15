@@ -15,7 +15,6 @@ import android.os.StrictMode;
 import android.support.annotation.NonNull;
 import android.support.v4.app.NotificationCompat;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -32,9 +31,13 @@ import android.widget.Toast;
 import com.andresdlg.groupmeapp.Entities.File;
 import com.andresdlg.groupmeapp.Entities.SubGroup;
 import com.andresdlg.groupmeapp.R;
+import com.andresdlg.groupmeapp.Utils.Roles;
+import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
 import com.bumptech.glide.Glide;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FileDownloadTask;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.OnProgressListener;
@@ -50,6 +53,7 @@ import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Map;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -59,14 +63,18 @@ public class RVGroupFilesSubgroupsAdapter extends ExpandableRecyclerViewAdapter<
 
     Context context;
     private String groupName;
+    private String groupKey;
     private int notificationChannel;
     private NotificationCompat.Builder mBuilder;
     private NotificationManager notificationManager;
 
-    public RVGroupFilesSubgroupsAdapter(List<? extends ExpandableGroup> groups, Context context, String groupName){
+    private String myRol;
+
+    public RVGroupFilesSubgroupsAdapter(List<? extends ExpandableGroup> groups, Context context, String groupName, String groupKey){
         super(groups);
         this.context = context;
         this.groupName = groupName;
+        this.groupKey = groupKey;
         notificationChannel = 5963;
     }
 
@@ -89,8 +97,16 @@ public class RVGroupFilesSubgroupsAdapter extends ExpandableRecyclerViewAdapter<
 
     @Override
     public void onBindChildViewHolder(SubGroupFileViewHolder holder, int flatPosition, ExpandableGroup group, int childIndex) {
+        //flatPosition -> Representa la posicion del elemento contando tambien a los padres. Ejemplo:
+        /*
+        * Item       -> flatPostition = 0
+        *   Child 1  -> flatPostition = 1
+        *   Child 2  -> flatPostition = 2
+        * Item       -> flatPostition = 3
+        *   Child 1  -> flatPostition = 4
+        * */
         final File file = ((SubGroup) group).getItems().get(childIndex);
-        holder.setFileData(file,((SubGroup) group).getName(), flatPosition, childIndex);
+        holder.setFileData(file,((SubGroup) group).getName(), flatPosition, ((SubGroup) group).getMembers(),((SubGroup) group).getSubGroupKey());
     }
 
 
@@ -99,17 +115,26 @@ public class RVGroupFilesSubgroupsAdapter extends ExpandableRecyclerViewAdapter<
         private TextView subGroupName;
         private CircleImageView subGroupPhoto;
         private ImageButton arrow;
+        private ImageButton addFile;
 
         SubGroupViewHolder(View itemView) {
             super(itemView);
             subGroupName = itemView.findViewById(R.id.subgroup_name);
             subGroupPhoto = itemView.findViewById(R.id.subgroup_photo);
             arrow = itemView.findViewById(R.id.arrow);
+            addFile = itemView.findViewById(R.id.add_file);
         }
 
         void setSubGroupData(final ExpandableGroup group) {
             subGroupName.setText(((SubGroup)group).getName());
             Glide.with(context).load(((SubGroup)group).getImageUrl()).into(subGroupPhoto);
+
+            /*myRol = setMyRol(((SubGroup)group).getMembers());
+
+            if(myRol.equals(Roles.SUBGROUP_ADMIN.toString())){
+                addFile.setVisibility(View.VISIBLE);
+            }*/
+
         }
 
         @Override
@@ -161,7 +186,10 @@ public class RVGroupFilesSubgroupsAdapter extends ExpandableRecyclerViewAdapter<
             btn = itemView.findViewById(R.id.btn_menu);
         }
 
-        void setFileData(final File file, final String subGroupName, final int subGroupPosition, final int filePosition) {
+        void setFileData(final File file, final String subGroupName, final int subGroupPosition, Map<String, String> members, final String subGroupKey) {
+
+            myRol = setMyRol(members);
+
             fileName.setText(file.getFilename());
 
             fileSizeTv.setText(readableFileSize((long)file.getFileSize()));
@@ -196,13 +224,15 @@ public class RVGroupFilesSubgroupsAdapter extends ExpandableRecyclerViewAdapter<
 
                     //REVISAR SI A ESTO LE PONGO PERMISOS POR ROLES
                     //popupMenu.getMenu().removeItem(R.id.share);
-                    popupMenu.getMenu().removeItem(R.id.delete);
+                    //popupMenu.getMenu().removeItem(R.id.delete);
 
-                    /*if(!myRol.equals(Roles.SUBGROUP_ADMIN.toString())){
+                    popupMenu.getMenu().removeItem(R.id.publish);
+
+                    if(!myRol.equals(Roles.SUBGROUP_ADMIN.toString())){
                         popupMenu.getMenu().removeItem(R.id.delete);
                     }
 
-                    if(!fileFromPhone.exists()){
+                    /*if(!fileFromPhone.exists()){
                         popupMenu.getMenu().removeItem(R.id.share);
                     }*/
 
@@ -213,17 +243,17 @@ public class RVGroupFilesSubgroupsAdapter extends ExpandableRecyclerViewAdapter<
                             switch (id){
                                 case R.id.download:
                                     //DESCARGA
-                                    overrideFile(file.getFileUrl(),file.getFilename(),file.getFileType(),fileFromPhone.exists(),subGroupName, subGroupPosition, filePosition);
+                                    overrideFile(file.getFileUrl(),file.getFilename(),file.getFileType(),fileFromPhone.exists(),subGroupName, subGroupPosition);
                                     break;
                                 case R.id.share:
                                     //COMPARTIR
                                     shareFile(fileFromPhone);
                                     //saveFileToDrive(fileFromPhone);
                                     break;
-                                /*case R.id.delete:
+                                case R.id.delete:
                                     //ELIMINAR
-                                    deleteFile(fileKey,fileUrl,fileFromPhone,fileFromPhone.exists());
-                                    break;*/
+                                    deleteFile(file.getFileKey(),file.getFileUrl(),fileFromPhone,fileFromPhone.exists(),subGroupKey);
+                                    break;
                             }
                             return true;
                         }
@@ -342,7 +372,7 @@ public class RVGroupFilesSubgroupsAdapter extends ExpandableRecyclerViewAdapter<
             }
         }
 
-        private void overrideFile(final String fileUrl, final String fileName, final String fileType, boolean exists, final String subGroupName, final int subGroupPosition, final int filePosition){
+        private void overrideFile(final String fileUrl, final String fileName, final String fileType, boolean exists, final String subGroupName, final int subGroupPosition){
 
             if(exists){
                 new AlertDialog.Builder(context,R.style.MyDialogTheme)
@@ -351,7 +381,7 @@ public class RVGroupFilesSubgroupsAdapter extends ExpandableRecyclerViewAdapter<
                         .setPositiveButton("Si", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                downloadFile(fileUrl,fileName,fileType,subGroupName,subGroupPosition,filePosition);
+                                downloadFile(fileUrl,fileName,fileType,subGroupName,subGroupPosition);
                             }
                         })
                         .setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
@@ -363,11 +393,11 @@ public class RVGroupFilesSubgroupsAdapter extends ExpandableRecyclerViewAdapter<
                         .setCancelable(false)
                         .show();
             }else{
-                downloadFile(fileUrl,fileName,fileType,subGroupName, subGroupPosition, filePosition);
+                downloadFile(fileUrl,fileName,fileType,subGroupName, subGroupPosition);
             }
         }
 
-        private void downloadFile(String fileUri, final String fileName, String fileType, String subGroupName, final int subGroupPosition, final int filePosition) {
+        private void downloadFile(String fileUri, final String fileName, String fileType, String subGroupName, final int flatPosition) {
 
             notificationChannel++;
 
@@ -441,8 +471,9 @@ public class RVGroupFilesSubgroupsAdapter extends ExpandableRecyclerViewAdapter<
                             mBuilder.setSmallIcon(android.R.drawable.stat_sys_download_done);
                             mBuilder.setOngoing(false);
                             notificationManager.notify(notificationChannel, mBuilder.build());
-                            int flatChildPos = expandableList.getFlattenedChildIndex(subGroupPosition, filePosition);
-                            notifyItemChanged(flatChildPos);
+                            /*int flatChildPos = expandableList.getFlattenedChildIndex(subGroupPosition, filePosition);
+                            notifyItemChanged(flatChildPos);*/
+                            notifyItemChanged(flatPosition);
                         }
                     })
                     .addOnFailureListener(new OnFailureListener() {
@@ -479,7 +510,87 @@ public class RVGroupFilesSubgroupsAdapter extends ExpandableRecyclerViewAdapter<
 
                 context.startActivity(Intent.createChooser(intentShareFile, "Compartir archivo"));
             }
-
         }
+
+        private void deleteFile(final String fileKey, final String fileUrl, final java.io.File fileFromPhone, final boolean exists, final String subGroupKey) {
+
+            new AlertDialog.Builder(context,R.style.MyDialogTheme)
+                    .setTitle("¿Seguro desea eleminar el archivo compartido?")
+                    .setMessage("Este archivo ya no estará disponible ningún miembro del subgrupo")
+                    .setPositiveButton("Si", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            //Toast.makeText(context, "Borrando...", Toast.LENGTH_SHORT).show();
+                            //ELIMINO DE FIREBASE
+                            StorageReference fileStorageRef = FirebaseStorage.getInstance().getReferenceFromUrl(fileUrl);
+                            fileStorageRef.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
+                                @Override
+                                public void onSuccess(Void aVoid) {
+                                    DatabaseReference fileDataBaseRef = FirebaseDatabase.getInstance().getReference("Groups").child(groupKey).child("subgroups").child(subGroupKey).child("files").child(fileKey);
+                                    fileDataBaseRef.removeValue().addOnSuccessListener(new OnSuccessListener<Void>() {
+                                        @Override
+                                        public void onSuccess(Void aVoid) {
+                                            Toast.makeText(context, "El archivo ha sido eliminado del repositorio central", Toast.LENGTH_SHORT).show();
+                                            if(exists){
+                                                new AlertDialog.Builder(context,R.style.MyDialogTheme)
+                                                        .setTitle("¿Desea eliminar la copia existente en su dispositivo?")
+                                                        //.setMessage("Ya no estará disponib")
+                                                        .setPositiveButton("Si", new DialogInterface.OnClickListener() {
+                                                            @Override
+                                                            public void onClick(DialogInterface dialog, int which) {
+                                                                if(fileFromPhone.delete()){
+                                                                    Toast.makeText(context, "El archivo ha sido eliminado de su dispositivo", Toast.LENGTH_SHORT).show();
+                                                                }else{
+                                                                    Toast.makeText(context, "Error al eliminar el archivo de su dispositivo", Toast.LENGTH_SHORT).show();
+                                                                }
+                                                            }
+                                                        })
+                                                        .setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
+                                                            @Override
+                                                            public void onClick(DialogInterface dialog, int which) {
+                                                                dialog.dismiss();
+                                                            }
+                                                        })
+                                                        .setCancelable(false)
+                                                        .show();
+                                            }
+                                        }
+                                    })
+                                            .addOnFailureListener(new OnFailureListener() {
+                                                @Override
+                                                public void onFailure(@NonNull Exception e) {
+                                                    Toast.makeText(context, "Error al eliminar el archivo de la base de datos", Toast.LENGTH_SHORT).show();
+                                                }
+                                            });
+                                }
+                            })
+                                    .addOnFailureListener(new OnFailureListener() {
+                                        @Override
+                                        public void onFailure(@NonNull Exception e) {
+                                            Toast.makeText(context, "Error al eliminar el archivo del repositorio", Toast.LENGTH_SHORT).show();
+                                        }
+                                    });
+                        }
+                    })
+                    .setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                        }
+                    })
+                    .setCancelable(false)
+                    .show();
+        }
+    }
+
+    private String setMyRol(Map<String, String> members) {
+        myRol = "";
+        for(Map.Entry<String, String> entry: members.entrySet()) {
+            if(StaticFirebaseSettings.currentUserId.equals(entry.getKey())){
+                myRol = entry.getValue();
+                break;
+            }
+        }
+        return myRol;
     }
 }

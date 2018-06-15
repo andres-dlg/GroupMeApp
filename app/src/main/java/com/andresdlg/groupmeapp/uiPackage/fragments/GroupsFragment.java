@@ -114,8 +114,6 @@ public class GroupsFragment extends Fragment implements View.OnClickListener, He
 
         adapter = new RVGroupAdapter(getContext(),groups);
         rv.setAdapter(adapter);
-
-
     }
 
     private void getGroup(String key) {

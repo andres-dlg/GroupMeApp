@@ -186,7 +186,7 @@ public class SubGroupsFragment extends Fragment {
         subGroupsRef.addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(DataSnapshot data, String s) {
-                SubGroup sgf = new SubGroup(data.child("name").getValue().toString(),null,null);
+                SubGroup sgf = new SubGroup(data.child("name").getValue().toString(),null,null,null,null);
                 sgf.setName(data.child("name").getValue().toString());
                 sgf.setImageUrl(data.child("imageUrl").getValue().toString());
                 sgf.setMembers((Map<String,String>) data.child("members").getValue());
@@ -205,7 +205,7 @@ public class SubGroupsFragment extends Fragment {
             @Override
             public void onChildChanged(DataSnapshot data, String s) {
                 if(data.child("members").getValue()!=null){
-                    SubGroup sgf = new SubGroup(data.child("name").getValue().toString(),null,null);
+                    SubGroup sgf = new SubGroup(data.child("name").getValue().toString(),null,null,null,null);
                     sgf.setName(data.child("name").getValue().toString());
                     sgf.setImageUrl(data.child("imageUrl").getValue().toString());
                     sgf.setMembers((Map<String,String>) data.child("members").getValue());

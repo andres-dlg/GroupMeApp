@@ -31,11 +31,13 @@ public class SubGroup extends ExpandableGroup<File> implements Serializable{
         this.tasks = tasks;
     }
 
-    public SubGroup(String name, List<File> files, String imageUrl){
+    public SubGroup(String name, List<File> files, String imageUrl,Map<String,String> members,String subGroupKey){
         super(name,files);
         this.name = name;
         this.imageUrl = imageUrl;
         this.files = files;
+        this.members = members;
+        this.subGroupKey = subGroupKey;
     }
 
 

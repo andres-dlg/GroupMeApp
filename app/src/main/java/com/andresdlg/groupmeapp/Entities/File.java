@@ -16,10 +16,11 @@ public class File implements Parcelable {
     private float fileSize;
     private long uploadTime;
     private String user;
+    private boolean published;
 
     private File() {}
 
-    public File(String fileKey, String fileName, String fileUrl, String fileType, float fileSize ,long uploadTime, String user){
+    public File(String fileKey, String fileName, String fileUrl, String fileType, float fileSize ,long uploadTime, String user, boolean published){
         this.fileKey = fileKey;
         this.fileName = fileName;
         this.fileUrl = fileUrl;
@@ -27,6 +28,7 @@ public class File implements Parcelable {
         this.fileSize = fileSize;
         this.uploadTime = uploadTime;
         this.user = user;
+        this.published = published;
     }
 
     public String getFilename() {
@@ -94,5 +96,13 @@ public class File implements Parcelable {
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(fileName);
+    }
+
+    public boolean isPublished() {
+        return published;
+    }
+
+    public void setPublished(boolean published) {
+        this.published = published;
     }
 }

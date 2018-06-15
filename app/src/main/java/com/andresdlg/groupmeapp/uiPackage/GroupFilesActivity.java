@@ -26,6 +26,8 @@ import com.andresdlg.groupmeapp.Adapters.RVGroupFilesSubgroupsAdapter;
 import com.andresdlg.groupmeapp.Entities.File;
 import com.andresdlg.groupmeapp.Entities.SubGroup;
 import com.andresdlg.groupmeapp.R;
+import com.andresdlg.groupmeapp.Utils.NotificationStatus;
+import com.andresdlg.groupmeapp.Utils.NotificationTypes;
 import com.andresdlg.groupmeapp.Utils.Roles;
 import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -64,7 +66,7 @@ public class GroupFilesActivity extends AppCompatActivity {
 
     List<File> groupFiles;
 
-    public RVGroupFilesSubgroupsAdapter adapter;
+    RVGroupFilesSubgroupsAdapter adapter;
     RecyclerView rvSubGroupFiles;
     RecyclerView rvGroupFiles;
     ImageButton addGroupFileBtn;
@@ -103,11 +105,12 @@ public class GroupFilesActivity extends AppCompatActivity {
         FirebaseDatabase.getInstance().getReference("Groups").child(groupKey).child("members").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                for(DataSnapshot memberData : dataSnapshot.getChildren()){
-                    if(memberData.getKey().equals(StaticFirebaseSettings.currentUserId) && memberData.getValue().toString().equals(Roles.ADMIN.toString())){
-                        addGroupFileBtn.setVisibility(View.VISIBLE);
-                        setAddFileButtonListener();
-                    }
+                groupMembers = (Map<String,String>) dataSnapshot.getValue();
+                myRol = setMyRol();
+                rvGroupFilesAdapter.setMyRol(myRol);
+                if(myRol.equals(Roles.ADMIN.toString())){
+                    addGroupFileBtn.setVisibility(View.VISIBLE);
+                    setAddFileButtonListener();
                 }
             }
 
@@ -130,7 +133,6 @@ public class GroupFilesActivity extends AppCompatActivity {
         rvGroupFiles.setAdapter(rvGroupFilesAdapter);
         getGroupFiles();
 
-
         //-------- SECCION DE ARCHIVOS DE SUBGRUPO
         tvNoSubGroupsFiles = findViewById(R.id.tvNoSubGroupsFiles);
 
@@ -148,19 +150,18 @@ public class GroupFilesActivity extends AppCompatActivity {
 
     private void getGroupFiles() {
         DatabaseReference groupRef = FirebaseDatabase.getInstance().getReference("Groups").child(groupKey);
-        groupRef.addValueEventListener(new ValueEventListener() {
+        groupRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                groupMembers = (Map<String,String>) dataSnapshot.child("members").getValue();
-                myRol = setMyRol();
-                rvGroupFilesAdapter.setMyRol(myRol);
                 mGroupFilesDatabaseRef.addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         groupFiles.clear();
                         for (DataSnapshot d : dataSnapshot.getChildren()){
                             File file = d.getValue(File.class);
-                            groupFiles.add(file);
+                            if(file.isPublished()){
+                                groupFiles.add(file);
+                            }
                         }
                         if(groupFiles.size() > 0){
                             tvNoGroupsFiles.setVisibility(View.GONE);
@@ -242,7 +243,7 @@ public class GroupFilesActivity extends AppCompatActivity {
             DatabaseReference groupFilesRef = FirebaseDatabase.getInstance().getReference("Groups").child(groupKey).child("groupFiles");
             String fileKey = groupFilesRef.push().getKey();
 
-            final File file = new File(fileKey, fileData[0],"nourl",fileData[2], Float.valueOf(fileData[1]), 0, StaticFirebaseSettings.currentUserId);
+            final File file = new File(fileKey, fileData[0],"nourl",fileData[2], Float.valueOf(fileData[1]), 0, StaticFirebaseSettings.currentUserId,false);
 
             StorageReference fileStgRef = mGroupFilesStorageRef.child(fileKey);
 
@@ -303,6 +304,7 @@ public class GroupFilesActivity extends AppCompatActivity {
                             map.put("fileType",file.getFileType());
                             map.put("fileSize",file.getFileSize());
                             map.put("uploadTime",file.getUploadTime());
+                            map.put("published",true);
                             map.put("user",file.getUser());
 
 
@@ -360,26 +362,32 @@ public class GroupFilesActivity extends AppCompatActivity {
                                     //Toast.makeText(getContext(), "Archivo DB: " + fileData[0] + " agregado.", Toast.LENGTH_SHORT).show();
                                     // Toast.makeText(getContext(), "Archivo ST: " + fileData[0] + " agregado.", Toast.LENGTH_SHORT).show();
                                     Toast.makeText(GroupFilesActivity.this, fileData[0] + " agregado al repositorio", Toast.LENGTH_SHORT).show();
-                                    groupFiles.add(file);
+                                    for(int i = 0; i < groupFiles.size(); i++){
+                                        if(file.getFileKey().equals(groupFiles.get(i).getFileKey())){
+                                            groupFiles.remove(i);
+                                            groupFiles.add(i,file);
+                                            break;
+                                        }
+                                    }
                                 }
                             });
 
                             //NOTIFICO A LOS MIEMBROS DEL SUBGRUPO QUE SE HA SUBIDO UN NUEVO ARCHIVO
-                            /*for(Map.Entry<String, String> entry: members.entrySet()) {
+                            for(Map.Entry<String, String> entry: groupMembers.entrySet()) {
                                 if(!StaticFirebaseSettings.currentUserId.equals(entry.getKey())){
                                     DatabaseReference userToNotifications = FirebaseDatabase.getInstance().getReference("Users").child(entry.getKey()).child("notifications");
                                     String notificationKey = userToNotifications.push().getKey();
                                     Map<String,Object> notification = new HashMap<>();
                                     notification.put("notificationKey",notificationKey);
-                                    notification.put("title","Nuevo archivo en " + subGroupName);
-                                    notification.put("message","Se ha subido " + file.getFilename() + " en " + subGroupName);
+                                    notification.put("title","Nuevo archivo en " + groupName);
+                                    notification.put("message","Se ha subido " + file.getFilename() + " en " + groupName);
                                     notification.put("from", groupKey);
                                     notification.put("state", NotificationStatus.UNREAD);
                                     notification.put("date", Calendar.getInstance().getTimeInMillis());
                                     notification.put("type", NotificationTypes.NEW_FILE);
                                     userToNotifications.child(notificationKey).setValue(notification);
                                 }
-                            }*/
+                            }
                         }
                     });
         }else {
@@ -412,7 +420,6 @@ public class GroupFilesActivity extends AppCompatActivity {
         return new String[]{fileName,fileSize,fileType};
     }
 
-
     private String getFileExtension(String fileName){
         String ext = "";
         int i = fileName.lastIndexOf('.');
@@ -422,30 +429,29 @@ public class GroupFilesActivity extends AppCompatActivity {
         return ext;
     }
 
-
     private void getSubgroupsAndFiles() {
-        FirebaseDatabase.getInstance().getReference("Groups").child(groupKey).child("subgroups").addListenerForSingleValueEvent(new ValueEventListener() {
+        FirebaseDatabase.getInstance().getReference("Groups").child(groupKey).child("subgroups").addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-
                 List<SubGroup> subGroups = new ArrayList<>();
-
                 for(DataSnapshot data : dataSnapshot.getChildren()){
-                    SubGroup sgf = new SubGroup(data.child("name").getValue().toString(),null,data.child("imageUrl").getValue().toString());
+                    SubGroup sgf = new SubGroup(data.child("name").getValue().toString(),null,data.child("imageUrl").getValue().toString(),(Map<String,String>)data.child("members").getValue(),data.child("subGroupKey").getValue().toString());
                     List<File> files = new ArrayList<>();
                     for(DataSnapshot d : data.child("files").getChildren()){
                         File file = d.getValue(File.class);
-                        files.add(file);
+                        if(file.isPublished()){
+                            files.add(file);
+                        }
                     }
                     sgf.setFiles(files);
                     if(sgf.getFiles().size() > 0){
-                        SubGroup sg = new SubGroup(sgf.getName(),sgf.getFiles(),sgf.getImageUrl());
+                        SubGroup sg = new SubGroup(sgf.getName(),sgf.getFiles(),sgf.getImageUrl(),sgf.getMembers(),sgf.getSubGroupKey());
                         subGroups.add(sg);
                     }
                 }
 
                 if(subGroups.size() > 0){
-                    adapter = new RVGroupFilesSubgroupsAdapter(subGroups,GroupFilesActivity.this,groupName);
+                    adapter = new RVGroupFilesSubgroupsAdapter(subGroups,GroupFilesActivity.this,groupName,groupKey);
                     rvSubGroupFiles.setAdapter(adapter);
                     adapter.notifyDataSetChanged();
                 }else{
@@ -476,13 +482,17 @@ public class GroupFilesActivity extends AppCompatActivity {
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        adapter.onSaveInstanceState(outState);
+        if(adapter!=null){
+            adapter.onSaveInstanceState(outState);
+        }
     }
 
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
-        adapter.onRestoreInstanceState(savedInstanceState);
+        if(adapter!=null){
+            adapter.onRestoreInstanceState(savedInstanceState);
+        }
     }
 
 }

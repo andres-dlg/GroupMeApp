@@ -9,6 +9,10 @@
         android:title="Compartir">
     </item>
     <item
+        android:id="@+id/publish"
+        android:title="Publicar">
+    </item>
+    <item
         android:id="@+id/delete"
         android:title="Borrar">
     </item>

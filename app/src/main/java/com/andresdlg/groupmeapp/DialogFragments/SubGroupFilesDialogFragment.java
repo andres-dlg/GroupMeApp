@@ -215,7 +215,7 @@ public class SubGroupFilesDialogFragment extends DialogFragment {
             DatabaseReference subGroupFilesRef = FirebaseDatabase.getInstance().getReference("Groups").child(groupKey).child("subgroups").child(subGroupKey).child("files");
             String fileKey = subGroupFilesRef.push().getKey();
 
-            final File file = new File(fileKey, fileData[0],"nourl",fileData[2], Float.valueOf(fileData[1]), 0, StaticFirebaseSettings.currentUserId);
+            final File file = new File(fileKey, fileData[0],"nourl",fileData[2], Float.valueOf(fileData[1]), 0, StaticFirebaseSettings.currentUserId,false);
 
             StorageReference fileStgRef = mSubgroupFilesStorageRef.child(fileKey);
 
@@ -276,6 +276,7 @@ public class SubGroupFilesDialogFragment extends DialogFragment {
                             map.put("fileType",file.getFileType());
                             map.put("fileSize",file.getFileSize());
                             map.put("uploadTime",file.getUploadTime());
+                            map.put("published",false);
                             map.put("user",file.getUser());
 
 

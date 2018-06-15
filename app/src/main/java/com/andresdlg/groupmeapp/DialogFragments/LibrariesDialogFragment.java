@@ -111,6 +111,9 @@ public class LibrariesDialogFragment extends DialogFragment {
         Library lib13 = new Library("Spotlight", "Android Library that lights items for tutorials or walk-throughs etc...", "https://github.com/TakuSemba/Spotlight");
         libraries.add(lib13);
 
+        Library lib14 = new Library("Expandable RecyclerView", "Custom Android RecyclerViewAdapters that collapse and expand", "https://github.com/thoughtbot/expandable-recycler-view");
+        libraries.add(lib14);
+
     }
 
     @Override

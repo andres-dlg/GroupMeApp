@@ -74,15 +74,31 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:hint="Objetivo"
+                        android:scrollbars="vertical"
+                        android:isScrollContainer="true"/>
+
+                    <!--<EditText
+                        android:id="@+id/etobj"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="Objetivo"
                         android:inputType="text"
                         android:maxLines="1" />
-                </android.support.design.widget.TextInputLayout>
 
-                <!--<android.support.v7.widget.RecyclerView
-                    android:id="@+id/rvGroupAddContact"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
-                </android.support.v7.widget.RecyclerView>-->
+                    <EditText
+                        android:id="@+id/objetive"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:scrollbars="vertical"
+                        android:padding="10dp"
+                        android:isScrollContainer="true"
+                        android:textColor="@drawable/edit_text_selector"
+                        android:background="@android:color/transparent"
+                        android:enabled="false"
+                        android:textSize="15sp"
+                        />-->
+
+                </android.support.design.widget.TextInputLayout>
             </LinearLayout>
         </RelativeLayout>
     </android.support.v4.widget.NestedScrollView>

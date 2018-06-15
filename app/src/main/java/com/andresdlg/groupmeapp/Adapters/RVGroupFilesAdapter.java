@@ -150,6 +150,8 @@ public class RVGroupFilesAdapter extends RecyclerView.Adapter<RVGroupFilesAdapte
                     final Menu menu = popupMenu.getMenu();
                     popupMenu.getMenuInflater().inflate(R.menu.subgroup_files_dialog_fragment_admin_menu, menu);
 
+                    popupMenu.getMenu().removeItem(R.id.publish);
+
                     if(!myRol.equals(Roles.ADMIN.toString())){
                         popupMenu.getMenu().removeItem(R.id.delete);
                     }
