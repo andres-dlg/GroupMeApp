@@ -51,7 +51,7 @@ import java.util.List;
  * Created by andresdlg on 17/01/18.
  */
 
-public class RVFilesAdapter extends RecyclerView.Adapter<RVFilesAdapter.FilesViewHolder>{
+public class RVSubGroupFilesAdapter extends RecyclerView.Adapter<RVSubGroupFilesAdapter.FilesViewHolder>{
 
     private List<File> files;
     private Context context;
@@ -65,7 +65,7 @@ public class RVFilesAdapter extends RecyclerView.Adapter<RVFilesAdapter.FilesVie
     private NotificationCompat.Builder mBuilder;
     private int notificationChannel;
 
-    public RVFilesAdapter(List<File> files, Context context, String subGroupName, String groupKey, String subGroupKey){
+    public RVSubGroupFilesAdapter(List<File> files, Context context, String subGroupName, String groupKey, String subGroupKey){
         this.files = files;
         this.context = context;
         this.subGroupName = subGroupName;

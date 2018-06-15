@@ -25,7 +25,7 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.Toast;
 
-import com.andresdlg.groupmeapp.Adapters.RVFilesAdapter;
+import com.andresdlg.groupmeapp.Adapters.RVSubGroupFilesAdapter;
 import com.andresdlg.groupmeapp.Entities.File;
 import com.andresdlg.groupmeapp.R;
 import com.andresdlg.groupmeapp.Utils.NotificationStatus;
@@ -73,7 +73,7 @@ public class SubGroupFilesDialogFragment extends DialogFragment {
     private String myRol;
 
     List<File> files;
-    RVFilesAdapter rvFilesAdapter;
+    RVSubGroupFilesAdapter rvSubGroupFilesAdapter;
 
     StorageReference mSubgroupFilesStorageRef;
     DatabaseReference mSubgroupFilesDatabaseRef;
@@ -134,8 +134,8 @@ public class SubGroupFilesDialogFragment extends DialogFragment {
         LinearLayoutManager llm = new LinearLayoutManager(getContext());
         rv.setLayoutManager(llm);
 
-        rvFilesAdapter = new RVFilesAdapter(files,getContext(), subGroupName,groupKey,subGroupKey);
-        rv.setAdapter(rvFilesAdapter);
+        rvSubGroupFilesAdapter = new RVSubGroupFilesAdapter(files,getContext(), subGroupName,groupKey,subGroupKey);
+        rv.setAdapter(rvSubGroupFilesAdapter);
 
         DatabaseReference subGroupReg = FirebaseDatabase.getInstance().getReference("Groups").child(groupKey).child("subgroups").child(subGroupKey);
         subGroupReg.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -143,7 +143,7 @@ public class SubGroupFilesDialogFragment extends DialogFragment {
             public void onDataChange(DataSnapshot dataSnapshot) {
                 members = (Map<String,String>) dataSnapshot.child("members").getValue();
                 myRol = setMyRol();
-                rvFilesAdapter.setMyRol(myRol);
+                rvSubGroupFilesAdapter.setMyRol(myRol);
                 mSubgroupFilesDatabaseRef = FirebaseDatabase.getInstance().getReference("Groups").child(groupKey).child("subgroups").child(subGroupKey).child("files");
                 mSubgroupFilesDatabaseRef.addValueEventListener(new ValueEventListener() {
                     @Override
@@ -153,7 +153,7 @@ public class SubGroupFilesDialogFragment extends DialogFragment {
                             File file = d.getValue(File.class);
                             files.add(file);
                         }
-                        rvFilesAdapter.notifyDataSetChanged();
+                        rvSubGroupFilesAdapter.notifyDataSetChanged();
                     }
 
                     @Override

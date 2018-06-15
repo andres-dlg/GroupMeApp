@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -11,14 +12,32 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/textGroupFiles"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textSize="15sp"
-            android:text="Archivos del grupo"
-            android:layout_margin="15dp"
-            />
+            android:weightSum="1">
+
+            <TextView
+                android:id="@+id/textGroupFiles"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="15sp"
+                android:text="Archivos del grupo"
+                android:layout_margin="15dp"
+                android:layout_weight=".7"
+                />
+
+            <ImageButton
+                android:id="@+id/addGroupFileBtn"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:background="?android:attr/selectableItemBackground"
+                android:tint="#616161"
+                app:srcCompat="@drawable/file_plus"
+                android:layout_weight=".3"
+                android:visibility="gone"/>
+
+        </LinearLayout>
 
         <View
             android:id="@+id/divisor"
@@ -33,6 +52,14 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
         </android.support.v7.widget.RecyclerView>
+
+        <TextView
+            android:id="@+id/tvNoGroupsFiles"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:text="No hay archivos compartidos"
+            android:gravity="center"
+            android:visibility="gone"/>
 
         <TextView
             android:id="@+id/textSubGroupFiles"
@@ -51,12 +78,21 @@
             android:layout_marginRight="15dp"
             android:background="@color/bg_add_photo" />
 
+
         <android.support.v7.widget.RecyclerView
             android:id="@+id/rvSubGroupFiles"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
         </android.support.v7.widget.RecyclerView>
+
+        <TextView
+            android:id="@+id/tvNoSubGroupsFiles"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:text="No hay archivos compartidos"
+            android:gravity="center"
+            android:visibility="gone"/>
 
     </LinearLayout>
 

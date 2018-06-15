@@ -8,10 +8,14 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Environment;
+import android.os.StrictMode;
 import android.support.annotation.NonNull;
 import android.support.v4.app.NotificationCompat;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -40,6 +44,7 @@ import com.thoughtbot.expandablerecyclerview.models.ExpandableGroup;
 import com.thoughtbot.expandablerecyclerview.viewholders.ChildViewHolder;
 import com.thoughtbot.expandablerecyclerview.viewholders.GroupViewHolder;
 
+import java.lang.reflect.Method;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
@@ -190,7 +195,7 @@ public class RVGroupFilesSubgroupsAdapter extends ExpandableRecyclerViewAdapter<
                     popupMenu.getMenuInflater().inflate(R.menu.subgroup_files_dialog_fragment_admin_menu, menu);
 
                     //REVISAR SI A ESTO LE PONGO PERMISOS POR ROLES
-                    popupMenu.getMenu().removeItem(R.id.share);
+                    //popupMenu.getMenu().removeItem(R.id.share);
                     popupMenu.getMenu().removeItem(R.id.delete);
 
                     /*if(!myRol.equals(Roles.SUBGROUP_ADMIN.toString())){
@@ -210,12 +215,12 @@ public class RVGroupFilesSubgroupsAdapter extends ExpandableRecyclerViewAdapter<
                                     //DESCARGA
                                     overrideFile(file.getFileUrl(),file.getFilename(),file.getFileType(),fileFromPhone.exists(),subGroupName, subGroupPosition, filePosition);
                                     break;
-                                /*case R.id.share:
+                                case R.id.share:
                                     //COMPARTIR
                                     shareFile(fileFromPhone);
                                     //saveFileToDrive(fileFromPhone);
                                     break;
-                                case R.id.delete:
+                                /*case R.id.delete:
                                     //ELIMINAR
                                     deleteFile(fileKey,fileUrl,fileFromPhone,fileFromPhone.exists());
                                     break;*/
@@ -394,7 +399,6 @@ public class RVGroupFilesSubgroupsAdapter extends ExpandableRecyclerViewAdapter<
                         @Override
                         public void onProgress(FileDownloadTask.TaskSnapshot taskSnapshot) {
                             double progress = (100.0 * taskSnapshot.getBytesTransferred()) / taskSnapshot.getTotalByteCount();
-
                             Intent intent = new Intent();
                             final PendingIntent pendingIntent = PendingIntent.getActivity(
                                     context, 17, intent, 0);
@@ -447,6 +451,35 @@ public class RVGroupFilesSubgroupsAdapter extends ExpandableRecyclerViewAdapter<
                             Log.e("Error: ","File: "+storageRef.getPath()+" ||| " +exception.toString());
                         }
                     });
+        }
+
+        private void shareFile(java.io.File fileWithinMyDir) {
+
+            Intent intentShareFile = new Intent(Intent.ACTION_SEND);
+
+            if(fileWithinMyDir.exists()) {
+                intentShareFile.setType("*/*");
+                String[] mimeTypes = {"image/*","audio/*","video/*","text/*","application/*"};
+                //intentShareFile.putExtra(Intent.EXTRA_ALLOW_MULTIPLE,true);
+                intentShareFile.putExtra(Intent.EXTRA_MIME_TYPES,mimeTypes);
+                intentShareFile.putExtra(Intent.EXTRA_STREAM, Uri.parse("file://"+fileWithinMyDir));
+
+                if(Build.VERSION.SDK_INT>=24){
+                    try{
+                        Method m = StrictMode.class.getMethod("disableDeathOnFileUriExposure");
+                        m.invoke(null);
+                    }catch(Exception e){
+                        e.printStackTrace();
+                    }
+                }
+
+            /*intentShareFile.putExtra(Intent.EXTRA_SUBJECT,
+                    "Sharing File...");
+            intentShareFile.putExtra(Intent.EXTRA_TEXT, "Sharing File...");*/
+
+                context.startActivity(Intent.createChooser(intentShareFile, "Compartir archivo"));
+            }
+
         }
     }
 }
