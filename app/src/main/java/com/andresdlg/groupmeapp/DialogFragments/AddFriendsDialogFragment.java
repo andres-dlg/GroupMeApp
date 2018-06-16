@@ -120,9 +120,11 @@ public class AddFriendsDialogFragment extends DialogFragment {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 for(DataSnapshot data : dataSnapshot.getChildren()){
-                    String alias = data.child("alias").getValue().toString();
-                    if(!results.contains(alias)){
-                        results.add(alias);
+                    if(data.child("alias").getValue() != null){
+                        String alias = data.child("alias").getValue().toString();
+                        if(!results.contains(alias)){
+                            results.add(alias);
+                        }
                     }
                 }
 
