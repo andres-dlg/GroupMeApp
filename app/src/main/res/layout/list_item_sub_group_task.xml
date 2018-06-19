@@ -112,7 +112,7 @@
                     android:id="@+id/checkbox"
                     />
 
-                <de.hdodenhof.circleimageview.CircleImageView
+                <!--<de.hdodenhof.circleimageview.CircleImageView
                     android:clickable="true"
                     android:focusable="true"
                     android:foreground="?android:attr/selectableItemBackgroundBorderless"
@@ -122,18 +122,6 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:src="@drawable/calendar_clock"
-                    android:layout_gravity="center_vertical|center_horizontal"/>
-
-                <!--<de.hdodenhof.circleimageview.CircleImageView
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:foreground="?android:attr/selectableItemBackgroundBorderless"
-                    android:background="#00ffffff"
-                    android:layout_marginLeft="@dimen/horizontal_margin"
-                    android:id="@+id/btn_task_time"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:src="@drawable/clock"
                     android:layout_gravity="center_vertical|center_horizontal"/>-->
 
 

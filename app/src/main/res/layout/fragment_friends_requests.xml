@@ -13,7 +13,12 @@
         android:id="@+id/tvRequests"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:text="REQUESTS"
+        android:text="No tienes solicitudes pendientes"
+        android:layout_marginRight="20dp"
+        android:layout_marginLeft="20dp"
+        android:textSize="40sp"
+        android:textColor="#e0e0e0"
+        android:fontFamily="@font/simplifica"
         android:gravity="center"/>
 
 </RelativeLayout>

@@ -4,15 +4,16 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
-    android:weightSum="100">
+    android:weightSum="1">
 
     <RelativeLayout
+        android:id="@+id/rl"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:clickable="true"
         android:focusable="true"
         android:foreground="?android:attr/selectableItemBackground"
-        android:layout_weight="100">
+        android:layout_weight=".9">
 
         <FrameLayout
             android:layout_width="wrap_content"
@@ -27,7 +28,6 @@
                 android:id="@+id/contact_photo"
                 android:layout_width="70dp"
                 android:layout_height="70dp"
-                android:src="@drawable/new_user"
                 />
 
             <ProgressBar
@@ -46,7 +46,6 @@
             android:layout_alignTop="@+id/flo"
             android:layout_marginRight="20dp"
             android:layout_toEndOf="@+id/flo"
-            android:text="Alias"
             android:textSize="13sp"
             android:focusable="true"
             android:focusableInTouchMode="true"
@@ -62,7 +61,6 @@
             android:layout_below="@id/userAlias"
             android:layout_marginRight="20dp"
             android:layout_toEndOf="@+id/flo"
-            android:text="Mensaje de la notificación"
             android:textSize="17sp"
             android:focusable="true"
             android:focusableInTouchMode="true"
@@ -75,17 +73,26 @@
             android:id="@+id/date"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginRight="20dp"
             android:layout_alignBottom="@id/flo"
             android:layout_toEndOf="@+id/flo"
-            android:text="Fecha de la notificación"
             android:textSize="11sp"
             android:focusable="true"
             android:focusableInTouchMode="true"
             android:singleLine="true"
             android:scrollHorizontally="true"
             android:ellipsize="marquee"
-            android:marqueeRepeatLimit ="marquee_forever"/>
+            android:marqueeRepeatLimit ="marquee_forever"
+            android:layout_toRightOf="@+id/newNotificationIndicator"/>
+
+        <ImageView
+            android:id="@+id/newNotificationIndicator"
+            android:layout_width="10dp"
+            android:layout_height="10dp"
+            android:layout_marginRight="20dp"
+            android:layout_alignBottom="@+id/date"
+            android:layout_alignParentEnd="true"
+            android:visibility="gone"
+            android:background="@drawable/newnotindicator"/>
 
         <View
             android:id="@+id/divider"
@@ -98,12 +105,12 @@
     </RelativeLayout>
 
     <ImageButton
+        android:id="@+id/menu_btn"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
+        android:background="@android:color/transparent"
         android:src="@drawable/dots_vertical"
-        android:layout_gravity="center"
-        android:layout_marginRight="20dp"
-        android:background="#ffffff"
-        android:id="@+id/menu_btn"/>
+        android:layout_weight=".1"
+        android:visibility="gone"/>
 
 </LinearLayout>

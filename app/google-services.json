@@ -15,6 +15,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "345993324607-osm4ft5r0uqv4tlcaepgvftuocmin8k5.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.andresdlg.groupmeapp",
+            "certificate_hash": "6eb25ef278ed5f1fbe73855e998a5a760081f2bb"
+          }
+        },
+        {
           "client_id": "345993324607-hpd67dj56sg3r534ns15vc1krhnqjk33.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {

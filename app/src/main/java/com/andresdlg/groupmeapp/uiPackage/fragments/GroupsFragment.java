@@ -1,6 +1,7 @@
 package com.andresdlg.groupmeapp.uiPackage.fragments;
 
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.DialogFragment;
@@ -15,11 +16,13 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.andresdlg.groupmeapp.Adapters.RVGroupAdapter;
+import com.andresdlg.groupmeapp.Adapters.RVNotificationAdapter;
 import com.andresdlg.groupmeapp.DialogFragments.HeaderDialogFragment;
 import com.andresdlg.groupmeapp.Entities.Group;
 import com.andresdlg.groupmeapp.R;
 import com.andresdlg.groupmeapp.Utils.GroupStatus;
 import com.andresdlg.groupmeapp.Utils.GroupType;
+import com.andresdlg.groupmeapp.firebasePackage.FireApp;
 import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -29,12 +32,13 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by andresdlg on 02/05/17.
  */
 
-public class GroupsFragment extends Fragment implements View.OnClickListener{
+public class GroupsFragment extends Fragment implements View.OnClickListener, HeaderDialogFragment.OnSaveGroupListener, RVNotificationAdapter.OnSaveGroupListener{
 
     TextView tvNoGroups;
     RVGroupAdapter adapter;
@@ -42,42 +46,63 @@ public class GroupsFragment extends Fragment implements View.OnClickListener{
     DatabaseReference groupsRef;
     List<Group> groups;
     RecyclerView rv;
+    FloatingActionButton mFloatingActionButton;
+
+    View view;
+    private int value;
 
     @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_groups,container,false);
         setRetainInstance(true);
+        value = 0;
         return v;
     }
 
     @Override
-    public void onViewCreated(final View view, @Nullable Bundle savedInstanceState) {
+    public void onViewCreated(@NonNull final View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        this.view = view;
+
         groups = new ArrayList<>();
+
+        tvNoGroups = view.findViewById(R.id.tvNoGroups);
 
         //Recicler view
         rv = view.findViewById(R.id.rvGroups);
         rv.setHasFixedSize(true); //El tamaño queda fijo, mejora el desempeño
         LinearLayoutManager llm = new LinearLayoutManager(getContext());
         rv.setLayoutManager(llm);
+        rv.setItemViewCacheSize(100);
+        rv.setDrawingCacheEnabled(true);
+        rv.setDrawingCacheQuality(View.DRAWING_CACHE_QUALITY_HIGH);
 
         //Floating action button
-        FloatingActionButton mFloatingActionButton = view.findViewById(R.id.fabGroups);
+        mFloatingActionButton = view.findViewById(R.id.fabGroups);
         mFloatingActionButton.setOnClickListener(this);
 
         groupsRef = FirebaseDatabase.getInstance().getReference("Groups");
-
+        groupsRef.keepSynced(true);
         mUserGroupsRef = FirebaseDatabase.getInstance().getReference("Users").child(StaticFirebaseSettings.currentUserId).child("groups");
+
+    }
+
+    private void getAllGroups(){
         mUserGroupsRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 for(DataSnapshot data : dataSnapshot.getChildren()){
                     if(data.child("status").getValue().toString().equals(GroupStatus.ACCEPTED.toString())){
                         getGroup(data.getKey());
-                        view.findViewById(R.id.tvNoGroups).setVisibility(View.INVISIBLE);
                     }
+                }
+
+                if(!dataSnapshot.hasChildren()){
+                    tvNoGroups.setVisibility(View.VISIBLE);
+                }else {
+                    tvNoGroups.setVisibility(View.GONE);
                 }
             }
 
@@ -89,11 +114,6 @@ public class GroupsFragment extends Fragment implements View.OnClickListener{
 
         adapter = new RVGroupAdapter(getContext(),groups);
         rv.setAdapter(adapter);
-
-        tvNoGroups = view.findViewById(R.id.tvNoGroups);
-        checkGroupsQuantity();
-
-        //implementRecyclerViewClickListeners();
     }
 
     private void getGroup(String key) {
@@ -101,16 +121,9 @@ public class GroupsFragment extends Fragment implements View.OnClickListener{
         groupRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                boolean contains = false;
-                Group u = dataSnapshot.getValue(Group.class);
-                for(Group g : groups){
-                    if(g.getGroupKey().equals(u.getGroupKey())){
-                        contains = true;
-                    }
-                }
-                if(!contains){
-                    groups.add(u);
-                    adapter.notifyDataSetChanged();
+                if(dataSnapshot.getValue()!=null){
+                    Group u = dataSnapshot.getValue(Group.class);
+                    updateGroups(u);
                 }
             }
 
@@ -121,11 +134,6 @@ public class GroupsFragment extends Fragment implements View.OnClickListener{
         });
     }
 
-    private void checkGroupsQuantity() {
-        if(adapter.getItemCount() == 0){
-            tvNoGroups.setVisibility(View.VISIBLE);
-        }
-    }
 
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
@@ -141,6 +149,12 @@ public class GroupsFragment extends Fragment implements View.OnClickListener{
         }
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        getAllGroups();
+    }
+
     private void showHeaderDialogFragment() {
         FragmentManager fragmentManager = getFragmentManager();
         HeaderDialogFragment newFragment = new HeaderDialogFragment(GroupType.GROUP);
@@ -150,4 +164,43 @@ public class GroupsFragment extends Fragment implements View.OnClickListener{
         transaction.add(android.R.id.content, newFragment).addToBackStack(null).commit();
     }
 
+    @Override
+    public void onSavedGroup(boolean saved) {
+        if(saved){
+            getAllGroups();
+        }
+    }
+
+    @Override
+    public void setUserVisibleHint(boolean isVisibleToUser) {
+        super.setUserVisibleHint(isVisibleToUser);
+        if(isAdded()){
+            if(isVisibleToUser){
+                mFloatingActionButton.show();
+            }else{
+                mFloatingActionButton.hide();
+            }
+        }
+    }
+
+    private void updateGroups(Group group) {
+        boolean exists = false;
+        for(int i=0; i < groups.size(); i++){
+            if(groups.get(i).getGroupKey().equals(group.getGroupKey())){
+                exists = true;
+                groups.remove(i);
+                groups.add(i,group);
+                adapter.notifyItemChanged(i);
+            }
+        }
+        if(!exists){
+            groups.add(group);
+            adapter.notifyDataSetChanged();
+
+            //PARA NOTIFICACIONES
+            Map<String,Integer> map = ((FireApp) getContext().getApplicationContext()).getGroupsIds();
+            map.put(group.getGroupKey(),value);
+            value += 1;
+        }
+    }
 }

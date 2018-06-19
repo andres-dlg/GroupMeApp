@@ -1,45 +1,38 @@
 package com.andresdlg.groupmeapp.uiPackage;
 
-import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
-import android.view.LayoutInflater;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.andresdlg.groupmeapp.Adapters.ListMessageAdapter;
 import com.andresdlg.groupmeapp.Entities.Conversation;
+import com.andresdlg.groupmeapp.Entities.Message;
 import com.andresdlg.groupmeapp.Entities.Users;
 import com.andresdlg.groupmeapp.R;
-import com.andresdlg.groupmeapp.Entities.Message;
-import com.andresdlg.groupmeapp.Utils.NotificationStatus;
-import com.andresdlg.groupmeapp.Utils.NotificationTypes;
 import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
-import com.google.android.gms.tasks.OnSuccessListener;
+import com.bumptech.glide.Glide;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.squareup.picasso.Callback;
-import com.squareup.picasso.NetworkPolicy;
-import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -52,11 +45,18 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
     private String conversationKey;
     private ArrayList<String> contactIds;
     private Conversation conversation;
-    private ImageButton btnSend;
     private EditText editWriteMessage;
     private LinearLayoutManager linearLayoutManager;
     private Users userTo;
     private Users currentUser;
+    private LinearLayout toolbarContainer;
+    private TextView tv;
+    private CircleImageView civ;
+
+    DatabaseReference conversationRef;
+    DatabaseReference userToRef;
+    DatabaseReference currentUserRef;
+    ValueEventListener valueEventListener;
 
 
     @Override
@@ -64,43 +64,91 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
 
-        final Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar_chats);
+        final Toolbar toolbar = findViewById(R.id.toolbar_chats);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        toolbar.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.e("Toolbar","Clicked");
-            }
-        });
 
-        final TextView tv = toolbar.findViewById(R.id.action_bar_title_1);
-        final CircleImageView civ = toolbar.findViewById(R.id.conversation_contact_photo);
+        toolbarContainer = findViewById(R.id.toolbar_container);
+
+        tv = toolbar.findViewById(R.id.action_bar_title_1);
+        civ = toolbar.findViewById(R.id.conversation_contact_photo);
         contactIds = getIntent().getStringArrayListExtra("contactIds");
         conversationKey = getIntent().getStringExtra("conversationKey");
 
+        //conversationRef = FirebaseDatabase.getInstance().getReference("Conversations").child(conversationKey);
+        conversationRef = FirebaseDatabase.getInstance().getReference("Users").child(StaticFirebaseSettings.currentUserId).child("conversation").child(conversationKey);
+        valueEventListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if(dataSnapshot.getValue()!=null){
+                    for(DataSnapshot messageRef : dataSnapshot.getChildren()){
+                        Message m = messageRef.getValue(Message.class);
+                        boolean existo = false;
+                        for(String s : m.getSeenBy()){
+                            if(s.equals(StaticFirebaseSettings.currentUserId)){
+                                existo = true;
+                                break;
+                            }
+                        }
+                        if(!existo){
+                            List<String> seenBy = m.getSeenBy();
+                            seenBy.add(StaticFirebaseSettings.currentUserId);
+                            FirebaseDatabase
+                                    .getInstance()
+                                    .getReference("Conversations")
+                                    .child(conversationKey)
+                                    .child("messages")
+                                    .child(m.getId())
+                                    .child("seenBy")
+                                    .setValue(seenBy);
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        };
+
+        conversationRef.child("messages").addValueEventListener(valueEventListener);
+
         conversation = new Conversation();
-        btnSend = (ImageButton) findViewById(R.id.btnSend);
+        ImageButton btnSend = findViewById(R.id.btnSend);
         btnSend.setOnClickListener(this);
 
-        DatabaseReference userToRef = FirebaseDatabase.getInstance().getReference("Users").child(contactIds.get(0));
+        userToRef = FirebaseDatabase.getInstance().getReference("Users").child(contactIds.get(0));
         userToRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 userTo = dataSnapshot.getValue(Users.class);
-                DatabaseReference currentUserRef = FirebaseDatabase.getInstance().getReference("Users").child(StaticFirebaseSettings.currentUserId);
+                currentUserRef = FirebaseDatabase.getInstance().getReference("Users").child(StaticFirebaseSettings.currentUserId);
                 tv.setText(userTo.getName());
-                Picasso.with(ChatActivity.this).load(userTo.getImageURL()).into(civ);
+                Glide.with(ChatActivity.this)
+                        .load(userTo.getImageURL())
+                        .into(civ);
+
+                toolbarContainer.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Intent userProfileIntent = new Intent(ChatActivity.this, UserProfileSetupActivity.class);
+                        userProfileIntent.putExtra("iduser",userTo.getUserid());
+                        startActivity(userProfileIntent);
+                    }
+                });
+
                 currentUserRef.addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         currentUser = dataSnapshot.getValue(Users.class);
                         if (userTo != null && currentUser != null) {
                             linearLayoutManager = new LinearLayoutManager(getBaseContext(), LinearLayoutManager.VERTICAL, false);
-                            recyclerChat = (RecyclerView) findViewById(R.id.recyclerChat);
+                            recyclerChat = findViewById(R.id.recyclerChat);
                             recyclerChat.setLayoutManager(linearLayoutManager);
-                            adapter = new ListMessageAdapter(getBaseContext(), conversation, userTo.getImageURL(), currentUser.getImageURL(),"User");
-                            FirebaseDatabase.getInstance().getReference().child("Conversations").child(conversationKey).child("messages").addChildEventListener(new ChildEventListener() {
+                            adapter = new ListMessageAdapter(getBaseContext(), conversation, userTo.getImageURL(), currentUser.getImageURL(),"User", conversationKey);
+                            //FirebaseDatabase.getInstance().getReference().child("Conversations").child(conversationKey).child("messages").addChildEventListener(new ChildEventListener() {
+                            FirebaseDatabase.getInstance().getReference("Users").child(StaticFirebaseSettings.currentUserId).child("conversation").child(conversationKey).child("messages").addChildEventListener(new ChildEventListener() {
                                 @Override
                                 public void onChildAdded(DataSnapshot dataSnapshot, String s) {
                                     if (dataSnapshot.getValue() != null) {
@@ -153,20 +201,77 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
 
             }
         });
-        editWriteMessage = (EditText) findViewById(R.id.editWriteMessage);
+        editWriteMessage = findViewById(R.id.editWriteMessage);
+    }
+
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.activity_chat_menu, menu);
+        return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-
-        int id = item.getItemId();
-        switch (id){
+        // Handle item selection
+        switch (item.getItemId()) {
             case android.R.id.home:
                 this.finish();
-                break;
+                return true;
+            case R.id.delete:
+                deleteConversation();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
         }
-        return true;
     }
+
+    private void deleteConversation() {
+        new AlertDialog.Builder(this,R.style.MyDialogTheme)
+                .setTitle("¿Desea eliminar esta conversación?")
+                .setPositiveButton("Si", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        FirebaseDatabase
+                                .getInstance()
+                                .getReference("Users")
+                                .child(currentUser.getUserid())
+                                .child("conversation")
+                                .child(conversationKey)
+                                .removeValue();
+
+                        FirebaseDatabase
+                                .getInstance()
+                                .getReference("Users")
+                                .child(userTo.getUserid())
+                                .child("conversation")
+                                .child(conversationKey)
+                                .addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(DataSnapshot dataSnapshot) {
+                                if(!dataSnapshot.hasChildren()){
+                                    conversationRef.removeValue();
+                                }
+                            }
+
+                            @Override
+                            public void onCancelled(DatabaseError databaseError) {
+
+                            }
+                        });
+                        onBackPressed();
+                    }
+                })
+                .setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                })
+                .setCancelable(false)
+                .show();
+    }
+
 
     @Override
     public void onBackPressed() {
@@ -177,20 +282,32 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        conversationRef.removeEventListener(valueEventListener);
+    }
+
+    @Override
     public void onClick(View view) {
         if (view.getId() == R.id.btnSend) {
             String content = editWriteMessage.getText().toString().trim();
             if (content.length() > 0) {
+                List<String> seenBy = new ArrayList<>();
+                seenBy.add(StaticFirebaseSettings.currentUserId);
                 editWriteMessage.setText("");
-                DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference("Conversations").child(conversationKey).child("messages").push();
+                DatabaseReference dbRef = conversationRef.child("messages").push();
                 Message newMessage = new Message();
                 newMessage.setText(content);
                 newMessage.setIdSender(StaticFirebaseSettings.currentUserId);
+                newMessage.setSeenBy(seenBy);
                 //Tocar esto cuando la conversación sea grupal
                 newMessage.setIdReceiver(contactIds.get(0));
                 newMessage.setTimestamp(System.currentTimeMillis());
                 newMessage.setId(dbRef.getKey());
+                FirebaseDatabase.getInstance().getReference("Conversations").child(conversationKey).child("messages").child(newMessage.getId()).setValue(newMessage);
                 dbRef.setValue(newMessage);
+                userToRef.child("conversation").child(conversationKey).child("messages").child(newMessage.getId()).setValue(newMessage);
+                //currentUserRef.child("conversation").child(conversationKey).child("messages").child(newMessage.getId()).setValue(newMessage);
             }
         }
     }

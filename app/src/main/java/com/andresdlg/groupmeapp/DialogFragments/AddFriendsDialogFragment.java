@@ -3,22 +3,19 @@ package com.andresdlg.groupmeapp.DialogFragments;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
-import android.content.res.ColorStateList;
-import android.graphics.PorterDuff;
-import android.graphics.PorterDuffColorFilter;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.speech.RecognizerIntent;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -28,7 +25,6 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ImageButton;
-import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -39,6 +35,11 @@ import com.andresdlg.groupmeapp.Utils.NotificationStatus;
 import com.andresdlg.groupmeapp.Utils.NotificationTypes;
 import com.andresdlg.groupmeapp.firebasePackage.FilterableFirebaseArray;
 import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.DataSource;
+import com.bumptech.glide.load.engine.GlideException;
+import com.bumptech.glide.request.RequestListener;
+import com.bumptech.glide.request.target.Target;
 import com.firebase.ui.database.ClassSnapshotParser;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.firebase.ui.database.FirebaseRecyclerOptions;
@@ -51,14 +52,11 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.miguelcatalan.materialsearchview.MaterialSearchView;
-import com.squareup.picasso.Callback;
-import com.squareup.picasso.NetworkPolicy;
-import com.squareup.picasso.OkHttpDownloader;
-import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import de.hdodenhof.circleimageview.CircleImageView;
@@ -72,8 +70,11 @@ import static android.app.Activity.RESULT_OK;
 public class AddFriendsDialogFragment extends DialogFragment {
 
     MaterialSearchView searchView;
-    private RecyclerView rvContactsResult;
+    RecyclerView rvContactsResult;
     DatabaseReference mUserDatabase;
+    TextView tvSearchUsers;
+
+    List<String> results;
 
     public AddFriendsDialogFragment(){
         setRetainInstance(true);
@@ -84,12 +85,15 @@ public class AddFriendsDialogFragment extends DialogFragment {
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.activity_main_add_friends_dialog, container, false);
 
+        tvSearchUsers = view.findViewById(R.id.tvSearchUsers);
+
+        results = new ArrayList<>();
 
         mUserDatabase = FirebaseDatabase.getInstance().getReference("Users");
 
         //TOOLBAR INITIALIZATION
         Toolbar toolbar = view.findViewById(R.id.toolbar);
-        toolbar.setTitle("Buscar alias");
+        toolbar.setTitle("Buscar por alias");
         toolbar.setTitleTextColor(getResources().getColor(R.color.colorAccent));
 
         assert (getActivity()) != null;
@@ -111,7 +115,28 @@ public class AddFriendsDialogFragment extends DialogFragment {
         searchView = view.findViewById(R.id.search_view);
         searchView.setVoiceSearch(true);
         searchView.setCursorDrawable(R.drawable.color_cursor_white);
-        searchView.setSuggestions(getResources().getStringArray(R.array.query_suggestions));
+
+        FirebaseDatabase.getInstance().getReference("Users").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for(DataSnapshot data : dataSnapshot.getChildren()){
+                    if(data.child("alias").getValue() != null){
+                        String alias = data.child("alias").getValue().toString();
+                        if(!results.contains(alias)){
+                            results.add(alias);
+                        }
+                    }
+                }
+
+                searchView.setSuggestions(results.toArray(new String[0]));
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
         searchView.setHint("Buscar");
         searchView.setOnQueryTextListener(new MaterialSearchView.OnQueryTextListener() {
             @Override
@@ -121,7 +146,12 @@ public class AddFriendsDialogFragment extends DialogFragment {
             }
 
             @Override
-            public boolean onQueryTextChange(String newText) {
+            public boolean onQueryTextChange(final String newText) {
+                if(newText.length() > 0){
+                    tvSearchUsers.setVisibility(View.GONE);
+                }else{
+                    tvSearchUsers.setVisibility(View.VISIBLE);
+                }
                 //Do some magic
                 return false;
             }
@@ -212,13 +242,31 @@ public class AddFriendsDialogFragment extends DialogFragment {
     }
 
 
-    private void firebaseUserSearch(String query){
+    private void firebaseUserSearch(final String query){
 
         //La query funciona bien
         final Query firebaseQuery = mUserDatabase.orderByChild("alias")
                                            .startAt(query)
                                            .endAt(query + "\uf8ff")
                                            .limitToFirst(100);
+
+        //Esto es para esconder o no el textview
+        firebaseQuery.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if(dataSnapshot.hasChildren()){
+                    tvSearchUsers.setVisibility(View.GONE);
+                }else {
+                    tvSearchUsers.setVisibility(View.VISIBLE);
+                    tvSearchUsers.setText(String.format("No se encontraron contactos para la búsqueda: \"%s\"", query));
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
 
         ClassSnapshotParser<Users> parser = new ClassSnapshotParser<>(Users.class);
         FilterableFirebaseArray filterableFirebaseArray = new FilterableFirebaseArray(firebaseQuery, parser);
@@ -238,7 +286,7 @@ public class AddFriendsDialogFragment extends DialogFragment {
             }
 
             @Override
-            protected void onBindViewHolder(@NonNull UsersViewHolder holder, int position, @NonNull Users model) {
+            protected void onBindViewHolder(@NonNull final UsersViewHolder holder, int position, @NonNull final Users model) {
                     holder.setDetails(getContext(),model.getName(),model.getAlias(),model.getImageURL(),model.getUserid());
             }
         };
@@ -252,25 +300,22 @@ public class AddFriendsDialogFragment extends DialogFragment {
 
     public static class UsersViewHolder extends RecyclerView.ViewHolder {
 
-
         View mView;
-        private boolean wasSent;
+        ImageButton mContactAdd;
 
         UsersViewHolder(View itemView) {
             super(itemView);
             mView = itemView;
-
+            mContactAdd = mView.findViewById(R.id.btn_add_contact);
         }
 
-        void setDetails(final Context context, String contactName, final String contactAlias, final String contactPhoto, final String id){
+        void setDetails(final Context context, String contactName, final String contactAlias, final String contactPhoto, String id){
             final CircleImageView mContactPhoto = mView.findViewById(R.id.contact_photo);
             TextView mContactName = mView.findViewById(R.id.contact_name);
             TextView mContactAlias = mView.findViewById(R.id.contact_alias);
 
-            CircleImageView mContactAdd = null;
             //Reviso si ya se envio la solicitud al usuario. En ese caso cambio el icono y deshabilito envio
             wasSent(id, context);
-            //mContactAdd = mView.findViewById(R.id.btn_add_contact);
 
             mContactAlias.setText(String.format("@%s", contactAlias));
             mContactAlias.setSelected(true);
@@ -278,77 +323,73 @@ public class AddFriendsDialogFragment extends DialogFragment {
             mContactName.setText(contactName);
             mContactName.setSelected(true);
 
-            //new Picasso.Builder(context).downloader(new OkHttpDownloader(context,Integer.MAX_VALUE)).build().load(contactPhoto).placeholder(R.drawable.progress_animation).into(mContactPhoto);
-
-            Picasso.with(context)
+            Glide.with(context)
                     .load(contactPhoto)
-                    .into(mContactPhoto, new Callback() {
+                    .listener(new RequestListener<Drawable>() {
                         @Override
-                        public void onSuccess() {
+                        public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
+                            return false;
+                        }
+
+                        @Override
+                        public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
                             itemView.findViewById(R.id.homeprogress).setVisibility(View.GONE);
+                            return false;
                         }
-
-                        @Override
-                        public void onError() {
-                            Picasso.with(context)
-                                    .load(contactPhoto)
-                                    .networkPolicy(NetworkPolicy.OFFLINE)
-                                    .into(mContactPhoto, new Callback() {
-                                        @Override
-                                        public void onSuccess() {
-                                            itemView.findViewById(R.id.homeprogress).setVisibility(View.GONE);
-                                        }
-
-                                        @Override
-                                        public void onError() {
-                                            Log.v("Picasso","No se ha podido cargar la foto");
-                                        }
-                                    });
-                        }
-                    });
+                    })
+                    .into(mContactPhoto);
         }
 
         private void wasSent(final String id, final Context context) {
 
             //Obtengo el reloj de arena y lo pinto
-            final Drawable mDrawablePending = context.getResources().getDrawable(R.drawable.timer_sand);
-            mDrawablePending.setTint(context.getResources().getColor(R.color.add_photo));
+            final Drawable mDrawablePending = ContextCompat.getDrawable(context,R.drawable.ic_timer_sand_black_24dp);
+            //mDrawablePending.setTint(context.getResources().getColor(R.color.add_photo));
 
             //Obtengo el reloj de arena y lo pinto
-            final Drawable mDrawableAccepted = context.getResources().getDrawable(R.drawable.account_check);
-            mDrawableAccepted.setTint(context.getResources().getColor(R.color.add_photo));
+            final Drawable mDrawableAccepted = ContextCompat.getDrawable(context,R.drawable.ic_account_check_black_24dp);
+            //mDrawableAccepted.setTint(context.getResources().getColor(R.color.add_photo));
 
             final String idCurrentUser = FirebaseAuth.getInstance().getCurrentUser().getUid();
-            wasSent = false;
-            DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("Users").child(id).child("friends");
+
+            DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("Users").child(id).child("friends").child(idCurrentUser);
             databaseReference.addValueEventListener(new ValueEventListener() {
                 @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
-                    CircleImageView mContactAdd = null;
-                    for(DataSnapshot data : dataSnapshot.getChildren()){
-                        if(data.getKey().equals(idCurrentUser) && data.child("status").getValue().equals(FriendshipStatus.PENDING.toString())){
-                            wasSent = true;
-                            mContactAdd = mView.findViewById(R.id.btn_add_contact);
-                            mContactAdd.setImageDrawable(mDrawablePending);
-                            mContactAdd.setEnabled(false);
-                            break;
-                        }
-                        if(data.getKey().equals(idCurrentUser) && data.child("status").getValue().equals(FriendshipStatus.ACCEPTED.toString())){
-                            wasSent = true;
-                            mContactAdd = mView.findViewById(R.id.btn_add_contact);
-                            mContactAdd.setImageDrawable(mDrawableAccepted);
-                            mContactAdd.setEnabled(false);
-                            break;
-                        }
+                public void onDataChange(DataSnapshot data) {
+                    //mContactAdd = mView.findViewById(R.id.btn_add_contact);
+                    if(data.child("status").getValue()!= null && data.child("status").getValue().equals(FriendshipStatus.PENDING.toString())){
+                        mContactAdd.setImageDrawable(mDrawablePending);
+                        mContactAdd.setEnabled(false);
                     }
-                    if(!wasSent){
-                        mContactAdd = mView.findViewById(R.id.btn_add_contact);
+                    else if(data.child("status").getValue() != null && data.child("status").getValue().equals(FriendshipStatus.ACCEPTED.toString())){
+                        mContactAdd.setImageDrawable(mDrawableAccepted);
+                        mContactAdd.setEnabled(false);
                     }
+                    else{
+                        mContactAdd.setImageDrawable(ContextCompat.getDrawable(context,R.drawable.ic_account_plus_black_24dp));
+                        mContactAdd.setEnabled(true);
+                    }
+                }
 
-                    mContactAdd.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
+                }
+            });
+
+            mContactAdd.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+
+                    final String userFrom = StaticFirebaseSettings.currentUserId;
+
+                    FirebaseDatabase
+                            .getInstance()
+                            .getReference("Users")
+                            .child(userFrom).addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
-                        public void onClick(View view) {
-                            String userFrom = StaticFirebaseSettings.currentUserId;
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+                            Users me = dataSnapshot.getValue(Users.class);
 
                             DatabaseReference userTo = FirebaseDatabase
                                     .getInstance()
@@ -361,10 +402,10 @@ public class AddFriendsDialogFragment extends DialogFragment {
                             Map<String,Object> notification = new HashMap<>();
                             notification.put("notificationKey",notificationKey);
                             notification.put("title","Solicitud de amistad");
-                            notification.put("message","Has recibido una solicitud de amistad de ");
+                            notification.put("message","Has recibido una solicitud de amistad de " + me.getName());
                             notification.put("from",userFrom);
                             notification.put("state", NotificationStatus.UNREAD);
-                            notification.put("date", Calendar.getInstance().getTime());
+                            notification.put("date", Calendar.getInstance().getTimeInMillis());
                             notification.put("type", NotificationTypes.FRIENDSHIP);
 
                             userToNotifications.child(notificationKey).setValue(notification).addOnSuccessListener(new OnSuccessListener<Void>() {
@@ -378,14 +419,16 @@ public class AddFriendsDialogFragment extends DialogFragment {
                             DatabaseReference userToFriends = userTo.child("friends");
                             Map<String,Object> friend = new HashMap<>();
                             friend.put("status", FriendshipStatus.PENDING);
+                            friend.put("seen", NotificationStatus.UNREAD);
                             userToFriends.child(userFrom).updateChildren(friend);
+
+                        }
+
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
+
                         }
                     });
-                }
-
-                @Override
-                public void onCancelled(DatabaseError databaseError) {
-
                 }
             });
         }

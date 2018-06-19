@@ -3,36 +3,42 @@ package com.andresdlg.groupmeapp.Adapters;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.drawable.Drawable;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Adapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.andresdlg.groupmeapp.Entities.ConversationFirebase;
+import com.andresdlg.groupmeapp.Entities.Message;
 import com.andresdlg.groupmeapp.Entities.Users;
 import com.andresdlg.groupmeapp.R;
 import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
 import com.andresdlg.groupmeapp.uiPackage.ChatActivity;
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.DataSource;
+import com.bumptech.glide.load.engine.GlideException;
+import com.bumptech.glide.request.RequestListener;
+import com.bumptech.glide.request.target.Target;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.squareup.picasso.Callback;
-import com.squareup.picasso.NetworkPolicy;
-import com.squareup.picasso.Picasso;
 
-import java.util.ArrayDeque;
+import org.ocpsoft.prettytime.PrettyTime;
+
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Created by andresdlg on 21/01/18.
@@ -41,28 +47,30 @@ import java.util.List;
 public class RVMessageAdapter extends RecyclerView.Adapter<RVMessageAdapter.MessageViewHolder>{
 
 
-    DatabaseReference conversationRef;
-    DatabaseReference userRef;
+    private DatabaseReference userRef;
 
-    ValueEventListener conversationEventListener;
-    ValueEventListener userValueEventListener;
+    private ValueEventListener userValueEventListener;
 
     private List<ConversationFirebase> conversations;
     private Context context;
 
+    private PrettyTime prettyTime;
+
     public RVMessageAdapter(List<ConversationFirebase> conversations, Context context){
         this.conversations = conversations;
         this.context = context;
+        this.prettyTime = new PrettyTime(new Locale("es"));
     }
 
+    @NonNull
     @Override
-    public MessageViewHolder onCreateViewHolder(final ViewGroup parent, int viewType) {
+    public MessageViewHolder onCreateViewHolder(@NonNull final ViewGroup parent, int viewType) {
         View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.fragment_messages_list, parent, false);
         return new MessageViewHolder(v);
     }
 
     @Override
-    public void onBindViewHolder(final MessageViewHolder messageViewHolder, @SuppressLint("RecyclerView") final int position) {
+    public void onBindViewHolder(@NonNull final MessageViewHolder messageViewHolder, @SuppressLint("RecyclerView") final int position) {
 
         Collections.sort(conversations, new Comparator<ConversationFirebase>() {
             @Override
@@ -92,14 +100,14 @@ public class RVMessageAdapter extends RecyclerView.Adapter<RVMessageAdapter.Mess
             }
         });
 
-        conversationRef = FirebaseDatabase.getInstance().getReference("Conversations").child(conversations.get(position).getId());
-        conversationEventListener = new ValueEventListener() {
+        DatabaseReference conversationRef = FirebaseDatabase.getInstance().getReference("Conversations").child(conversations.get(position).getId());
+        ValueEventListener conversationEventListener = new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                String idUser = null;
-                if(dataSnapshot.child("user1").getValue().toString().equals(StaticFirebaseSettings.currentUserId)){
+                String idUser;
+                if (dataSnapshot.child("user1").getValue().toString().equals(StaticFirebaseSettings.currentUserId)) {
                     idUser = dataSnapshot.child("user2").getValue().toString();
-                }else{
+                } else {
                     idUser = dataSnapshot.child("user1").getValue().toString();
                 }
 
@@ -108,11 +116,16 @@ public class RVMessageAdapter extends RecyclerView.Adapter<RVMessageAdapter.Mess
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         Users u = dataSnapshot.getValue(Users.class);
-                        messageViewHolder.userAlias.setText(new StringBuilder().append("@").append(u.getAlias()).toString());
-                        messageViewHolder.setPhoto(context,u.getImageURL());//Picasso.with(context).load(u.getImageURL()).into(messageViewHolder.userPhoto);
+                        messageViewHolder.userAlias.setText(String.format("@%s", u.getAlias()));
+                        messageViewHolder.setPhoto(context, u.getImageURL());
                         messageViewHolder.messageText.setText(conversations.get(position).getMessage().getText());
-                        messageViewHolder.messageDate.setText(dateDifference(conversations.get(position).getMessage().getTimestamp()));
 
+                        Calendar calendar = Calendar.getInstance();
+                        calendar.setTimeInMillis(conversations.get(position).getMessage().getTimestamp());
+                        String date = prettyTime.format(calendar);
+                        messageViewHolder.messageDate.setText(date);
+
+                        messageViewHolder.setNewMessageIndicator(conversations.get(position));
                         //removeUsersListener();
                         //removeConversationListener();
                     }
@@ -123,7 +136,6 @@ public class RVMessageAdapter extends RecyclerView.Adapter<RVMessageAdapter.Mess
                     }
                 };
                 userRef.addValueEventListener(userValueEventListener);
-
             }
 
             @Override
@@ -132,14 +144,6 @@ public class RVMessageAdapter extends RecyclerView.Adapter<RVMessageAdapter.Mess
             }
         };
         conversationRef.addListenerForSingleValueEvent(conversationEventListener);
-    }
-
-    private void removeConversationListener() {
-        conversationRef.removeEventListener(conversationEventListener);
-    }
-
-    private void removeUsersListener(){
-        userRef.removeEventListener(userValueEventListener);
     }
 
     @Override
@@ -153,30 +157,15 @@ public class RVMessageAdapter extends RecyclerView.Adapter<RVMessageAdapter.Mess
     }
 
     @Override
-    public void onAttachedToRecyclerView(RecyclerView recyclerView) {
+    public void onAttachedToRecyclerView(@NonNull RecyclerView recyclerView) {
         super.onAttachedToRecyclerView(recyclerView);
-    }
-
-    private String dateDifference(Long d) {
-
-        Calendar today = Calendar.getInstance();
-        long diff = today.getTimeInMillis() - d;
-
-        if(diff/1000 <= 60){
-            return ("Hace "+ Math.round(diff/1000)+ " segundos");
-        }else if(diff/1000/60 < 60){
-            return ("Hace "+ Math.round(diff/1000/60)+ " minutos");
-        }else if(diff/1000/60/60 < 24){
-            return ("Hace "+ Math.round(diff/1000/60/60)+ " horas");
-        }else{
-            return ("Hace "+ Math.round(diff/1000/60/60/24)+ " dias");
-        }
     }
 
 
     static class MessageViewHolder extends RecyclerView.ViewHolder {
         TextView userAlias;
         ImageView userPhoto;
+        ImageView newMessagesIndicator;
         TextView messageText;
         TextView messageDate;
         View mView;
@@ -189,32 +178,48 @@ public class RVMessageAdapter extends RecyclerView.Adapter<RVMessageAdapter.Mess
             userPhoto = itemView.findViewById(R.id.contact_photo);
             messageText = itemView.findViewById(R.id.messageText);
             messageDate = itemView.findViewById(R.id.date);
+            newMessagesIndicator = itemView.findViewById(R.id.newMessageIndicator);
         }
 
-        public void setPhoto(final Context context, final String imageURL) {
-            Picasso.with(context).load(imageURL).into(userPhoto, new Callback() {
-                @Override
-                public void onSuccess() {
-                    itemView.findViewById(R.id.homeprogress).setVisibility(View.GONE);
-                }
-                @Override
-                public void onError() {
-                    Picasso.with(context)
-                            .load(imageURL)
-                            .networkPolicy(NetworkPolicy.OFFLINE)
-                            .into(userPhoto, new Callback() {
-                                @Override
-                                public void onSuccess() {
-                                    itemView.findViewById(R.id.homeprogress).setVisibility(View.GONE);
-                                }
+        public void setPhoto(Context context, final String imageURL) {
+            Glide.with(context)
+                    .load(imageURL)
+                    .listener(new RequestListener<Drawable>() {
+                        @Override
+                        public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
+                            return false;
+                        }
 
-                                @Override
-                                public void onError() {
-                                    Log.v("Picasso","No se ha podido cargar la foto");
-                                }
-                            });
+                        @Override
+                        public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
+                            itemView.findViewById(R.id.homeprogress).setVisibility(View.GONE);
+                            return false;
+                        }
+                    })
+                    .into(userPhoto);
+        }
+
+        public void setNewMessageIndicator(ConversationFirebase conversation) {
+            boolean areThereNewMessages = false;
+            for(Message m : conversation.getMessages()){
+                boolean existo = false;
+                for(String s : m.getSeenBy()){
+                    if(s.equals(StaticFirebaseSettings.currentUserId)){
+                        existo = true;
+                        break;
+                    }
                 }
-            });
+                if(!existo){
+                    areThereNewMessages = true;
+                    break;
+                }
+            }
+
+            if(areThereNewMessages){
+                newMessagesIndicator.setVisibility(View.VISIBLE);
+            }else{
+                newMessagesIndicator.setVisibility(View.GONE);
+            }
 
         }
     }

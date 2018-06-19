@@ -16,10 +16,8 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
-        android:layout_marginTop="30dp"
-        android:layout_marginBottom="50dp"
         android:animateLayoutChanges="true"
-        />
+        android:layout_marginBottom="96dp" />
 
     <devlight.io.library.ntb.NavigationTabBar
         android:id="@+id/ntb"
@@ -34,7 +32,7 @@
         app:ntb_badge_use_typeface="true"
         app:ntb_badged="true"
         app:ntb_bg_color="@color/colorAccent"
-        app:ntb_typeface="@font/simplifica_font"
+        android:layout_marginBottom="48dp"
         android:elevation="50dp"/>
 
     <View
@@ -45,6 +43,53 @@
         android:background="@color/colorAccent"
         android:elevation="10dp"
         android:translationZ="10dp"
+        android:layout_marginBottom="48dp"
         />
+
+    <LinearLayout
+        android:id="@+id/viewToAnchor"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_gravity="bottom"
+        android:elevation="10dp"
+        android:layout_above="@+id/adview"
+        android:translationZ="10dp"
+        android:orientation="vertical">
+    </LinearLayout>
+
+    <!--<com.google.android.gms.ads.AdView
+        xmlns:ads="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/adview"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_gravity="center_horizontal"
+        ads:adSize="SMART_BANNER"
+        ads:layout_anchor="@id/viewToAnchor"
+        ads:adUnitId="ca-app-pub-3940256099942544/6300978111"
+        ads:layout_anchorGravity="bottom|center"/>-->
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:gravity="center"
+        android:elevation="10dp"
+        android:layout_centerHorizontal="true"
+        android:layout_above="@+id/adview"
+        android:translationZ="10dp"
+        android:orientation="horizontal">
+
+        <com.google.android.gms.ads.AdView
+            xmlns:ads="http://schemas.android.com/apk/res-auto"
+            android:id="@+id/adView"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            ads:adSize="BANNER"
+            ads:adUnitId="ca-app-pub-6164739277423889/8658953023"/>
+
+    </LinearLayout>
 
 </android.support.design.widget.CoordinatorLayout>

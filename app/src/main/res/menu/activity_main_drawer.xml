@@ -5,19 +5,45 @@
         android:checkableBehavior="single"
         android:id="@+id/options">
         <item
-            android:id="@+id/nav_camera"
-            android:icon="@drawable/ic_menu_camera"
-            android:title="Grupos" />
+            android:id="@+id/config"
+            android:icon="@drawable/ic_settings"
+            android:title="Configurar perfil" />
         <item
-            android:id="@+id/nav_manage"
-            android:icon="@drawable/ic_menu_manage"
-            android:title="Configuración" />
+            android:id="@+id/rate_review"
+            android:icon="@drawable/ic_rate_review"
+            android:title="Puntúa y comenta" />
+        <item
+            android:id="@+id/help"
+            android:icon="@drawable/ic_help"
+            android:title="Ayuda" />
+        <item
+            android:id="@+id/share"
+            android:icon="@drawable/ic_share"
+            android:title="Compartir" />
+        <item
+            android:id="@+id/libraries"
+            android:icon="@drawable/ic_library"
+            android:title="Librerias utilizadas" />
+        <item
+            android:id="@+id/privacy"
+            android:icon="@drawable/ic_lock"
+            android:title="Términos y condiciones" />
+        <item
+            android:id="@+id/about"
+            android:icon="@drawable/ic_about"
+            android:title="Acerca de" />
+        <item
+            android:id="@+id/logout"
+            android:icon="@drawable/ic_logout"
+            android:title="Salir de la cuenta" />
+        <item
+            android:id="@+id/noid"
+            android:title="" />
     </group>
 
-    <group
+    <!--<group
         android:checkableBehavior="single"
         android:id="@+id/actions">
-
             <item
                 android:id="@+id/nav_share"
                 android:icon="@drawable/ic_menu_share"
@@ -26,6 +52,6 @@
                 android:id="@+id/nav_log_out"
                 android:icon="@drawable/ic_exit_to_app_black_48dp"
                 android:title="Salir" />
+    </group>-->
 
-    </group>
 </menu>

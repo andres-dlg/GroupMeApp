@@ -6,7 +6,24 @@
     tools:context=".uiPackage.TaskWeekViewBaseActivty"
     android:background="#fff">
 
+    <android.support.design.widget.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/appBarLayout">
+
+        <android.support.v7.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?android:attr/actionBarSize"
+            app:layout_scrollFlags="scroll|enterAlways"
+            app:titleTextColor="@color/white"
+            android:theme="@style/ThemeOverlay.AppCompat.Dark"
+            app:popupTheme="@style/PopupMenuStyle"/>
+
+    </android.support.design.widget.AppBarLayout>
+
     <com.alamkanak.weekview.WeekView
+        android:layout_below="@+id/appBarLayout"
         android:id="@+id/weekView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"

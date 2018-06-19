@@ -48,7 +48,6 @@
             android:layout_alignTop="@+id/flo"
             android:layout_marginRight="20dp"
             android:layout_toEndOf="@+id/flo"
-            android:text="Alias"
             android:textSize="13sp"
             android:focusable="true"
             android:focusableInTouchMode="true"
@@ -64,7 +63,6 @@
             android:layout_below="@id/userAlias"
             android:layout_toEndOf="@+id/flo"
             android:layout_above="@+id/date"
-            android:text="Extracto Ultimo mensaje"
             android:maxLines="2"
             android:textSize="14sp"
             />
@@ -74,10 +72,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginRight="20dp"
-
             android:layout_alignBottom="@id/flo"
             android:layout_toEndOf="@+id/flo"
-            android:text="Fecha del ultimo mensaje"
             android:textSize="11sp"
             android:focusable="true"
             android:focusableInTouchMode="true"
@@ -94,6 +90,16 @@
             android:layout_marginLeft="15dp"
             android:layout_marginRight="15dp"
             android:background="@color/bg_add_photo" />
+
+        <ImageView
+            android:id="@+id/newMessageIndicator"
+            android:layout_width="8dp"
+            android:layout_height="8dp"
+            android:layout_alignBottom="@+id/flo"
+            android:layout_alignEnd="@+id/userAlias"
+            android:src="@drawable/newnotindicator"
+            android:visibility="gone"/>
+
     </RelativeLayout>
 
 </LinearLayout>

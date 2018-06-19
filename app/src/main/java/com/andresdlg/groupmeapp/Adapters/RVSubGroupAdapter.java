@@ -1,21 +1,26 @@
 package com.andresdlg.groupmeapp.Adapters;
 
-import android.app.Activity;
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.res.TypedArray;
 import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.util.Pair;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
-import android.text.InputType;
-import android.text.TextUtils;
-import android.util.Log;
+import android.util.DisplayMetrics;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -29,33 +34,39 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.PopupMenu;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.afollestad.materialdialogs.MaterialDialog;
 import com.andresdlg.groupmeapp.DialogFragments.SubGroupChatDialogFragment;
 import com.andresdlg.groupmeapp.DialogFragments.SubGroupFilesDialogFragment;
 import com.andresdlg.groupmeapp.DialogFragments.SubGroupMembersDialogFragment;
+import com.andresdlg.groupmeapp.DialogFragments.SubGroupNewTaskDialogFragment;
 import com.andresdlg.groupmeapp.Entities.SubGroup;
 import com.andresdlg.groupmeapp.Entities.Task;
 import com.andresdlg.groupmeapp.R;
-import com.andresdlg.groupmeapp.Utils.BlurBuilder;
+import com.andresdlg.groupmeapp.Utils.NotificationStatus;
+import com.andresdlg.groupmeapp.Utils.NotificationTypes;
+import com.andresdlg.groupmeapp.Utils.Roles;
 import com.andresdlg.groupmeapp.firebasePackage.FireApp;
 import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
 import com.andresdlg.groupmeapp.uiPackage.GroupActivity;
-import com.borax12.materialdaterangepicker.date.DatePickerDialog;
-import com.borax12.materialdaterangepicker.time.RadialPickerLayout;
-import com.borax12.materialdaterangepicker.time.TimePickerDialog;
+import com.andresdlg.groupmeapp.uiPackage.SubGroupDetailActivity;
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.DataSource;
+import com.bumptech.glide.load.engine.GlideException;
+import com.bumptech.glide.request.RequestListener;
+import com.bumptech.glide.request.RequestOptions;
+import com.bumptech.glide.request.target.SimpleTarget;
+import com.bumptech.glide.request.transition.Transition;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.squareup.picasso.Callback;
-import com.squareup.picasso.NetworkPolicy;
-import com.squareup.picasso.Picasso;
-import com.squareup.picasso.Target;
 
-import java.util.ArrayList;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -75,33 +86,86 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
     private final int DIALOG_CHAT = 0;
     private final int DIALOG_MEMBERS = 1;
     private final int DIALOG_FILES = 2;
+    private final int DIALOG_NEW_TASK = 3;
+
+    private taskTypes actualTaskType;
+
+    private Map<String,Integer> cantidadDeTasks;
+
+    public void setCantidadTasks(String subGroupKey, int size) {
+        for(Map.Entry<String, Integer> entry: cantidadDeTasks.entrySet()) {
+            if(entry.getKey().equals(subGroupKey)){
+                entry.setValue(size);
+                return;
+            }
+        }
+        cantidadDeTasks.put(subGroupKey,size);
+    }
+
+    public taskTypes checkTasksSize(String subGroupKey, int size) {
+        if(size == cantidadDeTasks.get(subGroupKey)){
+            return taskTypes.UPDATED_TASK;
+        }else if(size > cantidadDeTasks.get(subGroupKey)){
+            return taskTypes.NEW_TASK;
+        }else{
+            return taskTypes.DELETED_TASK;
+        }
+    }
+
+    public enum taskTypes{
+        NEW_TASK,
+        UPDATED_TASK,
+        DELETED_TASK,
+        EXISTING_TASK
+    }
 
     public RVSubGroupAdapter(List<SubGroup> subGroups, String groupKey, Context context) {
         this.groupKey = groupKey;
         this.subGroups = subGroups;
         this.contexto = context;
+
+        actualTaskType = taskTypes.EXISTING_TASK;
+        cantidadDeTasks = new HashMap<>();
     }
 
+    @NonNull
     @Override
-    public SubGroupViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public SubGroupViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_parent_child_listing, parent, false);
         return new SubGroupViewHolder(v,viewType,parent);
     }
 
     @Override
-    public void onBindViewHolder(SubGroupViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull SubGroupViewHolder holder, int position) {
         SubGroup subGroup = subGroups.get(position);
         holder.textView_parentName.setText(subGroup.getName());
 
-        //
-        int noOfChildTextViews = holder.linearLayout_childItems.getChildCount();
+        switch (actualTaskType){
+
+            case NEW_TASK:
+                //holder.setTasks(actualTaskType,subGroup.getTasks().get(subGroup.getTasks().size()-1));
+                holder.setTasks(actualTaskType,subGroup.getTasks());
+                break;
+            case UPDATED_TASK:
+                holder.setTasks(actualTaskType,subGroup.getTasks());
+                break;
+            case EXISTING_TASK:
+                holder.setTasks(actualTaskType,null);
+                break;
+            case DELETED_TASK:
+                holder.setTasks(actualTaskType,null);
+                break;
+            default:
+                break;
+        }
+
+        /*int noOfChildTextViews = holder.linearLayout_childItems.getChildCount();
         if(subGroup.getTasks() != null){
             int noOfChild = subGroup.getTasks().size();
             for (int index = noOfChild; index < noOfChildTextViews; index++) {
-                TextView currentTextView = (TextView) holder.linearLayout_childItems.getChildAt(index);
-                currentTextView.setVisibility(View.GONE);
+                FrameLayout currentTextView = (FrameLayout) holder.linearLayout_childItems.getChildAt(index);
             }
-        }
+        }*/
     }
 
     @Override
@@ -119,19 +183,19 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
         notifyDataSetChanged();
     }
 
-    public void notify(List<SubGroup> list) {
-        List<SubGroup> aux = new ArrayList<>();
-        aux.addAll(list);
-        if (this.subGroups != null) {
-            this.subGroups.clear();
-            this.subGroups.addAll(aux);
-        } else {
-            this.subGroups.addAll(aux);
-        }
-        notifyDataSetChanged();
+    public void setNewTaskFlag() {
+        actualTaskType = taskTypes.NEW_TASK;
     }
 
-    public class SubGroupViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener, DatePickerDialog.OnDateSetListener{
+    public void setUpdatedTaskFlag() {
+        actualTaskType = taskTypes.UPDATED_TASK;
+    }
+
+    public void setDeletedTaskFlag() {
+        actualTaskType = taskTypes.DELETED_TASK;
+    }
+
+    public class SubGroupViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
 
         private Context context;
         private TextView textView_parentName;
@@ -141,8 +205,6 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
         TextView textView;
         TextView startDate;
         TextView endDate;
-        //ImageView addTaskiv;
-        //ImageView chat;
         ImageButton addTaskiv;
         ImageButton chat;
         ImageButton membersiv;
@@ -153,12 +215,34 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
         ImageView subGroupBg;
         String imageUrl;
 
+        boolean isSubGroupMember;
+
         SubGroupViewHolder(final View itemView, final int position, ViewGroup parent) {
             super(itemView);
             this.position = position;
             this.parent = parent;
             context = itemView.getContext();
+
+            final DisplayMetrics metrics = context.getResources().getDisplayMetrics();
+
+            View.OnClickListener onClickListener = new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Intent intent = new Intent(context, SubGroupDetailActivity.class);
+                    // Pass data object in the bundle and populate details activity.
+                    intent.putExtra("subGroupName", subGroups.get(position).getName());
+                    intent.putExtra("subGroupPhotoUrl", subGroups.get(position).getImageUrl());
+                    intent.putExtra("subGroupKey", subGroups.get(position).getSubGroupKey());
+                    intent.putExtra("groupKey", groupKey);
+                    Pair<View, String> p1 = Pair.create((View)subGroupPhoto, "photo");
+                    ActivityOptionsCompat options = ActivityOptionsCompat.
+                            makeSceneTransitionAnimation((AppCompatActivity)contexto, p1);
+                    context.startActivity(intent, options.toBundle());
+                }
+            };
+
             textView_parentName = itemView.findViewById(R.id.tv_parentName);
+            textView_parentName.setOnClickListener(onClickListener);
 
             addTaskiv = itemView.findViewById(R.id.add_task);
             addTaskiv.setOnClickListener(this);
@@ -178,18 +262,22 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
             arrow.setOnClickListener(this);
 
             subGroupPhoto = itemView.findViewById(R.id.list_item_sub_group_icon);
+            subGroupPhoto.setOnClickListener(onClickListener);
 
             linearLayout_childItems = itemView.findViewById(R.id.ll_child_items);
             linearLayout_childItems.setVisibility(View.GONE);
 
             subGroupBg = itemView.findViewById(R.id.subGroupBg);
+            subGroupBg.setOnClickListener(onClickListener);
 
-            boolean isSubGroupMember = false;
-            Map<String,String> members = subGroups.get(position).getMembers();
+            RelativeLayout relativeLayout = itemView.findViewById(R.id.relativeLayout);
+            relativeLayout.setOnClickListener(onClickListener);
+
+            isSubGroupMember = false;
+            final Map<String,String> members = subGroups.get(position).getMembers();
             for(Map.Entry<String, String> entry: members.entrySet()) {
                 if(entry.getKey().equals(StaticFirebaseSettings.currentUserId)){
                     isSubGroupMember = true;
-                    //checkBox.setEnabled(true);
                     break;
                 }
             }
@@ -198,112 +286,148 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
                 chat.setEnabled(false);
                 addTaskiv.setEnabled(false);
                 membersiv.setEnabled(false);
+                files.setEnabled(false);
                 cardLl.setBackgroundColor(context.getResources().getColor(R.color.gray_200));
+                textView_parentName.setOnClickListener(null);
+                subGroupPhoto.setOnClickListener(null);
+                subGroupBg.setOnClickListener(null);
+                relativeLayout.setOnClickListener(null);
             }
 
             //SETEO LAS FOTOS DE PERFIL Y EL BACKGROUND
             imageUrl = subGroups.get(position).getImageUrl();
-            Picasso.with(context).load(subGroups.get(position).getImageUrl()).into(subGroupPhoto, new Callback() {
+
+            //PERFIL
+            Glide.with(context)
+                    .load(subGroups.get(position).getImageUrl())
+                    .listener(new RequestListener<Drawable>() {
+                        @Override
+                        public boolean onLoadFailed(@Nullable GlideException e, Object model, com.bumptech.glide.request.target.Target<Drawable> target, boolean isFirstResource) {
+                            return false;
+                        }
+
+                        @Override
+                        public boolean onResourceReady(Drawable resource, Object model, com.bumptech.glide.request.target.Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
+                            itemView.findViewById(R.id.homeprogress).setVisibility(View.GONE);
+                            return false;
+                        }
+                    })
+                    .into(subGroupPhoto);
+
+            //BACKGROUND
+            SimpleTarget target = new SimpleTarget() {
                 @Override
-                public void onSuccess() {
-                    itemView.findViewById(R.id.homeprogress).setVisibility(View.GONE);
-                }
-                @Override
-                public void onError() {
-                    Picasso.with(context)
-                            .load(subGroups.get(position).getImageUrl())
-                            .networkPolicy(NetworkPolicy.OFFLINE)
-                            .into(subGroupPhoto, new Callback() {
-                                @Override
-                                public void onSuccess() {
-                                    itemView.findViewById(R.id.homeprogress).setVisibility(View.GONE);
-                                }
+                public void onResourceReady(@NonNull Object resource, @Nullable Transition transition) {
+                    //Bitmap blurredBitmap = BlurBuilder.blur(context, ((BitmapDrawable) resource).getBitmap());
+                    //subGroupBg.setImageBitmap(blurredBitmap);
 
-                                @Override
-                                public void onError() {
-                                    Log.v("Picasso","No se ha podido cargar la foto");
-                                }
-                            });
-                }
-            });
+                    //subGroupBg.setScaleType(ImageView.ScaleType.FIT_XY);
+                    //subGroupBg.setImageDrawable((BitmapDrawable)resource);
 
-            Target target = new Target() {
-                @Override
-                public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
-                    Bitmap blurredBitmap = BlurBuilder.blur(context, bitmap);
-                    subGroupBg.setImageBitmap(blurredBitmap);
-                }
 
-                @Override
-                public void onBitmapFailed(Drawable errorDrawable) {
+                    int heightPx = (int) (TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 203, metrics));
+                    int widthPx = metrics.widthPixels;
 
-                }
-
-                @Override
-                public void onPrepareLoad(Drawable placeHolderDrawable) {
-
+                    Bitmap bitmap = ((BitmapDrawable) resource).getBitmap();
+                    subGroupBg.setImageBitmap(Bitmap.createScaledBitmap(bitmap,widthPx,heightPx,true));
                 }
             };
 
-            subGroupBg.setTag(target);
-            if(imageUrl.equals("https://firebasestorage.googleapis.com/v0/b/groupmeapp-5aaf6.appspot.com/o/new_user.png?alt=media&token=b62f0a54-fe51-41ae-ae04-da4a35d93180")){
-                Picasso.with(contexto)
-                        .load(R.drawable.background_placeholder)
+            RequestOptions requestOptions = new RequestOptions().placeholder(R.drawable.background_placeholder);
+
+            //RequestOptions requestOptions2 = new RequestOptions().transform(new BlurTransformation(25,1)).placeholder(R.drawable.background_placeholder);
+
+            //subGroupBg.setTag(target);
+            //if(imageUrl.equals("https://firebasestorage.googleapis.com/v0/b/groupmeapp-5aaf6.appspot.com/o/ic_launcher.png?alt=media&token=9740457d-49b7-4463-b78c-4c3513d768a7")){
+            if(imageUrl.equals("https://firebasestorage.googleapis.com/v0/b/groupmeapp-5aaf6.appspot.com/o/default_subgroup_photo.png?alt=media&token=db96a4ee-b336-4e94-9f74-6ef0e7d5c00e")){
+                Glide.with(contexto)
+                        .load("")
+                        .apply(requestOptions)
                         .into(subGroupBg);
             }else{
-                Picasso.with(contexto)
+                Glide.with(contexto)
                         .load(imageUrl)
+                        //.apply(RequestOptions.bitmapTransform(new SupportRSBlurTransformation(25,1)))
+                        //.apply(requestOptions2)
                         .into(target);
             }
 
-            if(subGroups.get(position).getTasks() != null){
-                int intMaxNoOfChild = subGroups.get(position).getTasks().size();
+        }
+
+        private void setTasks(taskTypes mode, List<Task> tasks) {
+            if(mode == taskTypes.EXISTING_TASK){
+                addTaskToList(subGroups.get(position).getTasks());
+                /*int intMaxNoOfChild = subGroups.get(position).getTasks().size();
                 for (int indexView = 0; indexView < intMaxNoOfChild; indexView++) {
-                    View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.list_item_sub_group_task, parent, false);
-                    FrameLayout fl = v.findViewById(R.id.fltask);
-                    fl.setOnClickListener(this);
+                    //addTaskToList(subGroups.get(position).getTasks().get(indexView));
+                    addTaskToList(subGroups.get(position).getTasks());
+                }*/
+            }else if(mode == taskTypes.NEW_TASK){
+                addTaskToList(tasks);
+            }else if(mode == taskTypes.UPDATED_TASK){
+                linearLayout_childItems.removeAllViews();
+                setTasks(taskTypes.EXISTING_TASK,tasks);
+            }else if(mode == taskTypes.DELETED_TASK){
+                linearLayout_childItems.removeAllViews();
+                setTasks(taskTypes.EXISTING_TASK,tasks);
+            }
+        }
 
-                    //Nombre de la tarea
-                    textView = fl.findViewById(R.id.tasktv);
-                    textView.setText(subGroups.get(position).getTasks().get(indexView).getName());
-
-                    //Fecha de comienzo de la tarea
-                    startDate = fl.findViewById(R.id.taskStartDateTv);
-                    final String startDateText = subGroups.get(position).getTasks().get(indexView).getStartDate();
-                    if(!TextUtils.isEmpty(startDateText)){
-                        startDate.setText(subGroups.get(position).getTasks().get(indexView).getStartDate());
-                    }else{
-                        startDate.setText("No definida");
-                    }
-
-                    //Fecha de fin de la tarea
-                    endDate = fl.findViewById(R.id.taskEndDateTv);
-                    final String endDateText = subGroups.get(position).getTasks().get(indexView).getEndDate();
-                    if(!TextUtils.isEmpty(endDateText)){
-                        endDate.setText(subGroups.get(position).getTasks().get(indexView).getEndDate());
-                    }else{
-                        endDate.setText("No definida");
-                    }
-
-                    //Checkbox de la tarea
-                    checkBox = fl.findViewById(R.id.checkbox);
-                    checkBox.setEnabled(false);
-                    if(subGroups.get(position).getTasks().get(indexView).getFinished()){
-                        checkBox.setChecked(true);
-                    }
-                    final int finalIndexView = indexView;
-                    checkBox.setOnClickListener(new View.OnClickListener() {
+        @SuppressLint("SetTextI18n")
+        private void addTaskToList(List<Task> tasks) {
+            for(final Task task : tasks){
+                View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.list_item_sub_group_task, parent, false);
+                FrameLayout fl = v.findViewById(R.id.fltask);
+                if(isSubGroupMember){
+                    fl.setOnClickListener(new View.OnClickListener() {
                         @Override
-                        public void onClick(View view) {
-                            finishResumeTask((CheckBox)view,context,subGroups.get(position).getSubGroupKey(),subGroups.get(position).getTasks().get(finalIndexView).getTaskKey());
+                        public void onClick(View v) {
+                            showTaskDialog(task, subGroups.get(position).getSubGroupKey(), groupKey);
                         }
                     });
-                    if(isSubGroupMember){
-                        checkBox.setEnabled(true);
-                    }
+                }
 
-                    //TimeRangePicker listener
-                    final TimePickerDialog.OnTimeSetListener timeListener =  new TimePickerDialog.OnTimeSetListener() {
+                //Nombre de la tarea
+                textView = fl.findViewById(R.id.tasktv);
+                textView.setText(task.getName());
+
+                //Fecha de comienzo de la tarea
+                startDate = fl.findViewById(R.id.taskStartDateTv);
+                long startDateLong = task.getStartDate();
+                if(startDateLong != 0){
+                    startDate.setText(formatDate(task.getStartDate()));
+                }else{
+                    startDate.setText("No definida");
+                }
+
+                //Fecha de fin de la tarea
+                endDate = fl.findViewById(R.id.taskEndDateTv);
+                long endDateLong = task.getEndDate();
+                if(endDateLong != 0){
+                    endDate.setText(formatDate(task.getEndDate()));
+                }else{
+                    endDate.setText("No definida");
+                }
+
+                //Checkbox de la tarea
+                checkBox = fl.findViewById(R.id.checkbox);
+                checkBox.setEnabled(false);
+                if(task.getFinished()){
+                    checkBox.setChecked(true);
+                }
+                checkBox.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        finishResumeTask((CheckBox)view,context,subGroups.get(position).getSubGroupKey(),task.getTaskKey(),task.getName(),subGroups.get(position).getName(),position);
+                    }
+                });
+                if(isSubGroupMember){
+                    checkBox.setEnabled(true);
+                }
+
+                //region OLD CALENDAR BUTTON WITH LISTENERS
+                //TimeRangePicker listener
+                    /*final TimePickerDialog.OnTimeSetListener timeListener =  new TimePickerDialog.OnTimeSetListener() {
                         @Override
                         public void onTimeSet(RadialPickerLayout view, int hourOfDay, int minute, int hourOfDayEnd, int minuteEnd) {
                             DatabaseReference taskRef = FirebaseDatabase.getInstance().getReference("Groups")
@@ -312,67 +436,73 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
                                     .child(subGroups.get(position).getSubGroupKey())
                                     .child("tasks").child(subGroups.get(position).getTasks().get(finalIndexView).getTaskKey());
 
-                            String hourString = hourOfDay < 10 ? "0"+hourOfDay : ""+hourOfDay;
-                            String minuteString = minute < 10 ? "0"+minute : ""+minute;
-                            String hourStringEnd = hourOfDayEnd < 10 ? "0"+hourOfDayEnd : ""+hourOfDayEnd;
-                            String minuteStringEnd = minuteEnd < 10 ? "0"+minuteEnd : ""+minuteEnd;
-                            String time = "You picked the following time: From - "+hourString+"h"+minuteString+" To - "+hourStringEnd+"h"+minuteStringEnd;
-
-                            String startTime = hourString+":"+minuteString;
-                            String endTime = hourStringEnd+":"+minuteStringEnd;
-
                             FrameLayout fl = (FrameLayout)linearLayout_childItems.getChildAt(finalIndexView);
                             TextView tvStartDate = fl.findViewById(R.id.taskStartDateTv);
                             TextView tvEndDate = fl.findViewById(R.id.taskEndDateTv);
 
-                            String startDate = tvStartDate.getText().toString();
-                            String endDate = tvEndDate.getText().toString();
+                            long timeStartInMillisWithoutHour = calendarStart.getTimeInMillis();
+                            long timeEndInMillisWithoutHour = calendarEnd.getTimeInMillis();
 
-                            String startDateTime = startDate+" "+startTime;
-                            String endDateTime = endDate+" "+endTime;
+                            long timeStartInMillis = hourOfDay*3600000+minute*60000;
+                            long timeEndInMillis = hourOfDayEnd*3600000+minuteEnd*60000;
 
-                            tvStartDate.setText(startDateTime);
-                            tvEndDate.setText(endDateTime);
+                            Calendar finalStartDate = Calendar.getInstance();
+                            finalStartDate.setTimeInMillis(timeStartInMillisWithoutHour+timeStartInMillis);
 
-                            taskRef.child("startDate").setValue(startDateTime);
-                            taskRef.child("endDate").setValue(endDateTime);
+                            Calendar finalEndDate = Calendar.getInstance();
+                            finalEndDate.setTimeInMillis(timeEndInMillisWithoutHour+timeEndInMillis);
+
+                            tvStartDate.setText(formatDate(finalStartDate.getTimeInMillis()));
+                            tvEndDate.setText(formatDate(finalEndDate.getTimeInMillis()));
+
+                            taskRef.child("startDate").setValue(finalStartDate.getTimeInMillis());
+                            taskRef.child("endDate").setValue(finalEndDate.getTimeInMillis());
 
                             Toast.makeText(context,"Horarios guardados",Toast.LENGTH_SHORT).show();
                         }
-                    };
+                    };*/
 
-                    //DateRangePicker
-                    final DatePickerDialog.OnDateSetListener dateListener =  new DatePickerDialog.OnDateSetListener() {
+                //DateRangePicker
+                    /*final DatePickerDialog.OnDateSetListener dateListener =  new DatePickerDialog.OnDateSetListener() {
                         @Override
                         public void onDateSet(DatePickerDialog view, int year, int monthOfYear, int dayOfMonth, int yearEnd, int monthOfYearEnd, int dayOfMonthEnd) {
-                            DatabaseReference taskRef = FirebaseDatabase.getInstance().getReference("Groups")
-                                    .child(groupKey)
-                                    .child("subgroups")
-                                    .child(subGroups.get(position).getSubGroupKey())
-                                    .child("tasks").child(subGroups.get(position).getTasks().get(finalIndexView).getTaskKey());
+                            calendarStart = Calendar.getInstance();
+                            calendarStart.set(year,monthOfYear,dayOfMonth,0,0,0);
 
-                            String newDayOfMonth = String.valueOf(dayOfMonth).length() > 1 ? String.valueOf(dayOfMonth) : "0"+String.valueOf(dayOfMonth);
-                            String newMonthOfYear = String.valueOf(monthOfYear+1).length() > 1 ? String.valueOf(monthOfYear+1) : "0"+String.valueOf(monthOfYear+1);
-                            String newDayOfMonthEnd = String.valueOf(dayOfMonthEnd).length() > 1 ? String.valueOf(dayOfMonthEnd) : "0"+String.valueOf(dayOfMonthEnd);
-                            String newMonthOfYearEnd = String.valueOf(monthOfYearEnd+1).length() > 1 ? String.valueOf(monthOfYearEnd+1) : "0"+String.valueOf(monthOfYearEnd+1);
+                            calendarEnd = Calendar.getInstance();
+                            calendarEnd.set(yearEnd,monthOfYearEnd,dayOfMonthEnd,23,59,59);
 
-                            String startDateTxt = newDayOfMonth + "-" + newMonthOfYear +"-" + String.valueOf(year);
-                            String endDateTxt = newDayOfMonthEnd + "-" + newMonthOfYearEnd +"-" + String.valueOf(yearEnd);
+                            if(calendarStart.after(calendarEnd)){
+                                Toast.makeText(context,"Rango de fechas inválido",Toast.LENGTH_SHORT).show();
+                            }else{
 
-                            taskRef.child("startDate").setValue(startDateTxt);
-                            taskRef.child("endDate").setValue(endDateTxt);
+                                DatabaseReference taskRef = FirebaseDatabase.getInstance().getReference("Groups")
+                                        .child(groupKey)
+                                        .child("subgroups")
+                                        .child(subGroups.get(position).getSubGroupKey())
+                                        .child("tasks").child(subGroups.get(position).getTasks().get(finalIndexView).getTaskKey());
 
-                            FrameLayout fl = (FrameLayout)linearLayout_childItems.getChildAt(finalIndexView);
-                            ((TextView)fl.findViewById(R.id.taskStartDateTv)).setText(startDateTxt);
-                            ((TextView)fl.findViewById(R.id.taskEndDateTv)).setText(endDateTxt);
+                                FrameLayout fl = (FrameLayout)linearLayout_childItems.getChildAt(finalIndexView);
+                                TextView tvStartDate = fl.findViewById(R.id.taskStartDateTv);
+                                TextView tvEndDate = fl.findViewById(R.id.taskEndDateTv);
 
-                            setTime(startDateTxt, endDateTxt, timeListener);
+                                tvStartDate.setText(formatDate(calendarStart.getTimeInMillis()));
+                                tvEndDate.setText(formatDate(calendarEnd.getTimeInMillis()));
 
-                            Toast.makeText(context,"Fechas guardadas",Toast.LENGTH_SHORT).show();
+                                taskRef.child("startDate").setValue(calendarStart.getTimeInMillis());
+                                taskRef.child("endDate").setValue(calendarEnd.getTimeInMillis());
+
+                                Toast.makeText(context,"Horarios guardados",Toast.LENGTH_SHORT).show();
+
+
+                                // POR AHORA SOLO SE GUARDARAN LAS FECHAS PARA ALL EL DIA
+                                //setTime2(timeListener);
+                                //Toast.makeText(context,"Ahora elije a que hora comenzará la primer tarea y a que hora terminará la ultima",Toast.LENGTH_SHORT).show();
+                            }
                         }
-                    };
+                    };*/
 
-                    CircleImageView btnTaskCalendar = fl.findViewById(R.id.btn_task_calendar);
+                    /*CircleImageView btnTaskCalendar = fl.findViewById(R.id.btn_task_calendar);
                     btnTaskCalendar.setEnabled(false);
                     btnTaskCalendar.setColorFilter(ContextCompat.getColor(context, R.color.gray_400), android.graphics.PorterDuff.Mode.SRC_IN);
                     btnTaskCalendar.setOnClickListener(new View.OnClickListener() {
@@ -387,56 +517,58 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
                             );
                             dpd.setStartTitle("DESDE");
                             dpd.setEndTitle("HASTA");
-                            dpd.setAccentColor(R.color.colorPrimary);
-                            dpd.setCancelable(false);
+                            dpd.setAutoHighlight(true);
                             dpd.show(((Activity)RVSubGroupAdapter.this.contexto).getFragmentManager(),"Datepickerdialog");
                         }
                     });
+
                     if(isSubGroupMember){
                         btnTaskCalendar.setEnabled(true);
                         btnTaskCalendar.setColorFilter(ContextCompat.getColor(context, R.color.black), android.graphics.PorterDuff.Mode.SRC_IN);
-                    }
+                    }*/
+                //endregion
 
-                    //Menu (3 puntitos)
-                    CircleImageView btnMenu = fl.findViewById(R.id.btn_menu);
-                    btnMenu.setOnClickListener(this);
-                    btnMenu.setEnabled(false);
-                    btnMenu.setColorFilter(ContextCompat.getColor(context, R.color.gray_400), android.graphics.PorterDuff.Mode.SRC_IN);
-                    if(isSubGroupMember){
-                        btnMenu.setEnabled(true);
-                        btnMenu.setColorFilter(ContextCompat.getColor(context, R.color.black), android.graphics.PorterDuff.Mode.SRC_IN);
+                //Menu (3 puntitos)
+                CircleImageView btnMenu = fl.findViewById(R.id.btn_menu);
+                btnMenu.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        final PopupMenu popupMenu = new PopupMenu(context, v);
+                        final Menu menu = popupMenu.getMenu();
+                        popupMenu.getMenuInflater().inflate(R.menu.task_menu, menu);
+                        popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+                            @Override
+                            public boolean onMenuItemClick(MenuItem menuItem) {
+                                int id = menuItem.getItemId();
+                                switch (id){
+                                /*case R.id.comment:
+                                    break;*/
+                                    case R.id.delete:
+                                        deleteTask(task.getTaskKey(),subGroups.get(position).getSubGroupKey(),groupKey);
+                                        break;
+                                }
+                                return true;
+                            }
+                        });
+                        popupMenu.show();
                     }
-
-                    LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-                    int[] attrs = new int[]{R.attr.selectableItemBackground};
-                    TypedArray typedArray = context.obtainStyledAttributes(attrs);
-                    int backgroundResource = typedArray.getResourceId(0, 0);
-                    typedArray.recycle();
-                    fl.setBackgroundResource(backgroundResource);
-                    linearLayout_childItems.addView(fl, layoutParams);
+                });
+                btnMenu.setEnabled(false);
+                btnMenu.setColorFilter(ContextCompat.getColor(context, R.color.gray_400), android.graphics.PorterDuff.Mode.SRC_IN);
+                if(isSubGroupMember){
+                    btnMenu.setEnabled(true);
+                    btnMenu.setColorFilter(ContextCompat.getColor(context, R.color.black), android.graphics.PorterDuff.Mode.SRC_IN);
                 }
-                textView_parentName.setOnClickListener(this);
+
+                LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+                int[] attrs = new int[]{R.attr.selectableItemBackground};
+                TypedArray typedArray = context.obtainStyledAttributes(attrs);
+                int backgroundResource = typedArray.getResourceId(0, 0);
+                typedArray.recycle();
+                fl.setBackgroundResource(backgroundResource);
+                linearLayout_childItems.addView(fl, layoutParams);
             }
         }
-
-
-        private void setTime(String startDateText, String endDateText, TimePickerDialog.OnTimeSetListener timeListener) {
-            if(TextUtils.isEmpty(startDateText) || TextUtils.isEmpty(endDateText)){
-                Toast.makeText(context,"Primero defina las fechas de la tarea",Toast.LENGTH_SHORT).show();
-            }else{
-                Calendar now = Calendar.getInstance();
-                TimePickerDialog dpd = com.borax12.materialdaterangepicker.time.TimePickerDialog.newInstance(
-                        timeListener,
-                        now.get(Calendar.HOUR_OF_DAY),
-                        now.get(Calendar.MINUTE),
-                        false
-                );
-                dpd.setAccentColor(R.color.colorPrimary);
-                dpd.setTabIndicators("DESDE","HASTA");
-                dpd.show(((Activity)RVSubGroupAdapter.this.contexto).getFragmentManager(),"Timepickerdialog");
-            }
-        }
-
 
         @Override
         public void onClick(final View view) {
@@ -468,213 +600,47 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
                 case R.id.files:
                     showDialog(DIALOG_FILES);
                     break;
-                case R.id.btn_menu:
-                    final PopupMenu popupMenu = new PopupMenu(context, view);
-                    final Menu menu = popupMenu.getMenu();
-                    popupMenu.getMenuInflater().inflate(R.menu.task_menu, menu);
-                    popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-                        @Override
-                        public boolean onMenuItemClick(MenuItem menuItem) {
-                            int id = menuItem.getItemId();
-                            switch (id){
-                                case R.id.message:
-                                    //ENVIAR MENSAJE
-                                    //sendMessage(iduser, context);
-                                    //Toast.makeText(context,"aceptar "+contactName, Toast.LENGTH_SHORT).show();
-                                    break;
-                                case R.id.add_to_group:
-                                    break;
-                                case R.id.delete:
-                                    //ELIMINAR CONTACTO
-                                    //deleteContact(iduser, context);
-                                    break;
-                            }
-                            return true;
-                        }
-                    });
-                    popupMenu.show();
-                    break;
                 case R.id.add_task:
-                    new MaterialDialog.Builder(context)
-                            .title("Nueva tarea")
-                            .content("Nombre")
-                            .inputType(InputType.TYPE_CLASS_TEXT)
-                            .input("Ingrese el nombre", null, new MaterialDialog.InputCallback() {
-                                @Override
-                                public void onInput(@NonNull MaterialDialog dialog, CharSequence input) {
-                                    if(!TextUtils.isEmpty(input)){
-                                        final Task task = new Task(null,input.toString(),null,null,false);
-
-                                        /*View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.list_item_sub_group_task, parent , false);
-                                        FrameLayout fl = v.findViewById(R.id.fltask);
-                                        fl.setOnClickListener(SubGroupViewHolder.this);
-                                        textView = fl.findViewById(R.id.tasktv);
-                                        textView.setText(task.getName());
-                                        checkBox = fl.findViewById(R.id.checkbox);
-                                        //checkBox.setOnClickListener(SubGroupViewHolder.this);
-                                        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-                                        CircleImageView btnMenu = fl.findViewById(R.id.btn_menu);
-                                        btnMenu.setOnClickListener(SubGroupViewHolder.this);
-                                        int[] attrs = new int[]{R.attr.selectableItemBackground};
-                                        TypedArray typedArray = context.obtainStyledAttributes(attrs);
-                                        int backgroundResource = typedArray.getResourceId(0, 0);
-                                        typedArray.recycle();
-                                        fl.setBackgroundResource(backgroundResource);
-                                        linearLayout_childItems.addView(fl, layoutParams);*/
-
-                                        View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.list_item_sub_group_task, parent , false);
-                                        FrameLayout fl = v.findViewById(R.id.fltask);
-
-                                        //Nombre de la tarea
-                                        textView = fl.findViewById(R.id.tasktv);
-                                        textView.setText(task.getName());
-
-                                        //Fecha de comienzo de la tarea
-                                        startDate = fl.findViewById(R.id.taskStartDateTv);
-                                        final String startDateText = task.getStartDate();
-                                        if(!TextUtils.isEmpty(startDateText)){
-                                            startDate.setText(task.getStartDate());
-                                        }else{
-                                            startDate.setText("No definida");
-                                        }
-
-                                        //Fecha de fin de la tarea
-                                        endDate = fl.findViewById(R.id.taskEndDateTv);
-                                        final String endDateText = task.getEndDate();
-                                        if(!TextUtils.isEmpty(endDateText)){
-                                            endDate.setText(task.getEndDate());
-                                        }else{
-                                            endDate.setText("No definida");
-                                        }
-
-                                        //Checkbox de la tarea
-                                        checkBox = fl.findViewById(R.id.checkbox);
-                                        if(task.getFinished()){
-                                            checkBox.setChecked(true);
-                                        }
-                                        //final int finalIndexView = fl.getChildCount();
-                                        checkBox.setOnClickListener(new View.OnClickListener() {
-                                            @Override
-                                            public void onClick(View view) {
-                                                finishResumeTask((CheckBox)view,context,subGroups.get(position).getSubGroupKey(),task.getTaskKey());
-                                            }
-                                        });
-
-                                        //TimeRangePicker listener
-                                        final TimePickerDialog.OnTimeSetListener timeListener =  new TimePickerDialog.OnTimeSetListener() {
-                                            @Override
-                                            public void onTimeSet(RadialPickerLayout view, int hourOfDay, int minute, int hourOfDayEnd, int minuteEnd) {
-                                                DatabaseReference taskRef = FirebaseDatabase.getInstance().getReference("Groups")
-                                                        .child(groupKey)
-                                                        .child("subgroups")
-                                                        .child(subGroups.get(position).getSubGroupKey())
-                                                        .child("tasks").child(task.getTaskKey());
-
-                                                String hourString = hourOfDay < 10 ? "0"+hourOfDay : ""+hourOfDay;
-                                                String minuteString = minute < 10 ? "0"+minute : ""+minute;
-                                                String hourStringEnd = hourOfDayEnd < 10 ? "0"+hourOfDayEnd : ""+hourOfDayEnd;
-                                                String minuteStringEnd = minuteEnd < 10 ? "0"+minuteEnd : ""+minuteEnd;
-                                                String time = "You picked the following time: From - "+hourString+"h"+minuteString+" To - "+hourStringEnd+"h"+minuteStringEnd;
-
-                                                String startTime = hourString+":"+minuteString;
-                                                String endTime = hourStringEnd+":"+minuteStringEnd;
-
-
-
-                                                FrameLayout fl = (FrameLayout)linearLayout_childItems.getChildAt(linearLayout_childItems.getChildCount()-1);
-                                                TextView tvStartDate = fl.findViewById(R.id.taskStartDateTv);
-                                                TextView tvEndDate = fl.findViewById(R.id.taskEndDateTv);
-
-                                                String startDate = tvStartDate.getText().toString();
-                                                String endDate = tvEndDate.getText().toString();
-
-                                                String startDateTime = startDate+" "+startTime;
-                                                String endDateTime = endDate+" "+endTime;
-
-                                                tvStartDate.setText(startDateTime);
-                                                tvEndDate.setText(endDateTime);
-
-                                                taskRef.child("startDate").setValue(startDateTime);
-                                                taskRef.child("endDate").setValue(endDateTime);
-
-                                                Toast.makeText(context,"Horarios guardados",Toast.LENGTH_SHORT).show();
-                                            }
-                                        };
-
-                                        //DateRangePicker
-                                        final DatePickerDialog.OnDateSetListener dateListener =  new DatePickerDialog.OnDateSetListener() {
-                                            @Override
-                                            public void onDateSet(DatePickerDialog view, int year, int monthOfYear, int dayOfMonth, int yearEnd, int monthOfYearEnd, int dayOfMonthEnd) {
-                                                DatabaseReference taskRef = FirebaseDatabase.getInstance().getReference("Groups")
-                                                        .child(groupKey)
-                                                        .child("subgroups")
-                                                        .child(subGroups.get(position).getSubGroupKey())
-                                                        .child("tasks").child(task.getTaskKey());
-
-                                                String newDayOfMonth = String.valueOf(dayOfMonth).length() > 1 ? String.valueOf(dayOfMonth) : "0"+String.valueOf(dayOfMonth);
-                                                String newMonthOfYear = String.valueOf(monthOfYear+1).length() > 1 ? String.valueOf(monthOfYear+1) : "0"+String.valueOf(monthOfYear+1);
-                                                String newDayOfMonthEnd = String.valueOf(dayOfMonthEnd).length() > 1 ? String.valueOf(dayOfMonthEnd) : "0"+String.valueOf(dayOfMonthEnd);
-                                                String newMonthOfYearEnd = String.valueOf(monthOfYearEnd+1).length() > 1 ? String.valueOf(monthOfYearEnd+1) : "0"+String.valueOf(monthOfYearEnd+1);
-
-                                                String startDateTxt = newDayOfMonth + "-" + newMonthOfYear +"-" + String.valueOf(year);
-                                                String endDateTxt = newDayOfMonthEnd + "-" + newMonthOfYearEnd +"-" + String.valueOf(yearEnd);
-
-                                                taskRef.child("startDate").setValue(startDateTxt);
-                                                taskRef.child("endDate").setValue(endDateTxt);
-
-                                                FrameLayout fl = (FrameLayout)linearLayout_childItems.getChildAt(linearLayout_childItems.getChildCount()-1);
-                                                ((TextView)fl.findViewById(R.id.taskStartDateTv)).setText(startDateTxt);
-                                                ((TextView)fl.findViewById(R.id.taskEndDateTv)).setText(endDateTxt);
-
-                                                setTime(startDateTxt, endDateTxt, timeListener);
-
-                                                Toast.makeText(context,"Fechas guardadas",Toast.LENGTH_SHORT).show();
-                                            }
-                                        };
-
-                                        fl.findViewById(R.id.btn_task_calendar).setOnClickListener(new View.OnClickListener() {
-                                            @Override
-                                            public void onClick(View v) {
-                                                Calendar now = Calendar.getInstance();
-                                                DatePickerDialog dpd = com.borax12.materialdaterangepicker.date.DatePickerDialog.newInstance(
-                                                        dateListener,
-                                                        now.get(Calendar.YEAR),
-                                                        now.get(Calendar.MONTH),
-                                                        now.get(Calendar.DAY_OF_MONTH)
-                                                );
-                                                dpd.setStartTitle("DESDE");
-                                                dpd.setEndTitle("HASTA");
-                                                dpd.setAccentColor(R.color.colorPrimary);
-                                                dpd.setCancelable(false);
-                                                dpd.show(((Activity)RVSubGroupAdapter.this.contexto).getFragmentManager(),"Datepickerdialog");
-                                            }
-                                        });
-
-                                        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-                                        CircleImageView btnMenu = fl.findViewById(R.id.btn_menu);
-                                        btnMenu.setOnClickListener(SubGroupViewHolder.this);
-                                        int[] attrs = new int[]{R.attr.selectableItemBackground};
-                                        TypedArray typedArray = context.obtainStyledAttributes(attrs);
-                                        int backgroundResource = typedArray.getResourceId(0, 0);
-                                        typedArray.recycle();
-                                        fl.setBackgroundResource(backgroundResource);
-                                        linearLayout_childItems.addView(fl, layoutParams);
-
-                                        updateSubgroup(task,subGroups.get(position).getSubGroupKey(), checkBox,context);
-
-                                        //notifyDataSetChanged();
-
-                                    }else{
-                                        dialog.getInputEditText().setError("Este campo es necesario");
-                                    }
-                                }
-                            }).show();
+                    showDialog(DIALOG_NEW_TASK);
+                    break;
             }
         }
 
-        @Override
-        public void onDateSet(DatePickerDialog view, int year, int monthOfYear, int dayOfMonth, int yearEnd, int monthOfYearEnd, int dayOfMonthEnd) {
-
+        private void deleteTask(final String taskKey, final String subGroupKey, final String groupKey) {
+            new AlertDialog.Builder(context)
+                    .setTitle("¿Está seguro que desea eliminar la tarea?")
+                    .setPositiveButton("Si", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            DatabaseReference taskRef = FirebaseDatabase
+                                    .getInstance()
+                                    .getReference("Groups")
+                                    .child(groupKey)
+                                    .child("subgroups")
+                                    .child(subGroupKey)
+                                    .child("tasks")
+                                    .child(taskKey);
+                            taskRef.removeValue().addOnSuccessListener(new OnSuccessListener<Void>() {
+                                @Override
+                                public void onSuccess(Void aVoid) {
+                                    Toast.makeText(context, "Tarea eliminada correctamente", Toast.LENGTH_SHORT).show();
+                                }
+                            }).addOnFailureListener(new OnFailureListener() {
+                                @Override
+                                public void onFailure(@NonNull Exception e) {
+                                    Toast.makeText(context, "Error al eliminar tarea", Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                        }
+                    })
+                    .setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                        }
+                    })
+                    .setCancelable(false)
+                    .show();
         }
 
         void showDialog(int dialogType) {
@@ -701,18 +667,38 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
                     break;
 
                 case DIALOG_FILES:
-                    SubGroupFilesDialogFragment newFragment3 = new SubGroupFilesDialogFragment(textView_parentName.getText().toString(),imageUrl,subGroups.get(position).getSubGroupKey(),groupKey,((FireApp) context.getApplicationContext()).getGroupName());
+                    SubGroupFilesDialogFragment newFragment3 = new SubGroupFilesDialogFragment(textView_parentName.getText().toString(),subGroups.get(position).getSubGroupKey(),groupKey,((FireApp) context.getApplicationContext()).getGroupName());
                     newFragment3.setCancelable(false);
                     newFragment3.setStyle(DialogFragment.STYLE_NORMAL,R.style.AppTheme_DialogFragment);
                     FragmentTransaction transaction3 = fragmentManager.beginTransaction();
                     transaction3.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
                     transaction3.add(android.R.id.content, newFragment3).addToBackStack(null).commit();
                     break;
+
+                case DIALOG_NEW_TASK:
+                    SubGroupNewTaskDialogFragment newFragment4 = new SubGroupNewTaskDialogFragment(subGroups.get(position).getSubGroupKey(),groupKey);
+                    newFragment4.setCancelable(false);
+                    newFragment4.setStyle(DialogFragment.STYLE_NORMAL,R.style.AppTheme_DialogFragment);
+                    FragmentTransaction transaction4 = fragmentManager.beginTransaction();
+                    transaction4.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
+                    transaction4.add(android.R.id.content, newFragment4).addToBackStack(null).commit();
+                    break;
             }
         }
     }
 
-    private void finishResumeTask(final CheckBox checkBox, Context context, String subGroupKey, String taskKey) {
+    private void showTaskDialog(Task task, String subGroupKey, String groupKey) {
+        FragmentManager fragmentManager = ((GroupActivity)contexto).getSupportFragmentManager();
+        SubGroupNewTaskDialogFragment newFragment4 = new SubGroupNewTaskDialogFragment(subGroupKey,groupKey, task);
+        newFragment4.setCancelable(false);
+        newFragment4.setStyle(DialogFragment.STYLE_NORMAL,R.style.AppTheme_DialogFragment);
+        FragmentTransaction transaction4 = fragmentManager.beginTransaction();
+        transaction4.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
+        transaction4.add(android.R.id.content, newFragment4).addToBackStack(null).commit();
+    }
+
+
+    private void finishResumeTask(final CheckBox checkBox, final Context context, final String subGroupKey, final String taskKey, final String taskName, final String subgroupName, final int position) {
 
         final DatabaseReference taskRef = FirebaseDatabase.getInstance().getReference("Groups").child(groupKey).child("subgroups").child(subGroupKey).child("tasks").child(taskKey).child("finished");
 
@@ -737,10 +723,11 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
         }else{
             new AlertDialog.Builder(context)
                     .setTitle("¿Está seguro que quiere dar por finalizada la tarea?")
-                    .setMessage("Se le notificará al administrador del proyecto si la tarea fue finalizada")
+                    .setMessage("Se le notificará al administrador del subgrupo que la tarea fue finalizada")
                     .setPositiveButton("Si", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
+                            sendNotificationToSubgroupAdmins(subgroupName,taskName,position);
                             checkBox.setChecked(true);
                             taskRef.setValue(true);
                         }
@@ -757,35 +744,31 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
         }
     }
 
-    private void updateSubgroup(Task task, final String subGroupKey, CheckBox checkBox, final Context context) {
-
-        DatabaseReference subGroupTasksRef = FirebaseDatabase.getInstance().getReference("Groups").child(groupKey).child("subgroups").child(subGroupKey).child("tasks");
-
-        final String taskKey = subGroupTasksRef.push().getKey();
-
-        task.setTaskKey(taskKey);
-
-        Map<String,Object> map = new HashMap<>();
-        map.put("taskKey",taskKey);
-        map.put("name",task.getName());
-        map.put("startDate",task.getStartDate());
-        map.put("endDate",task.getEndDate());
-        map.put("finished",task.getFinished());
-
-        subGroupTasksRef.child(taskKey).updateChildren(map).addOnSuccessListener(new OnSuccessListener<Void>() {
-            @Override
-            public void onSuccess(Void aVoid) {
-                Toast.makeText(contexto, "TAREA AGREGADA!", Toast.LENGTH_SHORT).show();
-                //RVSubGroupAdapter.this.notifyDataSetChanged();
+    private void sendNotificationToSubgroupAdmins(String subGroupName, String taskName, int position) {
+        SubGroup s = subGroups.get(position);
+        for(Map.Entry<String, String> entry: s.getMembers().entrySet()) {
+            String userid = entry.getKey();
+            if(!userid.equals(StaticFirebaseSettings.currentUserId) && entry.getValue().equals(Roles.SUBGROUP_ADMIN.toString())){
+                DatabaseReference userToNotifications = FirebaseDatabase.getInstance().getReference("Users").child(userid).child("notifications");
+                String notificationKey = userToNotifications.push().getKey();
+                Map<String,Object> notification = new HashMap<>();
+                notification.put("notificationKey",notificationKey);
+                notification.put("title","Tarea finalizada en " + subGroupName);
+                notification.put("message","La tarea " + taskName + " ha sido finalizada en " + subGroupName);
+                notification.put("from", groupKey);
+                notification.put("state", NotificationStatus.UNREAD);
+                notification.put("date", Calendar.getInstance().getTimeInMillis());
+                notification.put("type", NotificationTypes.TASK_FINISHED);
+                userToNotifications.child(notificationKey).setValue(notification);
             }
-        });
+        }
+    }
 
-       checkBox.setOnClickListener(new View.OnClickListener() {
-           @Override
-           public void onClick(View view) {
-               finishResumeTask((CheckBox)view,context,subGroupKey,taskKey);
-           }
-       });
+    private String formatDate(long timeInMillis){
+        Date date = new Date(timeInMillis);
+        //SimpleDateFormat simpleDateFormater = new SimpleDateFormat("dd-MM-yyyy HH:mm")  ;
+        @SuppressLint("SimpleDateFormat") SimpleDateFormat simpleDateFormater = new SimpleDateFormat("dd/MM/yyyy")  ;
+        return simpleDateFormater.format(date);
     }
 
 }

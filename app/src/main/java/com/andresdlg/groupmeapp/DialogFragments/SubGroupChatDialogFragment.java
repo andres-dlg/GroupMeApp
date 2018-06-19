@@ -7,7 +7,6 @@ import android.support.v4.app.DialogFragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,16 +21,13 @@ import com.andresdlg.groupmeapp.Entities.Conversation;
 import com.andresdlg.groupmeapp.Entities.Message;
 import com.andresdlg.groupmeapp.Entities.Users;
 import com.andresdlg.groupmeapp.R;
-import com.andresdlg.groupmeapp.firebasePackage.FireApp;
 import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
+import com.bumptech.glide.Glide;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.squareup.picasso.Callback;
-import com.squareup.picasso.NetworkPolicy;
-import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -90,18 +86,20 @@ public class SubGroupChatDialogFragment extends DialogFragment {
             }
         });
 
+
         TextView tv = toolbar.findViewById(R.id.action_bar_title_1);
         tv.setText(subGroupName);
 
         CircleImageView civ = toolbar.findViewById(R.id.conversation_contact_photo);
-        Picasso.with(getContext()).load(subGroupUrlPhoto).into(civ);
+        Glide.with(getContext())
+                .load(subGroupUrlPhoto)
+                .into(civ);
 
         conversationKey = subGroupKey;
-        //List<String> contactIds = getContactIds();
 
         conversation = new Conversation();
 
-        ImageButton btnSend = (ImageButton) v.findViewById(R.id.btnSend);
+        ImageButton btnSend =  v.findViewById(R.id.btnSend);
         btnSend.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -123,12 +121,10 @@ public class SubGroupChatDialogFragment extends DialogFragment {
             }
         });
 
-        //DatabaseReference conversationRef = FirebaseDatabase.getInstance().getReference().child("Conversations").child(conversationKey)
-
         linearLayoutManager = new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false);
-        RecyclerView recyclerChat = (RecyclerView) v.findViewById(R.id.recyclerChat);
+        RecyclerView recyclerChat = v.findViewById(R.id.recyclerChat);
         recyclerChat.setLayoutManager(linearLayoutManager);
-        adapter = new ListMessageAdapter(getContext(), conversation, null, null,"Group");
+        adapter = new ListMessageAdapter(getContext(), conversation, null, null,"Group", conversationKey);
 
         FirebaseDatabase.getInstance().getReference().child("Conversations").child(conversationKey).child("messages").addChildEventListener(new ChildEventListener() {
             @Override
@@ -169,7 +165,7 @@ public class SubGroupChatDialogFragment extends DialogFragment {
         });
         recyclerChat.setAdapter(adapter);
 
-        editWriteMessage = (EditText) v.findViewById(R.id.editWriteMessage);
+        editWriteMessage =  v.findViewById(R.id.editWriteMessage);
 
         return v;
     }

@@ -49,7 +49,9 @@
                     android:id="@+id/tilId"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp">
+                    android:layout_marginTop="10dp"
+                    app:counterEnabled="true"
+                    app:counterMaxLength="20">
 
                     <EditText
                         android:id="@+id/etId"
@@ -57,7 +59,8 @@
                         android:layout_height="wrap_content"
                         android:hint="@string/group_name"
                         android:inputType="text"
-                        android:maxLines="1" />
+                        android:maxLines="1"
+                        android:maxLength="20"/>
                 </android.support.design.widget.TextInputLayout>
 
                 <android.support.design.widget.TextInputLayout
@@ -71,15 +74,31 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:hint="Objetivo"
+                        android:scrollbars="vertical"
+                        android:isScrollContainer="true"/>
+
+                    <!--<EditText
+                        android:id="@+id/etobj"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="Objetivo"
                         android:inputType="text"
                         android:maxLines="1" />
-                </android.support.design.widget.TextInputLayout>
 
-                <!--<android.support.v7.widget.RecyclerView
-                    android:id="@+id/rvGroupAddContact"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
-                </android.support.v7.widget.RecyclerView>-->
+                    <EditText
+                        android:id="@+id/objetive"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:scrollbars="vertical"
+                        android:padding="10dp"
+                        android:isScrollContainer="true"
+                        android:textColor="@drawable/edit_text_selector"
+                        android:background="@android:color/transparent"
+                        android:enabled="false"
+                        android:textSize="15sp"
+                        />-->
+
+                </android.support.design.widget.TextInputLayout>
             </LinearLayout>
         </RelativeLayout>
     </android.support.v4.widget.NestedScrollView>

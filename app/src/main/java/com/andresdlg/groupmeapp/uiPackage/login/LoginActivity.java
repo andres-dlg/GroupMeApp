@@ -1,31 +1,19 @@
 package com.andresdlg.groupmeapp.uiPackage.login;
 
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
-import android.annotation.TargetApi;
-import android.app.LoaderManager.LoaderCallbacks;
 import android.content.Context;
-import android.content.CursorLoader;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.Loader;
 import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
 import android.content.res.Configuration;
-import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Point;
-import android.graphics.PorterDuff;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
@@ -38,25 +26,20 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.inputmethod.EditorInfo;
-import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.andresdlg.groupmeapp.Manifest;
 import com.andresdlg.groupmeapp.R;
 import com.andresdlg.groupmeapp.uiPackage.MainActivity;
-import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
-import com.google.android.gms.common.SignInButton;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -64,8 +47,6 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.auth.GetTokenResult;
 import com.google.firebase.auth.GoogleAuthProvider;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
@@ -76,6 +57,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static android.Manifest.permission.ACCESS_COARSE_LOCATION;
 import static android.Manifest.permission.CAMERA;
 import static android.Manifest.permission.READ_CONTACTS;
 import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
@@ -241,6 +223,7 @@ public class LoginActivity extends AppCompatActivity {
         if(Build.VERSION.SDK_INT >= 23) {
             int contactsPermission = ContextCompat.checkSelfPermission(this, READ_CONTACTS);
             int internetPermission = ContextCompat.checkSelfPermission(this, CAMERA);
+            int locationPermission = ContextCompat.checkSelfPermission(this, ACCESS_COARSE_LOCATION);
             List<String> listPermissionsNeeded = new ArrayList<>();
 
             //ya se concedio el permiso de contactos?
@@ -253,6 +236,10 @@ public class LoginActivity extends AppCompatActivity {
             //Si no se concedio lo agrego a la lista de los permisos necesarios
             if (internetPermission != PackageManager.PERMISSION_GRANTED) {
                 listPermissionsNeeded.add(CAMERA);
+            }
+
+            if (locationPermission != PackageManager.PERMISSION_GRANTED) {
+                listPermissionsNeeded.add(ACCESS_COARSE_LOCATION);
             }
 
             if (internetPermission != PackageManager.PERMISSION_GRANTED) {
@@ -397,7 +384,7 @@ public class LoginActivity extends AppCompatActivity {
                         //permission is denied (and never ask again is  checked)
                         //shouldShowRequestPermissionRationale will return false
                         else {
-                            Toast.makeText(this, "Sorry you can't use the application", Toast.LENGTH_LONG)
+                            Toast.makeText(this, "Perdón, no puedes usar la aplicación si no nos das estos permisos. Mejoraremos esto en un futuro no muy lejano ;)", Toast.LENGTH_LONG)
                                     .show();
                             finish();
                             //                            //proceed with logic by disabling the related features or quit the app.
@@ -464,7 +451,7 @@ public class LoginActivity extends AppCompatActivity {
                     if (task.isSuccessful()) {
                         saveTokenAndLogin();
                     } else {
-                        Toast.makeText(LoginActivity.this, "No se ha podido loguear", Toast.LENGTH_LONG).show();
+                        Toast.makeText(LoginActivity.this, "Revisa el correo y la contraseña ingresados", Toast.LENGTH_LONG).show();
                         mProgressBar.setVisibility(View.INVISIBLE);
                     }
                 }
@@ -473,12 +460,12 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private boolean isEmailValid(String email) {
-        //TODO: Replace this with your own logic
+
         return email.contains("@");
     }
 
     private boolean isPasswordValid(String password) {
-        //TODO: Replace this with your own logic
+
         return password.length() > 4;
     }
 

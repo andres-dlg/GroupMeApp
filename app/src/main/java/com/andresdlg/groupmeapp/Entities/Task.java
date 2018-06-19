@@ -13,16 +13,18 @@ public class Task implements Parcelable {
 
     private String taskKey;
     private String name;
-    private String startDate;
-    private String endDate;
+    private long startDate;
+    private long endDate;
     private Boolean finished;
+    private String taskDescription;
 
-    public Task(String taskKey, String name,String startDate ,String endDate, Boolean finished){
+    public Task(String taskKey, String name,long startDate ,long endDate, Boolean finished, String taskDescription){
         this.taskKey = taskKey;
         this.name = name;
         this.startDate = startDate;
         this.endDate = endDate;
         this.finished = finished;
+        this.taskDescription = taskDescription;
     }
 
     public Task(){
@@ -53,19 +55,19 @@ public class Task implements Parcelable {
         this.name = name;
     }
 
-    public String getStartDate() {
+    public long getStartDate() {
         return startDate;
     }
 
-    public void setStartDate(String startDate) {
+    public void setStartDate(long startDate) {
         this.startDate = startDate;
     }
 
-    public String getEndDate() {
+    public long getEndDate() {
         return endDate;
     }
 
-    public void setEndDate(String endDate) {
+    public void setEndDate(long endDate) {
         this.endDate = endDate;
     }
 
@@ -100,6 +102,14 @@ public class Task implements Parcelable {
 
     public void setTaskKey(String taskKey) {
         this.taskKey = taskKey;
+    }
+
+    public String getTaskDescription() {
+        return taskDescription;
+    }
+
+    public void setTaskDescription(String taskDescription) {
+        this.taskDescription = taskDescription;
     }
 
     /*public boolean isFinished() {

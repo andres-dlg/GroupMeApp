@@ -1,8 +1,12 @@
 package com.andresdlg.groupmeapp.uiPackage;
 
 import android.graphics.RectF;
+import android.support.v4.app.DialogFragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
 import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -11,7 +15,11 @@ import com.alamkanak.weekview.DateTimeInterpreter;
 import com.alamkanak.weekview.MonthLoader;
 import com.alamkanak.weekview.WeekView;
 import com.alamkanak.weekview.WeekViewEvent;
+import com.andresdlg.groupmeapp.DialogFragments.SubGroupNewTaskDialogFragment;
+import com.andresdlg.groupmeapp.Entities.Task;
+import com.andresdlg.groupmeapp.Entities.WeekViewEventGroupMeApp;
 import com.andresdlg.groupmeapp.R;
+import com.andresdlg.groupmeapp.firebasePackage.FireApp;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -31,7 +39,11 @@ public class TaskWeekViewBaseActivty extends AppCompatActivity implements WeekVi
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_task_week_view_activty);
 
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
 
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setTitle("Calendario de tareas");
 
                 // Get a reference for the week view in the layout.
         mWeekView = (WeekView) findViewById(R.id.weekView);
@@ -65,8 +77,30 @@ public class TaskWeekViewBaseActivty extends AppCompatActivity implements WeekVi
     }
 
     @Override
-    public void onEventClick(WeekViewEvent event, RectF eventRect) {
+    public void onEventClick(WeekViewEvent evento, RectF eventRect) {
 
+        for(WeekViewEventGroupMeApp weekViewEventGroupMeApp : ((FireApp)getApplication()).getEventsGroupMeApp()){
+            if(weekViewEventGroupMeApp.getId() == evento.getId()){
+
+                String groupKey = weekViewEventGroupMeApp.getmGroupKey();
+                String subGroupKey = weekViewEventGroupMeApp.getmSubGroupKey();
+                String taskKey = weekViewEventGroupMeApp.getmTaskKey();
+                String taskDescription = weekViewEventGroupMeApp.getmTaskDesc();
+                boolean taskFinished = weekViewEventGroupMeApp.ismTaskFinished();
+
+                Task task = new Task(taskKey,weekViewEventGroupMeApp.getName(),weekViewEventGroupMeApp.getStartTime().getTimeInMillis(),weekViewEventGroupMeApp.getEndTime().getTimeInMillis(),taskFinished,taskDescription);
+
+                FragmentManager fragmentManager = getSupportFragmentManager();
+                SubGroupNewTaskDialogFragment newFragment4 = new SubGroupNewTaskDialogFragment(subGroupKey,groupKey, task, true);
+                newFragment4.setCancelable(false);
+                newFragment4.setStyle(DialogFragment.STYLE_NORMAL,R.style.AppTheme_DialogFragment);
+                FragmentTransaction transaction4 = fragmentManager.beginTransaction();
+                transaction4.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
+                transaction4.add(android.R.id.content, newFragment4).addToBackStack(null).commit();
+                break;
+            }
+
+        }
     }
 
     @Override
@@ -86,6 +120,10 @@ public class TaskWeekViewBaseActivty extends AppCompatActivity implements WeekVi
         int id = item.getItemId();
         setupDateTimeInterpreter(id == R.id.action_week_view);
         switch (id){
+            case android.R.id.home:
+                finish();
+                onBackPressed();
+                return true;
             case R.id.action_today:
                 mWeekView.goToToday();
                 return true;

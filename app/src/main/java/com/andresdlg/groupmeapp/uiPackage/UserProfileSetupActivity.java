@@ -6,24 +6,37 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Paint;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.TextInputLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
+import com.andresdlg.groupmeapp.Entities.Users;
 import com.andresdlg.groupmeapp.R;
+import com.andresdlg.groupmeapp.Utils.PhotoFullPopupWindow;
+import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.DataSource;
+import com.bumptech.glide.load.engine.GlideException;
+import com.bumptech.glide.request.RequestListener;
+import com.bumptech.glide.request.RequestOptions;
+import com.bumptech.glide.request.target.Target;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -35,13 +48,12 @@ import com.google.firebase.storage.UploadTask;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
 
-import java.util.Objects;
-
 import de.hdodenhof.circleimageview.CircleImageView;
 
 public class UserProfileSetupActivity extends AppCompatActivity {
 
     //FIELDS DECLARATION
+    CircleImageView mBack;
     CircleImageView mCircleImageView;
     AutoCompleteTextView mAlias;
     EditText mName;
@@ -49,10 +61,14 @@ public class UserProfileSetupActivity extends AppCompatActivity {
     Button mSaveButton;
     TextView mLater;
     Uri mCropImageUri;
+    TextInputLayout mTextInputAlias;
+    TextInputLayout mTextInputJob;
+    LinearLayout mMetricsLinearLayout;
+    TextView mGroupQuantity;
+    TextView mSubGroupQuantity;
 
     //FIREBASE AUTHENTICATION FIELDS
     FirebaseAuth mAuth;
-    FirebaseAuth.AuthStateListener mAuthStateListener;
 
     //FIREBASE DATABASE FIELDS
     DatabaseReference mUserDatabase;
@@ -61,11 +77,11 @@ public class UserProfileSetupActivity extends AppCompatActivity {
     //FIREBASE STORAGE FIELDS
     StorageReference mChildStorage;
 
-    private static final int REQUEST_CAMERA = 3;
-    private static final int SELECT_FILE = 2;
+    //private static final int REQUEST_CAMERA = 3;
+    //private static final int SELECT_FILE = 2;
 
     //IMAGE HOLD URI
-    Uri imageHoldUri;// = Uri.parse("android.resource://" + "com.andresdlg.groupmeapp" +"/"+R.drawable.new_user);
+    Uri imageHoldUri;
 
     //PROGRESS DIALOG
     ProgressDialog mProgress;
@@ -75,6 +91,9 @@ public class UserProfileSetupActivity extends AppCompatActivity {
     boolean imageSetted = false;
     boolean yaPasoPorAca = false;
 
+    String iduser;
+    Users u;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -83,14 +102,38 @@ public class UserProfileSetupActivity extends AppCompatActivity {
         /*getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);*/
 
+        iduser = getIntent().getStringExtra("iduser");
+
         //ASSIGN ID'S
         mCircleImageView = findViewById(R.id.user_profile_photo);
+        if(iduser!=null){
+
+            mBack = findViewById(R.id.back);
+            mBack.setVisibility(View.VISIBLE);
+            mBack.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    onBackPressed();
+                }
+            });
+        }
+
+
+        mTextInputAlias = findViewById(R.id.til);
 
         mAlias = findViewById(R.id.alias);
 
         mName =  findViewById(R.id.user_profile_name);
 
+        mTextInputJob = findViewById(R.id.til2);
+
         mJob =  findViewById(R.id.job);
+
+        mMetricsLinearLayout = findViewById(R.id.metricsLlo);
+
+        mGroupQuantity = findViewById(R.id.groupQuantityNumber);
+
+        mSubGroupQuantity = findViewById(R.id.subgroupQuantityNumber);
 
         mSaveButton = findViewById(R.id.save);
         mLater = findViewById(R.id.later);
@@ -104,7 +147,12 @@ public class UserProfileSetupActivity extends AppCompatActivity {
         mProgress = new ProgressDialog(this);
 
         //ASSIGN INSTANCE TO FIREBASE DATABASE
-        mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Users").child(mAuth.getCurrentUser().getUid());
+        if(iduser==null){
+            mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Users").child(mAuth.getCurrentUser().getUid());
+        }else {
+            mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Users").child(iduser);
+        }
+
         mStorageReference = FirebaseStorage.getInstance().getReference();
 
         //ONCLICK LISTENER PROFILE SAVE BUTTON
@@ -114,13 +162,6 @@ public class UserProfileSetupActivity extends AppCompatActivity {
                 saveUserProfile();
             }
         });
-
-        /*mStorageReference.child("new_user.png").getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-            @Override
-            public void onSuccess(Uri uri) {
-                imageHoldUri = uri;
-            }
-        });*/
 
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -133,6 +174,79 @@ public class UserProfileSetupActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 saveUserProfile();
+            }
+        });
+
+        if(iduser != null){
+
+            getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
+
+            if(!iduser.equals(StaticFirebaseSettings.currentUserId)){
+                mSaveButton.setVisibility(View.GONE);
+                fab.setVisibility(View.GONE);
+                mTextInputAlias.setEnabled(false);
+                mTextInputJob.setEnabled(false);
+                mJob.setEnabled(false);
+                mName.setEnabled(false);
+            }
+            setUserData();
+        }else{
+            mMetricsLinearLayout.setVisibility(View.GONE);
+        }
+
+    }
+
+    private void setUserData() {
+
+        mUserDatabase.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+
+                int groupQuantity = (int)dataSnapshot.child("groups").getChildrenCount();
+                mGroupQuantity.setText(String.valueOf(groupQuantity));
+
+                int subgroupQuantity = 0;
+                for(DataSnapshot data : dataSnapshot.child("groups").getChildren()){
+                    subgroupQuantity += (int)data.child("subgroups").getChildrenCount();
+                }
+                mSubGroupQuantity.setText(String.valueOf(subgroupQuantity));
+
+
+                u = dataSnapshot.getValue(Users.class);
+                mName.setText(u.getName());
+                mAlias.setText(u.getAlias());
+                mJob.setText(u.getJob());
+                supportPostponeEnterTransition();
+                RequestOptions requestOptions = new RequestOptions().dontAnimate();
+                Glide.with(UserProfileSetupActivity.this)
+                        .load(u.getImageURL())
+                        .apply(requestOptions)
+                        .listener(new RequestListener<Drawable>() {
+                            @Override
+                            public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
+                                //supportStartPostponedEnterTransition();
+                                return false;
+                            }
+
+                            @Override
+                            public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
+                                //supportStartPostponedEnterTransition();
+                                return false;
+                            }
+                        })
+                        .into(mCircleImageView);
+
+                mCircleImageView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        new PhotoFullPopupWindow(UserProfileSetupActivity.this, R.layout.popup_photo_full, mCircleImageView, u.getImageURL(), null);
+                    }
+                });
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
             }
         });
 
@@ -177,9 +291,9 @@ public class UserProfileSetupActivity extends AppCompatActivity {
                 imageHoldUri = result.getUri();
                 mCircleImageView.setImageURI(imageHoldUri);
                 imageSetted = true;
-            } else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
+            } /*else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
                 Exception error = result.getError();
-            }
+            }*/
         }
     }
 
@@ -198,7 +312,7 @@ public class UserProfileSetupActivity extends AppCompatActivity {
             focusView.requestFocus();
             pass = true;
         }if (TextUtils.isEmpty(userName)) {
-            mAlias.setError("Este campo es necesario");
+            mName.setError("Este campo es necesario");
             focusView = mName;
             focusView.requestFocus();
             pass = true;
@@ -211,15 +325,29 @@ public class UserProfileSetupActivity extends AppCompatActivity {
 
         if(!pass){
             DatabaseReference usersReference = FirebaseDatabase.getInstance().getReference().child("Users");
-            usersReference.addValueEventListener(new ValueEventListener() {
+            usersReference.addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     yaPasoPorAca = true;
-                    for(DataSnapshot data : dataSnapshot.getChildren()){
-                        if(data.child("alias").exists()){
-                            if (data.child("alias").getValue().equals(alias)) {
-                                exists = true;
-                                break;
+                    exists = false;
+                    if(iduser == null){
+                        for(DataSnapshot data : dataSnapshot.getChildren()){
+                            if(data.child("alias").exists()){
+                                if (data.child("alias").getValue().equals(alias)) {
+                                    exists = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }else{
+                        if(!u.getAlias().equals(alias)){
+                            for(DataSnapshot data : dataSnapshot.getChildren()){
+                                if(data.child("alias").exists()){
+                                    if (data.child("alias").getValue().equals(alias)) {
+                                        exists = true;
+                                        break;
+                                    }
+                                }
                             }
                         }
                     }
@@ -229,10 +357,15 @@ public class UserProfileSetupActivity extends AppCompatActivity {
                         mProgress.show();
 
                         if(imageSetted){
-                            mProgress.setMessage("Subiendo foto de perfil");
+
+                            if(iduser == null){
+                                mProgress.setMessage("Subiendo foto de perfil");
+                            }else{
+                                mProgress.setMessage("Actualizando perfil");
+                            }
                             mProgress.show();
 
-                            mChildStorage = mStorageReference.child("User_Profile").child(mAuth.getUid()).child(imageHoldUri.getLastPathSegment());
+                            mChildStorage = mStorageReference.child("User_Profile").child(mAuth.getCurrentUser().getUid()).child(imageHoldUri.getLastPathSegment());
                             mChildStorage.putFile(imageHoldUri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                                 @Override
                                 public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
@@ -242,23 +375,19 @@ public class UserProfileSetupActivity extends AppCompatActivity {
                                 }
                             });
                         }else{
-                            mStorageReference.child("new_user.png").getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-                                @Override
-                                public void onSuccess(Uri uri) {
-                                    imageHoldUri = uri;
-                                    mProgress.dismiss();
-                                    createUserData(alias,userName,job);
-                                }
-                            });
-
+                            if(iduser == null){
+                                imageHoldUri = Uri.parse("https://firebasestorage.googleapis.com/v0/b/groupmeapp-5aaf6.appspot.com/o/new_user.png?alt=media&token=8875556e-566a-4717-9654-6a2c27fa7cc6");
+                            }else{
+                                imageHoldUri = Uri.parse(u.getImageURL());
+                            }
+                            mProgress.dismiss();
+                            createUserData(alias,userName,job);
                         }
                     }else{
-                        if(!yaPasoPorAca){
-                            View focusView;
-                            mAlias.setError("Alias en uso");
-                            focusView = mAlias;
-                            focusView.requestFocus();
-                        }
+                        View focusView;
+                        mAlias.setError("Alias en uso");
+                        focusView = mAlias;
+                        focusView.requestFocus();
                     }
                 }
 
@@ -267,8 +396,6 @@ public class UserProfileSetupActivity extends AppCompatActivity {
 
                 }
             });
-
-
         }
     }
 
@@ -279,19 +406,23 @@ public class UserProfileSetupActivity extends AppCompatActivity {
         mUserDatabase.child("userid").setValue(mAuth.getCurrentUser().getUid());
         mUserDatabase.child("imageUrl").setValue(imageHoldUri.toString());
 
-        Intent intent = new Intent(UserProfileSetupActivity.this, MainActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        startActivity(intent);
-        finish();
+        //ESTO LO HAGO PORQUE SI VENGO DE EDITAR MI PERFIL (ELSE) ME DA ERROR EL CONTEXT DE GLIDE
+        if(iduser == null){
+            Intent intent = new Intent(UserProfileSetupActivity.this, MainActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivity(intent);
+            finish();
+        }else{
+            onBackPressed();
+        }
+
     }
 
-    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String permissions[], @NonNull int[] grantResults) {
         if (requestCode == CropImage.PICK_IMAGE_PERMISSIONS_REQUEST_CODE) {
             if (mCropImageUri != null && grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 // required permissions granted, start crop image activity
                 startCropImageActivity(mCropImageUri);
-            } else {
-                Toast.makeText(this, "Cancelling, required permissions are not granted", Toast.LENGTH_LONG).show();
             }
         }
     }

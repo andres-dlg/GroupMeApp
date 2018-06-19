@@ -1,10 +1,13 @@
 package com.andresdlg.groupmeapp.Entities;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 /**
  * Created by andresdlg on 28/12/17.
  */
 
-public class File {
+public class File implements Parcelable {
 
     private String fileKey;
     private String fileName;
@@ -13,10 +16,11 @@ public class File {
     private float fileSize;
     private long uploadTime;
     private String user;
+    private boolean published;
 
     private File() {}
 
-    public File(String fileKey, String fileName, String fileUrl, String fileType, float fileSize ,long uploadTime, String user){
+    public File(String fileKey, String fileName, String fileUrl, String fileType, float fileSize ,long uploadTime, String user, boolean published){
         this.fileKey = fileKey;
         this.fileName = fileName;
         this.fileUrl = fileUrl;
@@ -24,6 +28,7 @@ public class File {
         this.fileSize = fileSize;
         this.uploadTime = uploadTime;
         this.user = user;
+        this.published = published;
     }
 
     public String getFilename() {
@@ -80,5 +85,24 @@ public class File {
 
     public void setFileKey(String fileKey) {
         this.fileKey = fileKey;
+    }
+
+    //METODOS AGREGADOS POR LA INTERFACE
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(fileName);
+    }
+
+    public boolean isPublished() {
+        return published;
+    }
+
+    public void setPublished(boolean published) {
+        this.published = published;
     }
 }

@@ -4,12 +4,13 @@ import android.app.Application;
 
 import com.alamkanak.weekview.WeekViewEvent;
 import com.andresdlg.groupmeapp.Entities.Users;
+import com.andresdlg.groupmeapp.Entities.WeekViewEventGroupMeApp;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.database.FirebaseDatabase;
-import com.jakewharton.picasso.OkHttp3Downloader;
-import com.squareup.picasso.Picasso;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by andresdlg on 02/05/17.
@@ -19,8 +20,14 @@ public class FireApp extends Application {
 
     private String groupKey;
     private List<WeekViewEvent> events;
-    private String[] fileData;
+    private List<WeekViewEventGroupMeApp> eventsGroupMeApp;
     private String groupName;
+    private String downloadUrl;
+    private Map<String, String> members;
+
+    //PARA NOTIFICACIONES
+    private Map<String, Integer> groupsIds;
+    private Map<String, Integer> contactsIds;
 
     public String getGroupKey() {
         return groupKey;
@@ -44,8 +51,16 @@ public class FireApp extends Application {
         this.events = events;
     }
 
+    public void setEventsGroupMeApp(List<WeekViewEventGroupMeApp> events) {
+        this.eventsGroupMeApp = events;
+    }
+
     public List<WeekViewEvent> getEvents() {
         return events;
+    }
+
+    public List<WeekViewEventGroupMeApp> getEventsGroupMeApp() {
+        return eventsGroupMeApp;
     }
 
     @Override
@@ -55,39 +70,8 @@ public class FireApp extends Application {
             //Permite la persistencia offline
             FirebaseDatabase.getInstance().setPersistenceEnabled(true);
         }
-
-        //PICASSO OFFLINE
-        Picasso.Builder builder = new Picasso.Builder(this);
-        builder.downloader(new OkHttp3Downloader(this,Integer.MAX_VALUE));
-        Picasso built = builder.build();
-        built.setIndicatorsEnabled(true); // red: image comes from network, blue: disk, green: memory
-        built.setLoggingEnabled(true);
-        Picasso.setSingletonInstance(built);
-    }
-
-
-    /*public String getFileUri() {
-        return fileUri;
-    }
-
-    public void setFileUri(String fileUri) {
-        this.fileUri = fileUri;
-    }
-
-    public String getFileName() {
-        return fileName;
-    }
-
-    public void setFileName(String fileName) {
-        this.fileName = fileName;
-    }*/
-
-    public String[] getFileData() {
-        return fileData;
-    }
-
-    public void setFileData(String[] fileData) {
-        this.fileData = fileData;
+        groupsIds = new HashMap<>();
+        contactsIds = new HashMap<>();
     }
 
     public String getGroupName() {
@@ -96,5 +80,29 @@ public class FireApp extends Application {
 
     public void setGroupName(String groupName) {
         this.groupName = groupName;
+    }
+
+    public void setGroupPhoto(String downloadUrl) {
+        this.downloadUrl = downloadUrl;
+    }
+
+    public String getDownloadUrl() {
+        return downloadUrl;
+    }
+
+    public Map<String, String> getMembers() {
+        return members;
+    }
+
+    public void setMembers(Map<String, String> members) {
+        this.members = members;
+    }
+
+    public Map<String, Integer> getGroupsIds() {
+        return groupsIds;
+    }
+
+    public Map<String, Integer> getContactsIds() {
+        return contactsIds;
     }
 }

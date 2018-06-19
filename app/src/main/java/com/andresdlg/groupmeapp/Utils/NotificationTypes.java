@@ -6,7 +6,10 @@ package com.andresdlg.groupmeapp.Utils;
 
 public enum NotificationTypes {
     FRIENDSHIP,
+    FRIENDSHIP_ACCEPTED,
     MESSAGE,
     NEWS,
     GROUP_INVITATION,
+    SUBGROUP_INVITATION,
+    NEW_POST, TASK_FINISHED, NEW_FILE,
 }

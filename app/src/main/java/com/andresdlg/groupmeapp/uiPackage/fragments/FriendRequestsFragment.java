@@ -2,6 +2,7 @@ package com.andresdlg.groupmeapp.uiPackage.fragments;
 
 import android.content.res.Configuration;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
@@ -16,8 +17,8 @@ import com.andresdlg.groupmeapp.Adapters.RVContactRequestAdapter;
 import com.andresdlg.groupmeapp.Entities.Users;
 import com.andresdlg.groupmeapp.R;
 import com.andresdlg.groupmeapp.Utils.FriendshipStatus;
+import com.andresdlg.groupmeapp.Utils.NotificationStatus;
 import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
-import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -38,9 +39,13 @@ public class FriendRequestsFragment extends Fragment {
     DatabaseReference firebaseContacts;
     TextView tvRequests;
 
+    OnNewContactRequestSetListener mOnNewContactRequestSetListener;
+
+    int requestQuantity;
+
     @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_friends_requests,container,false);
 
         RecyclerView rv = v.findViewById(R.id.rvContactRequestsList);
@@ -76,12 +81,19 @@ public class FriendRequestsFragment extends Fragment {
             public void onDataChange(DataSnapshot dataSnapshot) {
                 users.clear();
                 adapter.notifyDataSetChanged();
+
+                boolean hide = false;
                 for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
                     //Getting the data from snapshot
                     if(postSnapshot.child("status").getValue().equals(FriendshipStatus.PENDING.toString())){
-                        getUser(postSnapshot.getKey());
-                        tvRequests.setVisibility(View.INVISIBLE);
+                        getUser(postSnapshot.getKey(),postSnapshot.child("seen").getValue().toString());
+                        hide = true;
                     }
+                }
+                if(hide){
+                    tvRequests.setVisibility(View.INVISIBLE);
+                }else {
+                    tvRequests.setVisibility(View.VISIBLE);
                 }
             }
 
@@ -93,7 +105,7 @@ public class FriendRequestsFragment extends Fragment {
         return v;
     }
 
-    private void getUser(String key) {
+    private void getUser(String key, final String requestSeen) {
 
         DatabaseReference user = FirebaseDatabase.getInstance().getReference("Users").child(key);
         user.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -103,6 +115,10 @@ public class FriendRequestsFragment extends Fragment {
                 if(!users.contains(u)){
                     users.add(u);
                     adapter.notifyDataSetChanged();
+                    if(requestSeen.equals(NotificationStatus.UNREAD.toString())){
+                        requestQuantity += 1;
+                        mOnNewContactRequestSetListener.onNewContactRequestSet(requestQuantity);
+                    }
                 }
             }
 
@@ -117,5 +133,50 @@ public class FriendRequestsFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
+
+        onAttachToParentFragment(getParentFragment());
+
+        requestQuantity = 0;
+    }
+
+    @Override
+    public void setUserVisibleHint(boolean isVisibleToUser) {
+        super.setUserVisibleHint(isVisibleToUser);
+        if(isAdded()){
+            if(isVisibleToUser){
+                for(Users u : users){
+                    firebaseContacts.child(u.getUserid()).child("seen").addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+                            if(dataSnapshot.getValue().toString().equals(NotificationStatus.UNREAD.toString())){
+                                dataSnapshot.getRef().setValue(NotificationStatus.READ);
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
+
+                        }
+                    });
+                    //firebaseContacts.child(u.getUserid()).child("seen").setValue(NotificationStatus.READ);
+                }
+            }else{
+                requestQuantity = 0;
+                mOnNewContactRequestSetListener.onNewContactRequestSet(0);
+            }
+        }
+    }
+
+    public interface OnNewContactRequestSetListener{
+        void onNewContactRequestSet(int requestQuantity);
+    }
+
+    public void onAttachToParentFragment(Fragment fragment){
+        try {
+            mOnNewContactRequestSetListener = (OnNewContactRequestSetListener) fragment;
+        }
+        catch (ClassCastException e){
+            throw new ClassCastException(fragment.toString() + " must implement OnUserSelectionSetListener");
+        }
     }
 }

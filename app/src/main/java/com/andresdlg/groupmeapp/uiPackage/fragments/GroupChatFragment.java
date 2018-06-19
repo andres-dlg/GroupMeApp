@@ -4,9 +4,12 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.DisplayMetrics;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -44,11 +47,18 @@ public class GroupChatFragment extends Fragment {
     private LinearLayoutManager linearLayoutManager;
 
     static List<Users> groupUsers;
+    private List<Users> users;
+
+    boolean isVisibleToUser;
+
+    OnNewMessageListener mOnNewMessageListener;
+
+    int cantidadDeMensajesNoVistos;
 
     public static void setGroupUsers(List<Users> users){
         groupUsers = new ArrayList<>();
         //groupUsers.clear();
-        users.addAll(groupUsers);
+        groupUsers.addAll(users);
     }
 
     @Nullable
@@ -60,6 +70,9 @@ public class GroupChatFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        onAttachToParentFragment(getActivity());
+        cantidadDeMensajesNoVistos = 0;
+        isVisibleToUser = false;
     }
 
     @Override
@@ -70,7 +83,10 @@ public class GroupChatFragment extends Fragment {
         Toolbar toolbar =  view.findViewById(R.id.toolbar_chats);
         toolbar.setVisibility(View.GONE);
 
-        conversationKey = ((FireApp) getActivity().getApplication()).getGroupKey();
+        Bundle bundle = getArguments();
+        conversationKey = bundle.getString("groupKey");
+
+        //conversationKey = ((FireApp) getActivity().getApplication()).getGroupKey();
 
         conversation = new Conversation();
 
@@ -81,16 +97,33 @@ public class GroupChatFragment extends Fragment {
                 if (view.getId() == R.id.btnSend) {
                     String content = editWriteMessage.getText().toString().trim();
                     if (content.length() > 0) {
+                        List<String> seenBy = new ArrayList<>();
+                        seenBy.add(StaticFirebaseSettings.currentUserId);
                         editWriteMessage.setText("");
                         DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference("Conversations").child(conversationKey).child("messages").push();
                         Message newMessage = new Message();
                         newMessage.setText(content);
+                        newMessage.setSeenBy(seenBy);
                         newMessage.setIdSender(StaticFirebaseSettings.currentUserId);
                         //Tocar esto cuando la conversación sea grupal
                         newMessage.setIdReceiver(null);
                         newMessage.setTimestamp(System.currentTimeMillis());
                         newMessage.setId(dbRef.getKey());
                         dbRef.setValue(newMessage);
+
+                        /*for(Users u : groupUsers){
+                            if(!u.getUserid().equals(StaticFirebaseSettings.currentUserId)){
+                                FirebaseDatabase
+                                        .getInstance()
+                                        .getReference("Users")
+                                        .child(u.getUserid())
+                                        .child("conversation")
+                                        .child(conversationKey)
+                                        .child("messages")
+                                        .child(dbRef.getKey())
+                                        .setValue(newMessage);
+                            }
+                        }*/
                     }
                 }
             }
@@ -99,7 +132,13 @@ public class GroupChatFragment extends Fragment {
         linearLayoutManager = new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false);
         RecyclerView recyclerChat = view.findViewById(R.id.recyclerChat);
         recyclerChat.setLayoutManager(linearLayoutManager);
-        adapter = new ListMessageAdapter(getContext(), conversation, null, null,"Group");
+
+        DisplayMetrics metrics = getResources().getDisplayMetrics();
+        ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams)recyclerChat.getLayoutParams();
+        int newMarginDp = 32;
+        params.topMargin = (int) (TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, newMarginDp, metrics));
+
+        adapter = new ListMessageAdapter(getContext(), conversation, null, null,"Group",conversationKey);
 
         FirebaseDatabase.getInstance().getReference().child("Conversations").child(conversationKey).child("messages").addChildEventListener(new ChildEventListener() {
             @Override
@@ -110,11 +149,20 @@ public class GroupChatFragment extends Fragment {
                     newMessage.setIdSender((String) mapMessage.get("idSender"));
                     newMessage.setIdReceiver((String) mapMessage.get("idReceiver"));
                     newMessage.setText((String) mapMessage.get("text"));
+                    newMessage.setSeenBy((List<String>) mapMessage.get("seenBy"));
                     newMessage.setTimestamp((long) mapMessage.get("timestamp"));
                     newMessage.setId((String) mapMessage.get("id"));
                     conversation.getListMessageData().add(newMessage);
                     adapter.notifyDataSetChanged();
                     linearLayoutManager.scrollToPosition(conversation.getListMessageData().size() - 1);
+
+                    if(!checkIfIHaveSeenThisMessage(newMessage.getSeenBy())&& !isVisibleToUser){
+                        cantidadDeMensajesNoVistos += 1;
+                    }else{
+                        cantidadDeMensajesNoVistos = 0;
+                    }
+
+                    mOnNewMessageListener.onNewMessage(cantidadDeMensajesNoVistos);
                 }
             }
 
@@ -142,4 +190,41 @@ public class GroupChatFragment extends Fragment {
 
         editWriteMessage = view.findViewById(R.id.editWriteMessage);
     }
+
+
+    private boolean checkIfIHaveSeenThisMessage(List<String> seenBy) {
+        for(String s : seenBy){
+            if(s.equals(StaticFirebaseSettings.currentUserId)){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public interface OnNewMessageListener{
+        void onNewMessage(int messageQuantity);
+    }
+
+    public void onAttachToParentFragment(FragmentActivity activity){
+        try {
+            mOnNewMessageListener = (OnNewMessageListener) activity;
+        }
+        catch (ClassCastException e){
+            throw new ClassCastException(activity.toString() + " must implement OnUserSelectionSetListener");
+        }
+    }
+
+    public void setUserVisibleHint(boolean isVisibleToUser) {
+        super.setUserVisibleHint(isVisibleToUser);
+        if(isAdded()){
+            this.isVisibleToUser = isVisibleToUser;
+            if(isVisibleToUser){
+                mOnNewMessageListener.onNewMessage(0);
+            }else {
+                adapter.updateAllMessagesToSeen();
+                cantidadDeMensajesNoVistos = 0;
+            }
+        }
+    }
+
 }

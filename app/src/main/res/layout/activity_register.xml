@@ -49,7 +49,7 @@
                 <ImageView
                     android:layout_height="101dp"
                     android:layout_width="105dp"
-                    android:src="@drawable/app_logo"
+                    android:src="@drawable/app_logo_2"
                     android:layout_gravity="center"
                     />
                 <TextView

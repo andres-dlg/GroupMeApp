@@ -1,13 +1,16 @@
 package com.andresdlg.groupmeapp.Adapters;
 
 import android.content.Context;
+import android.graphics.drawable.Drawable;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -15,17 +18,21 @@ import android.widget.Toast;
 import com.andresdlg.groupmeapp.Entities.Users;
 import com.andresdlg.groupmeapp.R;
 import com.andresdlg.groupmeapp.Utils.FriendshipStatus;
+import com.andresdlg.groupmeapp.Utils.NotificationStatus;
+import com.andresdlg.groupmeapp.Utils.NotificationTypes;
 import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
-import com.google.firebase.auth.FirebaseAuth;
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.DataSource;
+import com.bumptech.glide.load.engine.GlideException;
+import com.bumptech.glide.request.RequestListener;
+import com.bumptech.glide.request.target.Target;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.squareup.picasso.Callback;
-import com.squareup.picasso.NetworkPolicy;
-import com.squareup.picasso.Picasso;
 
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -46,14 +53,15 @@ public class RVContactRequestAdapter extends RecyclerView.Adapter<RVContactReque
         this.context = context;
     }
 
+    @NonNull
     @Override
-    public ContactsViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public ContactsViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.fragment_contact_request_list, parent, false);
         return new ContactsViewHolder(v);
     }
 
     @Override
-    public void onBindViewHolder(final ContactsViewHolder contactsViewHolder, final int position) {
+    public void onBindViewHolder(@NonNull final ContactsViewHolder contactsViewHolder, final int position) {
         Users u = users.get(position);
         contactsViewHolder.setDetails(context,u.getName(),u.getAlias(),u.getImageURL(),u.getUserid());
     }
@@ -64,13 +72,8 @@ public class RVContactRequestAdapter extends RecyclerView.Adapter<RVContactReque
     }
 
     @Override
-    public void onAttachedToRecyclerView(RecyclerView recyclerView) {
+    public void onAttachedToRecyclerView(@NonNull RecyclerView recyclerView) {
         super.onAttachedToRecyclerView(recyclerView);
-    }
-
-    public void setNotifications(List<Users> users) {
-        this.users = users;
-        notifyDataSetChanged();
     }
 
     static class ContactsViewHolder extends RecyclerView.ViewHolder {
@@ -92,34 +95,23 @@ public class RVContactRequestAdapter extends RecyclerView.Adapter<RVContactReque
             mContactName.setText(contactName);
             mContactName.setSelected(true);
 
-            Picasso.with(context)
+            Glide.with(context)
                     .load(contactPhoto)
-                    .into(mContactPhoto, new Callback() {
+                    .listener(new RequestListener<Drawable>() {
                         @Override
-                        public void onSuccess() {
+                        public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
+                            return false;
+                        }
+
+                        @Override
+                        public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
                             itemView.findViewById(R.id.homeprogress).setVisibility(View.GONE);
+                            return false;
                         }
+                    })
+                    .into(mContactPhoto);
 
-                        @Override
-                        public void onError() {
-                            Picasso.with(context)
-                                    .load(contactPhoto)
-                                    .networkPolicy(NetworkPolicy.OFFLINE)
-                                    .into(mContactPhoto, new Callback() {
-                                        @Override
-                                        public void onSuccess() {
-                                            itemView.findViewById(R.id.homeprogress).setVisibility(View.GONE);
-                                        }
-
-                                        @Override
-                                        public void onError() {
-                                            Log.v("Picasso","No se ha podido cargar la foto");
-                                        }
-                                    });
-                        }
-                    });
-
-            CircleImageView btn = mView.findViewById(R.id.btn_menu);
+            ImageButton btn = mView.findViewById(R.id.btn_menu);
             btn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
@@ -135,11 +127,11 @@ public class RVContactRequestAdapter extends RecyclerView.Adapter<RVContactReque
                             switch (id){
                                 case R.id.accept:
                                     acceptRequest(iduser);
-                                    Toast.makeText(context,"aceptar "+contactName, Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(context,"Has aceptado la invitación de "+contactName, Toast.LENGTH_SHORT).show();
                                     break;
                                 case R.id.reject:
                                     rejectRequest(iduser);
-                                    Toast.makeText(context,"rechazar"+contactName, Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(context,"Has rechazado la invitación de"+contactName, Toast.LENGTH_SHORT).show();
                                     break;
                             }
                             return true;
@@ -151,17 +143,45 @@ public class RVContactRequestAdapter extends RecyclerView.Adapter<RVContactReque
         }
 
         private void acceptRequest(String iduser) {
-            DatabaseReference userToRef = FirebaseDatabase.getInstance().getReference("Users").child(iduser).child("friends");
+
+            final DatabaseReference userToRef = FirebaseDatabase.getInstance().getReference("Users").child(iduser);
+
+            DatabaseReference userToFriendsRef = userToRef.child("friends");
             Map<String,Object> newFriend = new HashMap<>();
             newFriend.put("status", FriendshipStatus.ACCEPTED);
-            userToRef.child(StaticFirebaseSettings.currentUserId).updateChildren(newFriend);
+            userToFriendsRef.child(StaticFirebaseSettings.currentUserId).updateChildren(newFriend);
 
-            DatabaseReference currentUserRef = FirebaseDatabase.getInstance().getReference("Users").child(StaticFirebaseSettings.currentUserId).child("friends");
+            DatabaseReference currentUserRef = FirebaseDatabase.getInstance().getReference("Users").child(StaticFirebaseSettings.currentUserId);
+
+            DatabaseReference currentUserFriendsRef = currentUserRef.child("friends");
             Map<String,Object> newFriend2 = new HashMap<>();
             newFriend2.put("status", FriendshipStatus.ACCEPTED);
-            currentUserRef.child(iduser).updateChildren(newFriend2);
+            currentUserFriendsRef.child(iduser).updateChildren(newFriend2);
 
+            currentUserRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    Users u = dataSnapshot.getValue(Users.class);
 
+                    DatabaseReference userToNotifications = userToRef.child("notifications");
+                    String notificationKey = userToNotifications.push().getKey();
+                    Map<String,Object> notification = new HashMap<>();
+                    notification.put("notificationKey",notificationKey);
+                    notification.put("title","Invitacion aceptada");
+                    notification.put("message",u.getName() + " ha aceptado tu solicitud de contacto");
+                    notification.put("from", StaticFirebaseSettings.currentUserId);
+                    notification.put("state", NotificationStatus.UNREAD);
+                    notification.put("date", Calendar.getInstance().getTimeInMillis());
+                    notification.put("type", NotificationTypes.FRIENDSHIP_ACCEPTED);
+
+                    userToNotifications.child(notificationKey).setValue(notification);
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
+                }
+            });
         }
 
         private void rejectRequest(String iduser) {
