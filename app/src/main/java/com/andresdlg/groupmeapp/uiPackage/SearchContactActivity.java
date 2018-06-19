@@ -143,8 +143,6 @@ public class SearchContactActivity extends AppCompatActivity {
 
     private void sendInvitations() {
 
-
-
         List<String> selectedMembersId = rvSearchContactAdapter.getSelectedIds();
 
         //SI ESTOY AGREGANDO MIEMBROS A UN GRUPO
@@ -264,20 +262,18 @@ public class SearchContactActivity extends AppCompatActivity {
                 }
             });
         }else{
-
             for(Users groupUser : groupUsers){
-                boolean isInGroupButAndInSubgroup = false;
+                boolean isInGroupButNoInSubgroup = false;
                 for(Map.Entry<String, String> entry : members.entrySet()) {
                     String memberId = entry.getKey();
                     if(memberId.equals(groupUser.getUserid())){
-                        isInGroupButAndInSubgroup = true;
+                        isInGroupButNoInSubgroup = true;
                     }
                 }
-                if(!isInGroupButAndInSubgroup){
+                if(!isInGroupButNoInSubgroup){
                     users.add(groupUser);
                 }
             }
-            //users.addAll(groupUsers);
         }
 
 
@@ -347,6 +343,6 @@ public class SearchContactActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        ((FireApp) this.getApplication()).setMembers(null);
+        //((FireApp) this.getApplication()).setMembers(null);
     }
 }

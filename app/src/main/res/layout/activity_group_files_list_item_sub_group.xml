@@ -2,19 +2,22 @@
 <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/layout"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:padding="8dp"
     android:background="?android:attr/selectableItemBackground"
-    android:id="@+id/layout">
+    android:paddingLeft="8dp"
+    android:paddingRight="8dp"
+    android:paddingTop="8dp">
 
     <TextView
         android:id="@+id/subgroup_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
-        android:layout_marginStart="8dp"
+        android:layout_marginStart="16dp"
         android:layout_marginTop="8dp"
+        android:textSize="16sp"
         app:layout_constraintBottom_toBottomOf="@+id/subgroup_photo"
         app:layout_constraintStart_toEndOf="@+id/subgroup_photo"
         app:layout_constraintTop_toTopOf="@+id/subgroup_photo" />
@@ -25,10 +28,9 @@
         android:layout_height="48dp"
         android:layout_marginBottom="8dp"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/arrow"
         app:srcCompat="@drawable/new_user" />
 
     <ImageButton
@@ -39,13 +41,13 @@
         android:layout_columnWeight="0.25"
         android:layout_gravity="center_vertical"
         android:layout_row="0"
+        android:background="?android:attr/selectableItemBackground"
         android:src="@drawable/file_plus"
         android:tint="#616161"
-        android:background="?android:attr/selectableItemBackground"
+        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/arrow"
-        app:layout_constraintTop_toTopOf="parent"
-        android:visibility="gone"/>
+        app:layout_constraintTop_toTopOf="parent" />
 
     <ImageButton
         android:id="@+id/arrow"
@@ -55,11 +57,22 @@
         android:layout_columnWeight="0.25"
         android:layout_gravity="center_vertical"
         android:layout_row="0"
-        android:clickable="false"
         android:background="#00ffffff"
+        android:clickable="false"
         android:src="@drawable/ic_arrow_down"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <View
+        android:id="@+id/divisor1"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginTop="12dp"
+        android:background="@color/bg_add_photo"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/subgroup_photo" />
 
 </android.support.constraint.ConstraintLayout>
