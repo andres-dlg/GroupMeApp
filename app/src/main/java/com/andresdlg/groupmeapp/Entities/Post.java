@@ -12,8 +12,9 @@ public class Post {
     private String groupName;
     private String groupKey;
     private List<String> seenBy;
+    private List<String> likeBy;
 
-    public Post(String postId, String text, long time, String userId, String groupName,String groupKey, List<String> seenBy){
+    public Post(String postId, String text, long time, String userId, String groupName,String groupKey, List<String> seenBy, List<String> likeBy){
         this.postId = postId;
         this.text = text;
         this.time = time;
@@ -21,6 +22,7 @@ public class Post {
         this.groupName = groupName;
         this.groupKey = groupKey;
         this.seenBy = seenBy;
+        this.likeBy = likeBy;
     }
 
     public Post(){ }
@@ -79,5 +81,13 @@ public class Post {
 
     public void setGroupKey(String groupKey) {
         this.groupKey = groupKey;
+    }
+
+    public List<String> getLikeBy() {
+        return likeBy;
+    }
+
+    public void setLikeBy(List<String> likeBy) {
+        this.likeBy = likeBy;
     }
 }

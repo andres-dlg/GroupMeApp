@@ -3,7 +3,6 @@
 <android.support.v7.widget.CardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:card_view="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/cvPost"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -65,14 +64,12 @@
             android:id="@+id/postText"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:layout_marginEnd="8dp"
-            android:layout_marginStart="8dp"
             android:layout_marginTop="8dp"
+            android:layout_marginLeft="8dp"
+            android:layout_marginRight="8dp"
             android:maxHeight="500dp"
             android:scrollbars="vertical"
             android:textColor="@color/gray_edit_text"
-            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/divider" />
@@ -96,7 +93,8 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             card_view:srcCompat="@drawable/ic_dots_vertical_black_24dp"
-            android:visibility="gone"/>
+            android:visibility="gone"
+            android:contentDescription="Menu" />
 
         <ImageView
             android:id="@+id/newPostIndicator"
@@ -108,6 +106,51 @@
             app:layout_constraintBottom_toTopOf="@+id/divider"
             app:layout_constraintEnd_toEndOf="parent"
             android:visibility="gone"/>
+
+        <View
+            android:id="@+id/divider2"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_below="@id/flo"
+            android:layout_marginTop="8dp"
+            android:background="@color/bg_add_photo"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/postText" />
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/divider2"
+            android:orientation="horizontal"
+            android:weightSum="1">
+
+            <TextView
+                android:id="@+id/likesCountTv"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight=".95"
+                android:gravity="center_vertical"
+                android:textAlignment="viewEnd"/>
+
+            <ImageButton
+                android:id="@+id/likeBy"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/check_circle"
+                android:tint="@color/grey_500"
+                android:background="#00ffffff"
+                android:layout_weight=".05"/>
+
+        </LinearLayout>
 
     </android.support.constraint.ConstraintLayout>
 
