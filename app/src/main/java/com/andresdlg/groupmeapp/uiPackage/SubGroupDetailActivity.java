@@ -1,14 +1,15 @@
 package com.andresdlg.groupmeapp.uiPackage;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
@@ -16,7 +17,6 @@ import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.view.ViewCompat;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -30,6 +30,7 @@ import android.view.View;
 import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.view.animation.DecelerateInterpolator;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -38,9 +39,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.afollestad.materialdialogs.MaterialDialog;
-import com.andresdlg.groupmeapp.Adapters.RVGroupDetailAdapter;
 import com.andresdlg.groupmeapp.Adapters.RVSubGroupDetailAdapter;
-import com.andresdlg.groupmeapp.Entities.Group;
 import com.andresdlg.groupmeapp.Entities.SubGroup;
 import com.andresdlg.groupmeapp.Entities.Task;
 import com.andresdlg.groupmeapp.Entities.Users;
@@ -66,6 +65,10 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.takusemba.spotlight.OnSpotlightStateChangedListener;
+import com.takusemba.spotlight.Spotlight;
+import com.takusemba.spotlight.shape.Circle;
+import com.takusemba.spotlight.target.SimpleTarget;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
 
@@ -98,11 +101,14 @@ public class SubGroupDetailActivity extends AppCompatActivity {
     Uri mCropImageUri;
     Uri imageHoldUri;
     FloatingActionButton fab;
+    ImageButton editObjetiveBtn;
+    ImageButton addContact;
 
     private boolean editMode;
 
     CollapsingToolbarLayout collapsingToolbar;
     AppBarLayout appBarLayout;
+    Toolbar toolbar;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -127,7 +133,7 @@ public class SubGroupDetailActivity extends AppCompatActivity {
 
         setToolbar(subGroupName,myFadeInAnimation);
 
-        final ImageButton editObjetiveBtn = findViewById(R.id.editObjetiveBtn);
+        editObjetiveBtn = findViewById(R.id.editObjetiveBtn);
         editObjetiveBtn.startAnimation(myFadeInAnimation);
 
         objetive = findViewById(R.id.objetive);
@@ -140,7 +146,7 @@ public class SubGroupDetailActivity extends AppCompatActivity {
             }
         });
 
-        final ImageButton addContact = findViewById(R.id.addContact);
+        addContact = findViewById(R.id.addContact);
         addContact.startAnimation(myFadeInAnimation);
 
         fab = findViewById(R.id.fab);
@@ -176,6 +182,7 @@ public class SubGroupDetailActivity extends AppCompatActivity {
 
         subGroupRef = FirebaseDatabase.getInstance().getReference("Groups").child(groupKey).child("subgroups").child(subGroupKey);
         subGroupRef.addValueEventListener(new ValueEventListener() {
+            @SuppressLint("SetTextI18n")
             @Override
             public void onDataChange(DataSnapshot data) {
                 //SI ES NULL ES PORQUE FUE ELIMINADO
@@ -213,7 +220,7 @@ public class SubGroupDetailActivity extends AppCompatActivity {
                         @Override
                         public void onClick(View view) {
                             if(amIadmin()){
-                                onSelectImageClick(view);
+                                onSelectImageClick();
                             }else{
                                 Toast.makeText(SubGroupDetailActivity.this, "Debes ser administrador para actualizar la foto del grupo", Toast.LENGTH_SHORT).show();
                             }
@@ -291,7 +298,7 @@ public class SubGroupDetailActivity extends AppCompatActivity {
 
     private void setToolbar(String groupName, Animation myFadeInAnimation) {
 
-        Toolbar toolbar = findViewById(R.id.toolbar);
+        toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         //toolbar.setBackground(getResources().getDrawable(R.drawable.gradient_black_rotated));
@@ -339,51 +346,22 @@ public class SubGroupDetailActivity extends AppCompatActivity {
                 }
 
                 return true;
-            case R.id.delete:
-                /*if(amIadmin()){
-                    new AlertDialog.Builder(this,R.style.MyDialogTheme)
-                            .setTitle("¿Seguro desea elminiar este subgrupo?")
-                            //.setMessage("Ya no estará disponib")
-                            .setPositiveButton("Si", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    deleteSubgroup();
-                                }
-                            })
-                            .setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    dialog.dismiss();
-                                }
-                            })
-                            .setCancelable(false)
-                            .show();
-                }else{
-                    Toast.makeText(this, "Debes ser administrador para eliminar el subgrupo", Toast.LENGTH_SHORT).show();
-                }*/
+            case R.id.help:
+                appBarLayout.setExpanded(true);
+                final Handler handler = new Handler();
+                handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        letTheFirstPartOfTheShowBegin();
+                    }
+                }, 1000);
             default:
                 return super.onOptionsItemSelected(item);
         }
     }
 
-    private void deleteSubgroup() {
-
-        //ELIMINO EL SUBGRUPO DEL NODO GRUPOS
-        subGroupRef.removeValue();
-
-        //ELIMINO EL SUBGRUPO DEL NODO USUARIOS PARA TODOS LOS MIEMBROS DE ESTE SUBGRUPO
-        DatabaseReference userSubgroupRef = FirebaseDatabase.getInstance().getReference("Users");
-        for(Users member: usersList){
-            userSubgroupRef.child(member.getUserid()).child("groups").child(groupKey).child("subgroups").child(subGroupKey).removeValue();
-        }
-
-        onBackPressed();
-
-        //FALTARIA IMPLEMENTAR EL BORRADO DE LOS DIRECTORIOS EN FIREBASE STORAGE UNA VEZ QUE ESO ESTE DISPONIBLE
-    }
-
     //NEW IMAGE SELECTION
-    private void onSelectImageClick(View view) {
+    private void onSelectImageClick() {
         Intent i = CropImage.getPickImageChooserIntent(this);
         startActivityForResult(i,REQUEST_CODE);
     }
@@ -428,7 +406,9 @@ public class SubGroupDetailActivity extends AppCompatActivity {
                 saveGroupPhoto(imageHoldUri,iv);
 
             } else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
-                Exception error = result.getError();
+                Exception error;
+                error = result.getError();
+                Log.e("ERROR CROP IMAGE",error.getMessage());
             }
         }
     }
@@ -584,5 +564,103 @@ public class SubGroupDetailActivity extends AppCompatActivity {
     public void onBackPressed() {
         fab.hide();
         super.onBackPressed();
+    }
+
+    private void letTheFirstPartOfTheShowBegin() {
+
+        int[] oneLocation;
+        float oneX;
+        float oneY;
+
+        SimpleTarget mainTarget = new SimpleTarget.Builder(this)
+                .setShape(new Circle(0f))
+                .setTitle("Detalles del subgrupo")
+                .setDescription("En esta pantalla podrás ver la foto, el objetivo y los miembros del subgrupo junto con el rol de cada uno")
+                .build();
+
+        if(amIadmin()){
+            oneLocation = new int[2];
+            View edit = toolbar.findViewById(R.id.editGroupNameBtn);
+            edit.getLocationInWindow(oneLocation);
+            oneX = oneLocation[0] + edit.getWidth() / 2f;
+            oneY = oneLocation[1] + edit.getHeight() / 2f;
+            SimpleTarget editTarget = new SimpleTarget.Builder(this)
+                    .setPoint(oneX, oneY)
+                    .setShape(new Circle(100f))
+                    .setTitle("Edición de nombre")
+                    .setDescription("Desde aquí podrás editar el nombre del subgrupo")
+                    .build();
+
+            oneLocation = new int[2];
+            fab.getLocationInWindow(oneLocation);
+            oneX = oneLocation[0] + fab.getWidth() / 2f;
+            oneY = oneLocation[1] + fab.getHeight() / 2f;
+            SimpleTarget fabTarget = new SimpleTarget.Builder(this)
+                    .setPoint(oneX, oneY)
+                    .setShape(new Circle(100f))
+                    .setTitle("Edición de foto")
+                    .setDescription("Desde aquí podrás editar la foto del subgrupo")
+                    .build();
+
+            oneLocation = new int[2];
+            editObjetiveBtn.getLocationInWindow(oneLocation);
+            oneX = oneLocation[0] + editObjetiveBtn.getWidth() / 2f;
+            oneY = oneLocation[1] + editObjetiveBtn.getHeight() / 2f;
+            SimpleTarget editObjetiveBtnTarget = new SimpleTarget.Builder(this)
+                    .setPoint(oneX, oneY)
+                    .setShape(new Circle(100f))
+                    .setTitle("Edición de objetivo")
+                    .setDescription("El objetivo de un subgrupo puede cambiar segun las necesidades\n Desde aquí podrás editar el objetivo")
+                    .build();
+
+            oneLocation = new int[2];
+            addContact.getLocationInWindow(oneLocation);
+            oneX = oneLocation[0] + addContact.getWidth() / 2f;
+            oneY = oneLocation[1] + addContact.getHeight() / 2f;
+            SimpleTarget addContactTarget = new SimpleTarget.Builder(this)
+                    .setPoint(oneX, oneY)
+                    .setShape(new Circle(100f))
+                    .setTitle("Agregar miembros")
+                    .setDescription("Desde aquí podrás agregar al subgrupo a los usuarios que tu quieras y que ya sean parte del grupo general")
+                    .build();
+
+            Spotlight.with(this)
+                    .setOverlayColor(R.color.background)
+                    .setDuration(1000L)
+                    .setAnimation(new DecelerateInterpolator(2f))
+                    //Agrego los targets
+                    .setTargets(mainTarget,editTarget,fabTarget,editObjetiveBtnTarget,addContactTarget)
+                    .setClosedOnTouchedOutside(true)
+                    .setOnSpotlightStateListener(new OnSpotlightStateChangedListener() {
+                        @Override
+                        public void onStarted() {
+                        }
+
+                        @Override
+                        public void onEnded() {
+                        }
+                    })
+                    .start();
+        }
+
+        if(!amIadmin()){
+            Spotlight.with(this)
+                    .setOverlayColor(R.color.background)
+                    .setDuration(1000L)
+                    .setAnimation(new DecelerateInterpolator(2f))
+                    //Agrego los targets
+                    .setTargets(mainTarget)
+                    .setClosedOnTouchedOutside(true)
+                    .setOnSpotlightStateListener(new OnSpotlightStateChangedListener() {
+                        @Override
+                        public void onStarted() {
+                        }
+
+                        @Override
+                        public void onEnded() {
+                        }
+                    })
+                    .start();
+        }
     }
 }

@@ -84,10 +84,14 @@ public class GroupActivity extends AppCompatActivity implements GroupChatFragmen
     CircleImageView civ;
     ArrayList<NavigationTabBar.Model> models;
     Toolbar toolbar;
+    View view;
+    View groupDetailsToolBarView;
 
     String groupName;
+    String groupPhotoUrl;
 
     boolean viewPagerWasInChatPage;
+    private boolean presentationStarted;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -137,13 +141,17 @@ public class GroupActivity extends AppCompatActivity implements GroupChatFragmen
 
         viewPagerWasInChatPage = false;
 
+        presentationStarted = false;
+
         dummyView = findViewById(R.id.dummyView);
+
+        view = findViewById(R.id.view);
 
         final DisplayMetrics metrics = getResources().getDisplayMetrics();
 
         groupKey = getIntent().getStringExtra("groupKey");
         groupName = getIntent().getStringExtra("groupName");
-        final String groupPhotoUrl = getIntent().getStringExtra("groupImage");
+        groupPhotoUrl = getIntent().getStringExtra("groupImage");
 
         ((FireApp) this.getApplication()).setGroupKey(groupKey);
 
@@ -155,22 +163,8 @@ public class GroupActivity extends AppCompatActivity implements GroupChatFragmen
                 .load(groupPhotoUrl)
                 .into(civ);
 
-        View v = toolbar.findViewById(R.id.toolbar_container);
-        v.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(GroupActivity.this, GroupDetailActivity.class);
-                // Pass data object in the bundle and populate details activity.
-                intent.putExtra("groupName", groupName);
-                intent.putExtra("groupPhotoUrl", groupPhotoUrl);
-                intent.putExtra("groupKey", groupKey);
-                Pair<View, String> p1 = Pair.create((View)civ, "photo");
-                Pair<View, String> p2 = Pair.create((View)tv, "text");
-                ActivityOptionsCompat options = ActivityOptionsCompat.
-                        makeSceneTransitionAnimation(GroupActivity.this, p1, p2);
-                startActivity(intent, options.toBundle());
-            }
-        });
+        groupDetailsToolBarView = toolbar.findViewById(R.id.toolbar_container);
+        setGroupDetailsToolBarViewListener();
 
         //Typeface customFont = Typeface.createFromAsset(this.getAssets(),"fonts/Simplifica.ttf");
 
@@ -325,6 +319,24 @@ public class GroupActivity extends AppCompatActivity implements GroupChatFragmen
 
     }
 
+    private void setGroupDetailsToolBarViewListener() {
+        groupDetailsToolBarView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(GroupActivity.this, GroupDetailActivity.class);
+                // Pass data object in the bundle and populate details activity.
+                intent.putExtra("groupName", groupName);
+                intent.putExtra("groupPhotoUrl", groupPhotoUrl);
+                intent.putExtra("groupKey", groupKey);
+                Pair<View, String> p1 = Pair.create((View)civ, "photo");
+                Pair<View, String> p2 = Pair.create((View)tv, "text");
+                ActivityOptionsCompat options = ActivityOptionsCompat.
+                        makeSceneTransitionAnimation(GroupActivity.this, p1, p2);
+                startActivity(intent, options.toBundle());
+            }
+        });
+    }
+
     private void fetchContacts(){
         groupRef = FirebaseDatabase.getInstance().getReference("Groups").child(groupKey).child("members");
         groupsEventListener = new ValueEventListener() {
@@ -425,100 +437,101 @@ public class GroupActivity extends AppCompatActivity implements GroupChatFragmen
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case android.R.id.home:
-                finish();
-                return true;
-
-            case R.id.help:
-                if(viewPager.getCurrentItem() == 2){
-                    viewPager.setCurrentItem(1);
-                    viewPager.setCurrentItem(0);
-                }else{
-                    viewPager.setCurrentItem(0);
-                }
-                final Handler handler = new Handler();
-                handler.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        letTheFirstPartOfTheShowBegin();
+        if(!presentationStarted) {
+            switch (item.getItemId()) {
+                case android.R.id.home:
+                    finish();
+                    return true;
+                case R.id.help:
+                    if (viewPager.getCurrentItem() == 2) {
+                        viewPager.setCurrentItem(1);
+                        viewPager.setCurrentItem(0);
+                    } else {
+                        viewPager.setCurrentItem(0);
                     }
-                }, 1000);
-                return true;
+                    final Handler handler = new Handler();
+                    handler.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            letTheFirstPartOfTheShowBegin();
+                        }
+                    }, 1000);
+                    return true;
+                case R.id.dates:
+                    clicked = true;
+                    final Intent intent = new Intent(GroupActivity.this, TaskWeekViewActivity.class);
+                    intent.putExtra("groupKey", groupKey);
 
-            case R.id.dates:
-                clicked = true;
-                final Intent intent = new Intent(GroupActivity.this, TaskWeekViewActivity.class);
-                intent.putExtra("groupKey",groupKey);
+                    ((FireApp) getApplicationContext()).setEvents(null);
 
-                ((FireApp) getApplicationContext()).setEvents(null);
+                    final List<WeekViewEvent> events = new ArrayList<>();
+                    final List<WeekViewEventGroupMeApp> eventsGroupMeApp = new ArrayList<>();
 
-                final List<WeekViewEvent> events = new ArrayList<>();
-                final List<WeekViewEventGroupMeApp> eventsGroupMeApp = new ArrayList<>();
+                    final ProgressBar progressBar = new ProgressBar(this);
+                    progressBar.setVisibility(View.VISIBLE);
 
-                final ProgressBar progressBar = new ProgressBar(this);
-                progressBar.setVisibility(View.VISIBLE);
+                    subGroupsRef = FirebaseDatabase.getInstance().getReference("Groups")
+                            .child(groupKey)
+                            .child("subgroups");
 
-                subGroupsRef = FirebaseDatabase.getInstance().getReference("Groups")
-                        .child(groupKey)
-                        .child("subgroups");
+                    subGroupsValueEventListener = new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+                            ((FireApp) getApplicationContext()).setEvents(null);
+                            int i = 0;
+                            for (DataSnapshot subgroupRef : dataSnapshot.getChildren()) {
+                                for (DataSnapshot taskRef : subgroupRef.child("tasks").getChildren()) {
+                                    Task task = taskRef.getValue(Task.class);
 
-                subGroupsValueEventListener = new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        ((FireApp) getApplicationContext()).setEvents(null);
-                        int i = 0;
-                        for(DataSnapshot subgroupRef: dataSnapshot.getChildren()){
-                            for(DataSnapshot taskRef: subgroupRef.child("tasks").getChildren()){
-                                Task task = taskRef.getValue(Task.class);
+                                    if (task.getStartDate() != 0 && task.getEndDate() != 0) {
 
-                                if(task.getStartDate() != 0 && task.getEndDate() != 0){
+                                        Calendar taskStartDateTime = Calendar.getInstance();
+                                        taskStartDateTime.setTimeInMillis(task.getStartDate());
 
-                                    Calendar taskStartDateTime = Calendar.getInstance();
-                                    taskStartDateTime.setTimeInMillis(task.getStartDate());
+                                        Calendar taskEndDateTime = Calendar.getInstance();
+                                        taskEndDateTime.setTimeInMillis(task.getEndDate());
 
-                                    Calendar taskEndDateTime = Calendar.getInstance();
-                                    taskEndDateTime.setTimeInMillis(task.getEndDate());
-
-                                    WeekViewEventGroupMeApp eventGroupMeApp = new WeekViewEventGroupMeApp(i, task.getName(), groupKey, subgroupRef.child("subGroupKey").getValue().toString(), task.getTaskKey(), task.getTaskDescription(), task.getFinished(), taskStartDateTime, taskEndDateTime);
-                                    WeekViewEvent event = new WeekViewEvent(i, subgroupRef.child("name").getValue() + "-" + task.getName(), groupKey + "RQYg6ybUaE|sep" + subgroupRef.child("subGroupKey").getValue() + "RQYg6ybUaE|sep" + task.getTaskKey() + "RQYg6ybUaE|sep" +task.getTaskDescription() + "RQYg6ybUaE|sep" + task.getFinished(), taskStartDateTime, taskEndDateTime);
-                                    event.setColor(getResources().getColor(R.color.colorPrimary));
-                                    eventsGroupMeApp.add(eventGroupMeApp);
-                                    events.add(event);
-                                    i++;
+                                        WeekViewEventGroupMeApp eventGroupMeApp = new WeekViewEventGroupMeApp(i, task.getName(), groupKey, subgroupRef.child("subGroupKey").getValue().toString(), task.getTaskKey(), task.getTaskDescription(), task.getFinished(), taskStartDateTime, taskEndDateTime);
+                                        WeekViewEvent event = new WeekViewEvent(i, subgroupRef.child("name").getValue() + "-" + task.getName(), groupKey + "RQYg6ybUaE|sep" + subgroupRef.child("subGroupKey").getValue() + "RQYg6ybUaE|sep" + task.getTaskKey() + "RQYg6ybUaE|sep" + task.getTaskDescription() + "RQYg6ybUaE|sep" + task.getFinished(), taskStartDateTime, taskEndDateTime);
+                                        event.setColor(getResources().getColor(R.color.colorPrimary));
+                                        eventsGroupMeApp.add(eventGroupMeApp);
+                                        events.add(event);
+                                        i++;
+                                    }
                                 }
                             }
-                        }
-                        progressBar.setVisibility(View.GONE);
-                        ((FireApp) getApplicationContext()).setEvents(events);
-                        ((FireApp) getApplicationContext()).setEventsGroupMeApp(eventsGroupMeApp);
-                        if (clicked){
-                            startActivity(intent);
+                            progressBar.setVisibility(View.GONE);
+                            ((FireApp) getApplicationContext()).setEvents(events);
+                            ((FireApp) getApplicationContext()).setEventsGroupMeApp(eventsGroupMeApp);
+                            if (clicked) {
+                                startActivity(intent);
+                                clicked = false;
+                            }
                             clicked = false;
                         }
-                        clicked = false;
-                    }
 
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
 
-                    }
-                };
+                        }
+                    };
 
-                subGroupsRef.addValueEventListener(subGroupsValueEventListener);
+                    subGroupsRef.addValueEventListener(subGroupsValueEventListener);
 
-                //startActivity(intent);
-                return true;
+                    //startActivity(intent);
+                    return true;
 
-            case R.id.files:
-                Intent i =  new Intent(this,GroupFilesActivity.class);
-                i.putExtra("groupKey",groupKey);
-                i.putExtra("groupName",groupName);
-                startActivity(i);
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
+                case R.id.files:
+                    Intent i = new Intent(this, GroupFilesActivity.class);
+                    i.putExtra("groupKey", groupKey);
+                    i.putExtra("groupName", groupName);
+                    startActivity(i);
+                    return true;
+                default:
+                    return super.onOptionsItemSelected(item);
+            }
         }
+        return false;
     }
 
     private void letTheFirstPartOfTheShowBegin() {
@@ -568,9 +581,8 @@ public class GroupActivity extends AppCompatActivity implements GroupChatFragmen
                 .setDescription("Aquí podrás escribir una publicación y guardarla para que los demas miembros puedan verla")
                 .build();
 
-
         //EMPIEZA LA PRIMER PARTE DEL SHOW
-        Spotlight.with(this)
+        Spotlight spotlight = Spotlight.with(this)
                 .setOverlayColor(R.color.background)
                 .setDuration(1000L)
                 .setAnimation(new DecelerateInterpolator(2f))
@@ -580,6 +592,9 @@ public class GroupActivity extends AppCompatActivity implements GroupChatFragmen
                 .setOnSpotlightStateListener(new OnSpotlightStateChangedListener() {
                     @Override
                     public void onStarted() {
+                        presentationStarted = true;
+                        view.setVisibility(View.VISIBLE);
+                        groupDetailsToolBarView.setOnClickListener(null);
                     }
 
                     @Override
@@ -593,8 +608,9 @@ public class GroupActivity extends AppCompatActivity implements GroupChatFragmen
                             }
                         }, 1000);
                     }
-                })
-                .start();
+                });
+
+        spotlight.start();
 
     }
 
@@ -659,8 +675,21 @@ public class GroupActivity extends AppCompatActivity implements GroupChatFragmen
 
         float datesX = oneX;
 
+        // 4) TARGET FILES
+        View files = toolbar.findViewById(R.id.files);
+        oneLocation = new int[2];
+        files.getLocationInWindow(oneLocation);
+        oneX = oneLocation[0] + files.getWidth() / 2f;
+        oneY = oneLocation[1] + files.getHeight() / 2f;
+        SimpleTarget filesTarget = new SimpleTarget.Builder(this)
+                .setPoint(oneX, oneY)
+                .setShape(new Circle(100f))
+                .setTitle("Archivos compartidos")
+                .setDescription("Cuando el administrador del grupo o los miembros de algun subgrupo compartan archivos podrás descargarlos, compartirlos o, si tienes permisos, eliminarlos desde esta pantalla")
+                .build();
 
-        // 3) TARGET GROUP
+
+        // 5) TARGET GROUP
         oneLocation = new int[2];
         toolbar.getLocationInWindow(oneLocation);
         oneX = oneLocation[0] + dates.getWidth() / 2f;
@@ -677,7 +706,7 @@ public class GroupActivity extends AppCompatActivity implements GroupChatFragmen
                 .setDuration(1000L)
                 .setAnimation(new DecelerateInterpolator(2f))
                 //Agrego los targets
-                .setTargets(tabBarSubGroupsTarget,fabSubGroupsTarget,tabBarChatTarget,datesTarget,toolbarTarget)
+                .setTargets(tabBarSubGroupsTarget,fabSubGroupsTarget,tabBarChatTarget,datesTarget,filesTarget,toolbarTarget)
                 .setClosedOnTouchedOutside(true)
                 .setOnSpotlightStateListener(new OnSpotlightStateChangedListener() {
                     @Override
@@ -686,7 +715,9 @@ public class GroupActivity extends AppCompatActivity implements GroupChatFragmen
 
                     @Override
                     public void onEnded() {
-
+                        view.setVisibility(View.GONE);
+                        setGroupDetailsToolBarViewListener();
+                        presentationStarted = false;
                     }
                 })
                 .start();

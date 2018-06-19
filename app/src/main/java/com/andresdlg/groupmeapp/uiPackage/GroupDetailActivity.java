@@ -1,6 +1,7 @@
 package com.andresdlg.groupmeapp.uiPackage;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -8,6 +9,7 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
@@ -28,6 +30,7 @@ import android.view.View;
 import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.view.animation.DecelerateInterpolator;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -60,6 +63,10 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.takusemba.spotlight.OnSpotlightStateChangedListener;
+import com.takusemba.spotlight.Spotlight;
+import com.takusemba.spotlight.shape.Circle;
+import com.takusemba.spotlight.target.SimpleTarget;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
 
@@ -93,6 +100,10 @@ public class GroupDetailActivity extends AppCompatActivity {
 
     CollapsingToolbarLayout collapsingToolbar;
     AppBarLayout appBarLayout;
+    Toolbar toolbar;
+    FloatingActionButton fab;
+    ImageButton editObjetiveBtn;
+    ImageButton addContact;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -115,7 +126,7 @@ public class GroupDetailActivity extends AppCompatActivity {
 
         setToolbar(((FireApp) getApplication()).getGroupName(),myFadeInAnimation);
 
-        final ImageButton editObjetiveBtn = findViewById(R.id.editObjetiveBtn);
+        editObjetiveBtn = findViewById(R.id.editObjetiveBtn);
         editObjetiveBtn.startAnimation(myFadeInAnimation);
 
         objetive = findViewById(R.id.objetive);
@@ -128,11 +139,10 @@ public class GroupDetailActivity extends AppCompatActivity {
             }
         });
 
-        final ImageButton addContact = findViewById(R.id.addContact);
+        addContact = findViewById(R.id.addContact);
         addContact.startAnimation(myFadeInAnimation);
 
-        final FloatingActionButton fab = findViewById(R.id.fab);
-
+        fab = findViewById(R.id.fab);
 
         final RecyclerView rv = findViewById(R.id.rvMembers);
         rv.setHasFixedSize(true);
@@ -162,6 +172,7 @@ public class GroupDetailActivity extends AppCompatActivity {
 
         groupRef = FirebaseDatabase.getInstance().getReference("Groups").child(groupKey);
         groupRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @SuppressLint("SetTextI18n")
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 Group g = dataSnapshot.getValue(Group.class);
@@ -183,7 +194,7 @@ public class GroupDetailActivity extends AppCompatActivity {
                     @Override
                     public void onClick(View view) {
                         if(amIadmin()){
-                            onSelectImageClick(view);
+                            onSelectImageClick();
                         }else{
                             Toast.makeText(GroupDetailActivity.this, "Debes ser administrador para actualizar la foto del grupo", Toast.LENGTH_SHORT).show();
                         }
@@ -193,14 +204,6 @@ public class GroupDetailActivity extends AppCompatActivity {
                 if(amIadmin()){
 
                     appBarLayout.setExpanded(true);
-
-                    /*fab.setVisibility(View.VISIBLE);
-                    fab.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-                            onSelectImageClick(view);
-                        }
-                    });*/
 
                     editObjetiveBtn.setVisibility(View.VISIBLE);
                     editObjetiveBtn.setOnClickListener(new View.OnClickListener() {
@@ -256,7 +259,7 @@ public class GroupDetailActivity extends AppCompatActivity {
 
     private void setToolbar(String groupName, Animation myFadeInAnimation) {
 
-        Toolbar toolbar = findViewById(R.id.toolbar);
+        toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         //toolbar.setBackground(getResources().getDrawable(R.drawable.gradient_black_rotated));
@@ -302,7 +305,16 @@ public class GroupDetailActivity extends AppCompatActivity {
                 }else{
                     Toast.makeText(this, "Debes ser administrador para actualizar el nombre del grupo", Toast.LENGTH_SHORT).show();
                 }
-
+                return true;
+            case R.id.help:
+                appBarLayout.setExpanded(true);
+                final Handler handler = new Handler();
+                handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        letTheFirstPartOfTheShowBegin();
+                    }
+                }, 1000);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -310,7 +322,7 @@ public class GroupDetailActivity extends AppCompatActivity {
     }
 
     //NEW IMAGE SELECTION
-    private void onSelectImageClick(View view) {
+    private void onSelectImageClick() {
         Intent i = CropImage.getPickImageChooserIntent(this);
         startActivityForResult(i,REQUEST_CODE);
     }
@@ -354,7 +366,9 @@ public class GroupDetailActivity extends AppCompatActivity {
                 saveGroupPhoto(imageHoldUri,iv);
 
             } else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
-                Exception error = result.getError();
+                Exception error;
+                error = result.getError();
+                Log.e("CROP IMAGE ERROR",error.getMessage());
             }
         }
     }
@@ -504,5 +518,103 @@ public class GroupDetailActivity extends AppCompatActivity {
 
             }
         });
+    }
+
+    private void letTheFirstPartOfTheShowBegin() {
+
+        int[] oneLocation;
+        float oneX;
+        float oneY;
+
+        SimpleTarget mainTarget = new SimpleTarget.Builder(this)
+                .setShape(new Circle(0f))
+                .setTitle("Detalles del grupo")
+                .setDescription("En esta pantalla podrás ver la foto, el objetivo y los miembros del grupo junto con el rol de cada uno")
+                .build();
+
+        if(amIadmin()){
+            oneLocation = new int[2];
+            View edit = toolbar.findViewById(R.id.editGroupNameBtn);
+            edit.getLocationInWindow(oneLocation);
+            oneX = oneLocation[0] + edit.getWidth() / 2f;
+            oneY = oneLocation[1] + edit.getHeight() / 2f;
+            SimpleTarget editTarget = new SimpleTarget.Builder(this)
+                    .setPoint(oneX, oneY)
+                    .setShape(new Circle(100f))
+                    .setTitle("Edición de nombre")
+                    .setDescription("Desde aquí podrás editar el nombre del grupo")
+                    .build();
+
+            oneLocation = new int[2];
+            fab.getLocationInWindow(oneLocation);
+            oneX = oneLocation[0] + fab.getWidth() / 2f;
+            oneY = oneLocation[1] + fab.getHeight() / 2f;
+            SimpleTarget fabTarget = new SimpleTarget.Builder(this)
+                    .setPoint(oneX, oneY)
+                    .setShape(new Circle(100f))
+                    .setTitle("Edición de foto")
+                    .setDescription("Desde aquí podrás editar la foto del grupo")
+                    .build();
+
+            oneLocation = new int[2];
+            editObjetiveBtn.getLocationInWindow(oneLocation);
+            oneX = oneLocation[0] + editObjetiveBtn.getWidth() / 2f;
+            oneY = oneLocation[1] + editObjetiveBtn.getHeight() / 2f;
+            SimpleTarget editObjetiveBtnTarget = new SimpleTarget.Builder(this)
+                    .setPoint(oneX, oneY)
+                    .setShape(new Circle(100f))
+                    .setTitle("Edición de objetivo")
+                    .setDescription("El objetivo de un grupo puede cambiar segun las necesidades\n Desde aquí podrás editar el objetivo")
+                    .build();
+
+            oneLocation = new int[2];
+            addContact.getLocationInWindow(oneLocation);
+            oneX = oneLocation[0] + addContact.getWidth() / 2f;
+            oneY = oneLocation[1] + addContact.getHeight() / 2f;
+            SimpleTarget addContactTarget = new SimpleTarget.Builder(this)
+                    .setPoint(oneX, oneY)
+                    .setShape(new Circle(100f))
+                    .setTitle("Agregar miembros")
+                    .setDescription("Desde aquí podrás invitar a tus contactos a unirse al grupo")
+                    .build();
+
+            Spotlight.with(this)
+                    .setOverlayColor(R.color.background)
+                    .setDuration(1000L)
+                    .setAnimation(new DecelerateInterpolator(2f))
+                    //Agrego los targets
+                    .setTargets(mainTarget,editTarget,fabTarget,editObjetiveBtnTarget,addContactTarget)
+                    .setClosedOnTouchedOutside(true)
+                    .setOnSpotlightStateListener(new OnSpotlightStateChangedListener() {
+                        @Override
+                        public void onStarted() {
+                        }
+
+                        @Override
+                        public void onEnded() {
+                        }
+                    })
+                    .start();
+        }
+
+        if(!amIadmin()){
+            Spotlight.with(this)
+                    .setOverlayColor(R.color.background)
+                    .setDuration(1000L)
+                    .setAnimation(new DecelerateInterpolator(2f))
+                    //Agrego los targets
+                    .setTargets(mainTarget)
+                    .setClosedOnTouchedOutside(true)
+                    .setOnSpotlightStateListener(new OnSpotlightStateChangedListener() {
+                        @Override
+                        public void onStarted() {
+                        }
+
+                        @Override
+                        public void onEnded() {
+                        }
+                    })
+                    .start();
+        }
     }
 }

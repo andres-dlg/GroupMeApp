@@ -143,10 +143,11 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
         switch (actualTaskType){
 
             case NEW_TASK:
-                holder.setTasks(actualTaskType,subGroup.getTasks().get(subGroup.getTasks().size()-1));
+                //holder.setTasks(actualTaskType,subGroup.getTasks().get(subGroup.getTasks().size()-1));
+                holder.setTasks(actualTaskType,subGroup.getTasks());
                 break;
             case UPDATED_TASK:
-                holder.setTasks(actualTaskType,null);
+                holder.setTasks(actualTaskType,subGroup.getTasks());
                 break;
             case EXISTING_TASK:
                 holder.setTasks(actualTaskType,null);
@@ -353,76 +354,79 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
 
         }
 
-        private void setTasks(taskTypes mode, final Task task) {
+        private void setTasks(taskTypes mode, List<Task> tasks) {
             if(mode == taskTypes.EXISTING_TASK){
-                int intMaxNoOfChild = subGroups.get(position).getTasks().size();
+                addTaskToList(subGroups.get(position).getTasks());
+                /*int intMaxNoOfChild = subGroups.get(position).getTasks().size();
                 for (int indexView = 0; indexView < intMaxNoOfChild; indexView++) {
-                    addTaskToList(subGroups.get(position).getTasks().get(indexView));
-                }
+                    //addTaskToList(subGroups.get(position).getTasks().get(indexView));
+                    addTaskToList(subGroups.get(position).getTasks());
+                }*/
             }else if(mode == taskTypes.NEW_TASK){
-                addTaskToList(task);
+                addTaskToList(tasks);
             }else if(mode == taskTypes.UPDATED_TASK){
                 linearLayout_childItems.removeAllViews();
-                setTasks(taskTypes.EXISTING_TASK,null);
+                setTasks(taskTypes.EXISTING_TASK,tasks);
             }else if(mode == taskTypes.DELETED_TASK){
                 linearLayout_childItems.removeAllViews();
-                setTasks(taskTypes.EXISTING_TASK,null);
+                setTasks(taskTypes.EXISTING_TASK,tasks);
             }
         }
 
         @SuppressLint("SetTextI18n")
-        private void addTaskToList(final Task task) {
-            View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.list_item_sub_group_task, parent, false);
-            FrameLayout fl = v.findViewById(R.id.fltask);
-            if(isSubGroupMember){
-                fl.setOnClickListener(new View.OnClickListener() {
+        private void addTaskToList(List<Task> tasks) {
+            for(final Task task : tasks){
+                View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.list_item_sub_group_task, parent, false);
+                FrameLayout fl = v.findViewById(R.id.fltask);
+                if(isSubGroupMember){
+                    fl.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            showTaskDialog(task, subGroups.get(position).getSubGroupKey(), groupKey);
+                        }
+                    });
+                }
+
+                //Nombre de la tarea
+                textView = fl.findViewById(R.id.tasktv);
+                textView.setText(task.getName());
+
+                //Fecha de comienzo de la tarea
+                startDate = fl.findViewById(R.id.taskStartDateTv);
+                long startDateLong = task.getStartDate();
+                if(startDateLong != 0){
+                    startDate.setText(formatDate(task.getStartDate()));
+                }else{
+                    startDate.setText("No definida");
+                }
+
+                //Fecha de fin de la tarea
+                endDate = fl.findViewById(R.id.taskEndDateTv);
+                long endDateLong = task.getEndDate();
+                if(endDateLong != 0){
+                    endDate.setText(formatDate(task.getEndDate()));
+                }else{
+                    endDate.setText("No definida");
+                }
+
+                //Checkbox de la tarea
+                checkBox = fl.findViewById(R.id.checkbox);
+                checkBox.setEnabled(false);
+                if(task.getFinished()){
+                    checkBox.setChecked(true);
+                }
+                checkBox.setOnClickListener(new View.OnClickListener() {
                     @Override
-                    public void onClick(View v) {
-                        showTaskDialog(task, subGroups.get(position).getSubGroupKey(), groupKey);
+                    public void onClick(View view) {
+                        finishResumeTask((CheckBox)view,context,subGroups.get(position).getSubGroupKey(),task.getTaskKey(),task.getName(),subGroups.get(position).getName(),position);
                     }
                 });
-            }
-
-            //Nombre de la tarea
-            textView = fl.findViewById(R.id.tasktv);
-            textView.setText(task.getName());
-
-            //Fecha de comienzo de la tarea
-            startDate = fl.findViewById(R.id.taskStartDateTv);
-            long startDateLong = task.getStartDate();
-            if(startDateLong != 0){
-                startDate.setText(formatDate(task.getStartDate()));
-            }else{
-                startDate.setText("No definida");
-            }
-
-            //Fecha de fin de la tarea
-            endDate = fl.findViewById(R.id.taskEndDateTv);
-            long endDateLong = task.getEndDate();
-            if(endDateLong != 0){
-                endDate.setText(formatDate(task.getEndDate()));
-            }else{
-                endDate.setText("No definida");
-            }
-
-            //Checkbox de la tarea
-            checkBox = fl.findViewById(R.id.checkbox);
-            checkBox.setEnabled(false);
-            if(task.getFinished()){
-                checkBox.setChecked(true);
-            }
-            checkBox.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    finishResumeTask((CheckBox)view,context,subGroups.get(position).getSubGroupKey(),task.getTaskKey(),task.getName(),subGroups.get(position).getName(),position);
+                if(isSubGroupMember){
+                    checkBox.setEnabled(true);
                 }
-            });
-            if(isSubGroupMember){
-                checkBox.setEnabled(true);
-            }
 
-            //region OLD CALENDAR BUTTON WITH LISTENERS
-            //TimeRangePicker listener
+                //region OLD CALENDAR BUTTON WITH LISTENERS
+                //TimeRangePicker listener
                     /*final TimePickerDialog.OnTimeSetListener timeListener =  new TimePickerDialog.OnTimeSetListener() {
                         @Override
                         public void onTimeSet(RadialPickerLayout view, int hourOfDay, int minute, int hourOfDayEnd, int minuteEnd) {
@@ -458,7 +462,7 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
                         }
                     };*/
 
-            //DateRangePicker
+                //DateRangePicker
                     /*final DatePickerDialog.OnDateSetListener dateListener =  new DatePickerDialog.OnDateSetListener() {
                         @Override
                         public void onDateSet(DatePickerDialog view, int year, int monthOfYear, int dayOfMonth, int yearEnd, int monthOfYearEnd, int dayOfMonthEnd) {
@@ -522,47 +526,48 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
                         btnTaskCalendar.setEnabled(true);
                         btnTaskCalendar.setColorFilter(ContextCompat.getColor(context, R.color.black), android.graphics.PorterDuff.Mode.SRC_IN);
                     }*/
-            //endregion
+                //endregion
 
-            //Menu (3 puntitos)
-            CircleImageView btnMenu = fl.findViewById(R.id.btn_menu);
-            btnMenu.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    final PopupMenu popupMenu = new PopupMenu(context, v);
-                    final Menu menu = popupMenu.getMenu();
-                    popupMenu.getMenuInflater().inflate(R.menu.task_menu, menu);
-                    popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-                        @Override
-                        public boolean onMenuItemClick(MenuItem menuItem) {
-                            int id = menuItem.getItemId();
-                            switch (id){
+                //Menu (3 puntitos)
+                CircleImageView btnMenu = fl.findViewById(R.id.btn_menu);
+                btnMenu.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        final PopupMenu popupMenu = new PopupMenu(context, v);
+                        final Menu menu = popupMenu.getMenu();
+                        popupMenu.getMenuInflater().inflate(R.menu.task_menu, menu);
+                        popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+                            @Override
+                            public boolean onMenuItemClick(MenuItem menuItem) {
+                                int id = menuItem.getItemId();
+                                switch (id){
                                 /*case R.id.comment:
                                     break;*/
-                                case R.id.delete:
-                                    deleteTask(task.getTaskKey(),subGroups.get(position).getSubGroupKey(),groupKey);
-                                    break;
+                                    case R.id.delete:
+                                        deleteTask(task.getTaskKey(),subGroups.get(position).getSubGroupKey(),groupKey);
+                                        break;
+                                }
+                                return true;
                             }
-                            return true;
-                        }
-                    });
-                    popupMenu.show();
+                        });
+                        popupMenu.show();
+                    }
+                });
+                btnMenu.setEnabled(false);
+                btnMenu.setColorFilter(ContextCompat.getColor(context, R.color.gray_400), android.graphics.PorterDuff.Mode.SRC_IN);
+                if(isSubGroupMember){
+                    btnMenu.setEnabled(true);
+                    btnMenu.setColorFilter(ContextCompat.getColor(context, R.color.black), android.graphics.PorterDuff.Mode.SRC_IN);
                 }
-            });
-            btnMenu.setEnabled(false);
-            btnMenu.setColorFilter(ContextCompat.getColor(context, R.color.gray_400), android.graphics.PorterDuff.Mode.SRC_IN);
-            if(isSubGroupMember){
-                btnMenu.setEnabled(true);
-                btnMenu.setColorFilter(ContextCompat.getColor(context, R.color.black), android.graphics.PorterDuff.Mode.SRC_IN);
-            }
 
-            LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-            int[] attrs = new int[]{R.attr.selectableItemBackground};
-            TypedArray typedArray = context.obtainStyledAttributes(attrs);
-            int backgroundResource = typedArray.getResourceId(0, 0);
-            typedArray.recycle();
-            fl.setBackgroundResource(backgroundResource);
-            linearLayout_childItems.addView(fl, layoutParams);
+                LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+                int[] attrs = new int[]{R.attr.selectableItemBackground};
+                TypedArray typedArray = context.obtainStyledAttributes(attrs);
+                int backgroundResource = typedArray.getResourceId(0, 0);
+                typedArray.recycle();
+                fl.setBackgroundResource(backgroundResource);
+                linearLayout_childItems.addView(fl, layoutParams);
+            }
         }
 
         @Override

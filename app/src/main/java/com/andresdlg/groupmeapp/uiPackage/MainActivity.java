@@ -24,9 +24,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -121,6 +119,7 @@ public class MainActivity extends AppCompatActivity
 
     int value;
     View contactsIcon;
+    View view;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -179,6 +178,8 @@ public class MainActivity extends AppCompatActivity
                 // to the app after tapping on an ad.
             }
         });
+
+        view = findViewById(R.id.view);
 
         toolbar = findViewById(R.id.toolbar);
         toolbar.inflateMenu(R.menu.activity_main_menu);
@@ -618,10 +619,11 @@ public class MainActivity extends AppCompatActivity
                 .setAnimation(new DecelerateInterpolator(2f))
                 //Agrego los targets
                 .setTargets(tabBarTarget,tabBarNewsTarget,contactsTarget,addContactsTarget,simpleTarget)
-        .setClosedOnTouchedOutside(true)
+                .setClosedOnTouchedOutside(true)
                 .setOnSpotlightStateListener(new OnSpotlightStateChangedListener() {
                     @Override
                     public void onStarted() {
+                        view.setVisibility(View.VISIBLE);
                     }
 
                     @Override
@@ -778,6 +780,7 @@ public class MainActivity extends AppCompatActivity
 
                     @Override
                     public void onEnded() {
+                        view.setVisibility(View.GONE);
                     }
                 })
                 .start();

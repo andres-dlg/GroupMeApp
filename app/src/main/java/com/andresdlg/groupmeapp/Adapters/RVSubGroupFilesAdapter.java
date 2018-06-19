@@ -307,7 +307,7 @@ public class RVSubGroupFilesAdapter extends RecyclerView.Adapter<RVSubGroupFiles
     private void deleteFile(final String fileKey, final String fileUrl, final java.io.File fileFromPhone, final boolean exists) {
 
         new AlertDialog.Builder(context,R.style.MyDialogTheme)
-                .setTitle("¿Seguro desea eleminar el archivo compartido?")
+                .setTitle("¿Seguro desea eliminar el archivo compartido?")
                 .setMessage("Este archivo ya no estará disponible ningún miembro del subgrupo")
                 .setPositiveButton("Si", new DialogInterface.OnClickListener() {
                     @Override
