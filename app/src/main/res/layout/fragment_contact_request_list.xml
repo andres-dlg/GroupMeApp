@@ -90,8 +90,7 @@
     <ImageButton
         android:clickable="true"
         android:focusable="true"
-        android:foreground="?android:attr/selectableItemBackgroundBorderless"
-        android:background="#00ffffff"
+        android:background="?android:attr/selectableItemBackgroundBorderless"
         android:id="@+id/btn_menu"
         android:layout_width="0dp"
         android:layout_height="match_parent"

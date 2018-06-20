@@ -331,7 +331,7 @@ public class MainActivity extends AppCompatActivity
     }
 
 
-    private void fillDrawer(Users users) {
+    private void fillDrawer(final Users users) {
         View hView =  navigationView.getHeaderView(0);
         TextView nav_user = hView.findViewById(R.id.nav_user);
         TextView nav_name = hView.findViewById(R.id.nav_name);
@@ -346,8 +346,18 @@ public class MainActivity extends AppCompatActivity
         if(users !=null){
             nav_user.setText(String.format("@%s", users.getAlias()));
             nav_name.setText(users.getName());
+            nav_photo.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent userProfileIntent = new Intent(MainActivity.this, UserProfileSetupActivity.class);
+                    userProfileIntent.putExtra("iduser",users.getUserid());
+                    Pair<View, String> p1 = Pair.create((View)nav_photo, "userPhoto");
+                    ActivityOptionsCompat options = ActivityOptionsCompat.
+                            makeSceneTransitionAnimation(MainActivity.this, p1);
+                    startActivity(userProfileIntent, options.toBundle());
+                }
+            });
         }
-
     }
 
     @Override

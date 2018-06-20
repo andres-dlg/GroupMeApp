@@ -1,14 +1,16 @@
 package com.andresdlg.groupmeapp.Adapters;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
-import android.graphics.drawable.Drawable;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityOptionsCompat;
+import android.support.v4.app.DialogFragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.util.Pair;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -18,24 +20,22 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.PopupMenu;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.andresdlg.groupmeapp.Entities.Group;
+import com.andresdlg.groupmeapp.DialogFragments.HaveSeenThePostDialogFragment;
 import com.andresdlg.groupmeapp.Entities.Post;
 import com.andresdlg.groupmeapp.Entities.Users;
 import com.andresdlg.groupmeapp.R;
 import com.andresdlg.groupmeapp.Utils.Roles;
-import com.andresdlg.groupmeapp.firebasePackage.FireApp;
 import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
 import com.andresdlg.groupmeapp.uiPackage.GroupActivity;
+import com.andresdlg.groupmeapp.uiPackage.MainActivity;
+import com.andresdlg.groupmeapp.uiPackage.UserProfileSetupActivity;
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.DataSource;
-import com.bumptech.glide.load.engine.GlideException;
-import com.bumptech.glide.request.RequestListener;
-import com.bumptech.glide.request.target.Target;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.DataSnapshot;
@@ -48,10 +48,8 @@ import org.ocpsoft.prettytime.PrettyTime;
 
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -124,14 +122,14 @@ public class RVNewsAdapter extends RecyclerView.Adapter<RVNewsAdapter.NewsViewHo
         TextView postText;
         TextView groupText;
         ImageButton btnMenu;
-        RelativeLayout likeByBtn;
+        LinearLayout likeByBtn;
+        RelativeLayout rlCount;
         ImageView newPostIndicator;
         TextView likesCountTv;
         ImageView likeByIcon;
         TextView tv;
 
         DatabaseReference groupRolRef;
-
 
         NewsViewHolder(View itemView,DatabaseReference groupRolRef) {
             super(itemView);
@@ -146,6 +144,7 @@ public class RVNewsAdapter extends RecyclerView.Adapter<RVNewsAdapter.NewsViewHo
             likesCountTv = itemView.findViewById(R.id.likesCountTv);
             newPostIndicator = itemView.findViewById(R.id.newPostIndicator);
             likeByIcon = itemView.findViewById(R.id.likeByIcon);
+            rlCount = itemView.findViewById(R.id.rlCount);
             tv = itemView.findViewById(R.id.tv);
             this.groupRolRef = groupRolRef;
         }
@@ -163,6 +162,18 @@ public class RVNewsAdapter extends RecyclerView.Adapter<RVNewsAdapter.NewsViewHo
                     Glide.with(context)
                             .load(u.getImageURL())
                             .into(userProfilePhoto);
+
+                    userProfilePhoto.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            Intent userProfileIntent = new Intent(context, UserProfileSetupActivity.class);
+                            userProfileIntent.putExtra("iduser",u.getUserid());
+                            Pair<View, String> p1 = Pair.create((View)userProfilePhoto, "userPhoto");
+                            ActivityOptionsCompat options = ActivityOptionsCompat.
+                                    makeSceneTransitionAnimation((AppCompatActivity)context, p1);
+                            context.startActivity(userProfileIntent, options.toBundle());
+                        }
+                    });
 
                     //CARGO SU NOMBRE
                     userName.setText(u.getName());
@@ -252,12 +263,14 @@ public class RVNewsAdapter extends RecyclerView.Adapter<RVNewsAdapter.NewsViewHo
                 }
             });
 
-            if(likeBy!= null && likeBy.size()>0){
-                if(likeBy.size()==1){
-                    likesCountTv.setText(String.valueOf(likeBy.size()));
-                }else{
-                    likesCountTv.setText("0");
-                }
+            if(likeBy.size()>0){
+                likesCountTv.setText(String.valueOf(likeBy.size()));
+                rlCount.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        showHaveSeenThePostDialogFragment(posts.get(position).getLikeBy());
+                    }
+                });
             }
 
             final List<String> likesIds = new ArrayList<>();
@@ -285,6 +298,7 @@ public class RVNewsAdapter extends RecyclerView.Adapter<RVNewsAdapter.NewsViewHo
                         likesCountTv.setText(String.valueOf(likesIds.size()));
                     }else {
                         likesCountTv.setText("0");
+                        rlCount.setOnClickListener(null);
                     }
 
                     changeButton(likesIds);
@@ -339,6 +353,16 @@ public class RVNewsAdapter extends RecyclerView.Adapter<RVNewsAdapter.NewsViewHo
                 Toast.makeText(context, "Error al eliminar publicación", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private void showHaveSeenThePostDialogFragment(List<String> likeBy) {
+        FragmentManager fragmentManager = ((AppCompatActivity)context).getSupportFragmentManager();
+        HaveSeenThePostDialogFragment newFragment4 = new HaveSeenThePostDialogFragment(likeBy);
+        newFragment4.setCancelable(false);
+        newFragment4.setStyle(DialogFragment.STYLE_NORMAL,R.style.AppTheme_DialogFragment);
+        FragmentTransaction transaction4 = fragmentManager.beginTransaction();
+        transaction4.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
+        transaction4.add(android.R.id.content, newFragment4).addToBackStack(null).commit();
     }
 }
 

@@ -101,10 +101,9 @@
         android:layout_width="0dp"
         android:layout_height="match_parent"
         android:layout_gravity="center_vertical|center_horizontal"
-        android:background="@android:color/transparent"
         android:clickable="true"
         android:focusable="true"
-        android:foreground="?android:attr/selectableItemBackgroundBorderless"
+        android:background="?android:attr/selectableItemBackgroundBorderless"
         android:src="@drawable/dots_vertical"
         android:layout_weight=".1"/>
 

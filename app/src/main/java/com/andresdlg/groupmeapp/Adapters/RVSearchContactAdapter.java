@@ -3,10 +3,14 @@ package com.andresdlg.groupmeapp.Adapters;
 import android.animation.ObjectAnimator;
 import android.animation.PropertyValuesHolder;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityOptionsCompat;
+import android.support.v4.util.Pair;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.util.SparseBooleanArray;
@@ -16,11 +20,13 @@ import android.view.ViewGroup;
 import android.widget.Filter;
 import android.widget.Filterable;
 import android.widget.ImageButton;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.andresdlg.groupmeapp.Entities.Users;
 import com.andresdlg.groupmeapp.R;
 import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
+import com.andresdlg.groupmeapp.uiPackage.UserProfileSetupActivity;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.DataSource;
 import com.bumptech.glide.load.engine.GlideException;
@@ -190,9 +196,22 @@ public class RVSearchContactAdapter extends RecyclerView.Adapter<RVSearchContact
             final CircleImageView mContactPhoto = mView.findViewById(R.id.contact_photo);
             TextView mContactName = mView.findViewById(R.id.contact_name);
             TextView mContactAlias = mView.findViewById(R.id.contact_alias);
+            RelativeLayout rl = mView.findViewById(R.id.rl);
 
             mContactAlias.setText(String.format("@%s", contactAlias));
             mContactAlias.setSelected(true);
+
+            rl.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent userProfileIntent = new Intent(context, UserProfileSetupActivity.class);
+                    userProfileIntent.putExtra("iduser",iduser);
+                    Pair<View, String> p1 = Pair.create((View)mContactPhoto, "userPhoto");
+                    ActivityOptionsCompat options = ActivityOptionsCompat.
+                            makeSceneTransitionAnimation((AppCompatActivity)context, p1);
+                    context.startActivity(userProfileIntent, options.toBundle());
+                }
+            });
 
             if(iduser.equals(StaticFirebaseSettings.currentUserId)){
                 mContactName.setText("Tú");

@@ -104,9 +104,9 @@
                             android:layout_height="match_parent"
                             android:layout_weight=".2"
                             android:src="@drawable/pen"
-                            android:background="@android:color/transparent"
                             android:tint="@color/mdtp_light_gray"
-                            android:foreground="?android:attr/selectableItemBackgroundBorderless"
+                            android:visibility="gone"
+                            android:background="?android:attr/selectableItemBackgroundBorderless"
                             />
 
                     </LinearLayout>
@@ -171,9 +171,9 @@
                             android:layout_width="0dp"
                             android:layout_height="match_parent"
                             android:src="@drawable/account_plus"
-                            android:background="@android:color/transparent"
                             android:tint="@color/mdtp_light_gray"
-                            android:foreground="?android:attr/selectableItemBackgroundBorderless" />
+                            android:visibility="gone"
+                            android:background="?android:attr/selectableItemBackgroundBorderless"/>
 
                     </LinearLayout>
 

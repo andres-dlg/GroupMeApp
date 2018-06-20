@@ -66,7 +66,7 @@ public class FriendListFragment extends Fragment {
         LinearLayoutManager llm = new LinearLayoutManager(getContext());
         rv.setLayoutManager(llm);
 
-        adapter = new RVContactAdapter(users, getContext());
+        adapter = new RVContactAdapter(users, getContext(), false);
         rv.setAdapter(adapter);
 
         //tvNoNotifications = v.findViewById(R.id.tvNoNotifications);
