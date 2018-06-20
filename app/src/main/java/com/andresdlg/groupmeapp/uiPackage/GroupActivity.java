@@ -263,7 +263,7 @@ public class GroupActivity extends AppCompatActivity implements GroupChatFragmen
                     valueAnimator.setDuration(300);
                     valueAnimator.start();
 
-                }else if(position == 1){
+                }else if(position == 1 || position == 0){
 
                     if(viewPagerWasInChatPage){
 

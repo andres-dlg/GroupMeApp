@@ -1,5 +1,6 @@
 package com.andresdlg.groupmeapp.Entities;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -84,7 +85,11 @@ public class Post {
     }
 
     public List<String> getLikeBy() {
-        return likeBy;
+        if(likeBy == null){
+            return new ArrayList<>();
+        }else{
+            return likeBy;
+        }
     }
 
     public void setLikeBy(List<String> likeBy) {

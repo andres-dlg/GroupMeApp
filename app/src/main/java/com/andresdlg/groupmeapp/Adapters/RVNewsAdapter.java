@@ -8,6 +8,7 @@ import android.graphics.drawable.Drawable;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityOptionsCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -18,6 +19,7 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.PopupMenu;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -88,7 +90,7 @@ public class RVNewsAdapter extends RecyclerView.Adapter<RVNewsAdapter.NewsViewHo
     @Override
     public void onBindViewHolder(@NonNull NewsViewHolder groupViewHolder, int position) {
         Post post = posts.get(position);
-        groupViewHolder.setDetails(context,post.getPostId(),post.getText(),post.getTime(),post.getUserId(),post.getGroupName(),post.getSeenBy(), prettyTime, isInGroup, post.getGroupKey(), post.getLikeBy());
+        groupViewHolder.setDetails(context,post.getPostId(),post.getText(),post.getTime(),post.getUserId(),post.getGroupName(),post.getSeenBy(), prettyTime, isInGroup, post.getGroupKey(), post.getLikeBy(),position);
     }
 
     @Override
@@ -122,9 +124,11 @@ public class RVNewsAdapter extends RecyclerView.Adapter<RVNewsAdapter.NewsViewHo
         TextView postText;
         TextView groupText;
         ImageButton btnMenu;
-        ImageButton likeBtn;
+        RelativeLayout likeByBtn;
         ImageView newPostIndicator;
         TextView likesCountTv;
+        ImageView likeByIcon;
+        TextView tv;
 
         DatabaseReference groupRolRef;
 
@@ -138,13 +142,15 @@ public class RVNewsAdapter extends RecyclerView.Adapter<RVNewsAdapter.NewsViewHo
             postText = itemView.findViewById(R.id.postText);
             groupText = itemView.findViewById(R.id.group);
             btnMenu = itemView.findViewById(R.id.btnMenu);
-            likeBtn = itemView.findViewById(R.id.likeBy);
+            likeByBtn = itemView.findViewById(R.id.likeByBtn);
             likesCountTv = itemView.findViewById(R.id.likesCountTv);
             newPostIndicator = itemView.findViewById(R.id.newPostIndicator);
+            likeByIcon = itemView.findViewById(R.id.likeByIcon);
+            tv = itemView.findViewById(R.id.tv);
             this.groupRolRef = groupRolRef;
         }
 
-        void setDetails(final Context context, final String postId, final String text, final long time, String userId, final String groupName, final List<String> seenBy, final PrettyTime prettyTime, final boolean isInGroup, final String groupKey, List<String> likeBy) {
+        void setDetails(final Context context, final String postId, final String text, final long time, String userId, final String groupName, final List<String> seenBy, final PrettyTime prettyTime, final boolean isInGroup, final String groupKey, final List<String> likeBy, final int position) {
 
             FirebaseDatabase.getInstance().getReference("Users").child(userId).addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
@@ -248,11 +254,10 @@ public class RVNewsAdapter extends RecyclerView.Adapter<RVNewsAdapter.NewsViewHo
 
             if(likeBy!= null && likeBy.size()>0){
                 if(likeBy.size()==1){
-                    likesCountTv.setText(String.format("%s vez marcado como visto", String.valueOf(likeBy.size())));
+                    likesCountTv.setText(String.valueOf(likeBy.size()));
                 }else{
-                    likesCountTv.setText(String.format("%s veces marcado como visto", String.valueOf(likeBy.size())));
+                    likesCountTv.setText("0");
                 }
-                likeBtn.setColorFilter(Color.argb(255, 63, 81, 181));
             }
 
             final List<String> likesIds = new ArrayList<>();
@@ -260,36 +265,56 @@ public class RVNewsAdapter extends RecyclerView.Adapter<RVNewsAdapter.NewsViewHo
                 likesIds.addAll(likeBy);
             }
 
-            likeBtn.setOnClickListener(new View.OnClickListener() {
+            changeButton(likesIds);
+
+            likeByBtn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     boolean existo = false;
-
                     for(String id : likesIds){
                         if(id.equals(StaticFirebaseSettings.currentUserId)){
                             likesIds.remove(StaticFirebaseSettings.currentUserId);
                             existo = true;
                         }
                     }
-
                     if(!existo){
                         likesIds.add(StaticFirebaseSettings.currentUserId);
                     }
 
-
-                    if(likesIds.size() == 1){
-                        likesCountTv.setText(String.format("%s vez marcado como visto", String.valueOf(likesIds.size())));
-                        likeBtn.setColorFilter(Color.argb(255, 63, 81, 181));
-                    }else if(likesIds.size() == 0){
-                        likesCountTv.setText(null);
-                        likeBtn.setColorFilter(Color.argb(255, 158, 158, 158));
-                    }else{
-                        likesCountTv.setText(String.format("%s veces marcado como visto", String.valueOf(likesIds.size())));
+                    if(likesIds.size() > 0){
+                        likesCountTv.setText(String.valueOf(likesIds.size()));
+                    }else {
+                        likesCountTv.setText("0");
                     }
+
+                    changeButton(likesIds);
+
+                    posts.get(position).setLikeBy(likesIds);
 
                     FirebaseDatabase.getInstance().getReference("Groups").child(groupKey).child("posts").child(postId).child("likeBy").setValue(likesIds);
                 }
             });
+        }
+
+        private void changeButton(List<String> likesIds) {
+
+            boolean existo = false;
+            for(String id : likesIds){
+                if(id.equals(StaticFirebaseSettings.currentUserId)){
+                    likeByBtn.setBackground(context.getResources().getDrawable(R.drawable.border_button_selected));
+                    likeByIcon.setColorFilter(Color.argb(255, 63, 81, 181));
+                    tv.setTextColor(ContextCompat.getColor(context,R.color.colorPrimary));
+                    tv.setText("Ya has marcado");
+                    existo = true;
+                    break;
+                }
+            }
+            if(!existo){
+                likeByBtn.setBackground(context.getResources().getDrawable(R.drawable.border_button_no_selected));
+                likeByIcon.setColorFilter(Color.argb(255, 158, 158, 158));
+                tv.setTextColor(ContextCompat.getColor(context,R.color.gray_300));
+                tv.setText("Marcar como visto");
+            }
         }
     }
 

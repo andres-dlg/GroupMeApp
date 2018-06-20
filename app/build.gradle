@@ -7,14 +7,14 @@ android {
         applicationId "com.andresdlg.groupmeapp"
         minSdkVersion 21
         targetSdkVersion 27
-        versionCode 17
-        versionName "1.0.16"
+        versionCode 18
+        versionName "1.0.19"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         //multiDexEnabled true
     }
     buildTypes {
         release {
-            minifyEnabled true
+            minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }

@@ -231,7 +231,6 @@ public class GroupNewsFragment extends Fragment {
             if(isVisibleToUser){
                 fab.show();
             }else{
-
                 for(Post p : posts){
                     List<String> seenBy = p.getSeenBy();
                     boolean existo = false;
