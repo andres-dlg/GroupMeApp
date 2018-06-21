@@ -15,6 +15,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.PopupMenu;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -138,6 +139,17 @@ public class RVContactAdapter extends RecyclerView.Adapter<RVContactAdapter.Cont
                     .into(mContactPhoto);
 
             ImageButton btn = mView.findViewById(R.id.btn_menu);
+
+            if(iduser.equals(StaticFirebaseSettings.currentUserId)){
+                LinearLayout.LayoutParams param = new LinearLayout.LayoutParams(
+                        RelativeLayout.LayoutParams.MATCH_PARENT,
+                        RelativeLayout.LayoutParams.MATCH_PARENT,
+                        1.0f
+                );
+                btn.setVisibility(View.GONE);
+                rl.setLayoutParams(param);
+            }
+
             btn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {

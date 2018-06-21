@@ -16,13 +16,14 @@ import android.support.annotation.RequiresApi;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.TextInputLayout;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.CardView;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.LinearLayout;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 import com.andresdlg.groupmeapp.Entities.Users;
@@ -53,7 +54,7 @@ import de.hdodenhof.circleimageview.CircleImageView;
 public class UserProfileSetupActivity extends AppCompatActivity {
 
     //FIELDS DECLARATION
-    CircleImageView mBack;
+    ImageButton mBack;
     CircleImageView mCircleImageView;
     AutoCompleteTextView mAlias;
     EditText mName;
@@ -63,15 +64,19 @@ public class UserProfileSetupActivity extends AppCompatActivity {
     Uri mCropImageUri;
     TextInputLayout mTextInputAlias;
     TextInputLayout mTextInputJob;
-    LinearLayout mMetricsLinearLayout;
+    CardView mMetricsLinearLayout;
     TextView mGroupQuantity;
     TextView mSubGroupQuantity;
+    TextView mTasksQuantity;
+    TextView mCompletedTasksQuantity;
+    ImageButton mEdit;
 
     //FIREBASE AUTHENTICATION FIELDS
     FirebaseAuth mAuth;
 
     //FIREBASE DATABASE FIELDS
     DatabaseReference mUserDatabase;
+    DatabaseReference mGroupsRef;
     StorageReference mStorageReference;
 
     //FIREBASE STORAGE FIELDS
@@ -90,6 +95,10 @@ public class UserProfileSetupActivity extends AppCompatActivity {
     boolean exists = false;
     boolean imageSetted = false;
     boolean yaPasoPorAca = false;
+    boolean editMode = false;
+
+    int cantidadTareas;
+    int cantidadTareasCompletadas;
 
     String iduser;
     Users u;
@@ -101,6 +110,9 @@ public class UserProfileSetupActivity extends AppCompatActivity {
 
         /*getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);*/
+
+        cantidadTareas = 0;
+        cantidadTareasCompletadas = 0;
 
         iduser = getIntent().getStringExtra("iduser");
 
@@ -129,11 +141,17 @@ public class UserProfileSetupActivity extends AppCompatActivity {
 
         mJob =  findViewById(R.id.job);
 
-        mMetricsLinearLayout = findViewById(R.id.metricsLlo);
+        mMetricsLinearLayout = findViewById(R.id.statsCv);
 
         mGroupQuantity = findViewById(R.id.groupQuantityNumber);
 
         mSubGroupQuantity = findViewById(R.id.subgroupQuantityNumber);
+
+        mTasksQuantity = findViewById(R.id.taskQuantityNumber);
+
+        mCompletedTasksQuantity = findViewById(R.id.completedTasksQuantityNumber);
+
+        mEdit = findViewById(R.id.edit);
 
         mSaveButton = findViewById(R.id.save);
         mLater = findViewById(R.id.later);
@@ -151,6 +169,7 @@ public class UserProfileSetupActivity extends AppCompatActivity {
             mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Users").child(mAuth.getCurrentUser().getUid());
         }else {
             mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Users").child(iduser);
+            mGroupsRef = FirebaseDatabase.getInstance().getReference().child("Groups");
         }
 
         mStorageReference = FirebaseStorage.getInstance().getReference();
@@ -181,13 +200,37 @@ public class UserProfileSetupActivity extends AppCompatActivity {
 
             getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
 
+            mTextInputAlias.setEnabled(false);
+            mTextInputJob.setEnabled(false);
+            mJob.setEnabled(false);
+
             if(!iduser.equals(StaticFirebaseSettings.currentUserId)){
                 mSaveButton.setVisibility(View.GONE);
                 fab.setVisibility(View.GONE);
-                mTextInputAlias.setEnabled(false);
-                mTextInputJob.setEnabled(false);
-                mJob.setEnabled(false);
                 mName.setEnabled(false);
+            }else{
+                mEdit.setVisibility(View.VISIBLE);
+                mEdit.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        if(!editMode){
+                            mTextInputAlias.setEnabled(true);
+                            mTextInputJob.setEnabled(true);
+                            mJob.setEnabled(true);
+
+                            Drawable i = getResources().getDrawable(R.drawable.ic_check_black_24dp);
+                            mEdit.setImageDrawable(i);
+                        }else{
+                            mTextInputAlias.setEnabled(false);
+                            mTextInputJob.setEnabled(false);
+                            mJob.setEnabled(false);
+
+                            Drawable i = getResources().getDrawable(R.drawable.ic_pen_black_24dp);
+                            mEdit.setImageDrawable(i);
+                        }
+                        editMode = !editMode;
+                    }
+                });
             }
             setUserData();
         }else{
@@ -206,11 +249,15 @@ public class UserProfileSetupActivity extends AppCompatActivity {
                 mGroupQuantity.setText(String.valueOf(groupQuantity));
 
                 int subgroupQuantity = 0;
-                for(DataSnapshot data : dataSnapshot.child("groups").getChildren()){
-                    subgroupQuantity += (int)data.child("subgroups").getChildrenCount();
+                for(DataSnapshot groupDataSnapshot : dataSnapshot.child("groups").getChildren()){
+
+                    for(DataSnapshot subGroupDataSnapshot : groupDataSnapshot.child("subgroups").getChildren()){
+                        getTasksStats(groupDataSnapshot.getKey(),subGroupDataSnapshot.getKey());
+                    }
+
+                    subgroupQuantity += (int)groupDataSnapshot.child("subgroups").getChildrenCount();
                 }
                 mSubGroupQuantity.setText(String.valueOf(subgroupQuantity));
-
 
                 u = dataSnapshot.getValue(Users.class);
                 mName.setText(u.getName());
@@ -242,6 +289,31 @@ public class UserProfileSetupActivity extends AppCompatActivity {
                         new PhotoFullPopupWindow(UserProfileSetupActivity.this, R.layout.popup_photo_full, mCircleImageView, u.getImageURL(), null);
                     }
                 });
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
+    }
+
+    private void getTasksStats(String groupKey, final String subGroupKey) {
+
+        mGroupsRef.child(groupKey).child("subgroups").child(subGroupKey).child("tasks").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                cantidadTareas += (int)dataSnapshot.getChildrenCount();
+
+                for(DataSnapshot taskDataSnapshot : dataSnapshot.getChildren()){
+                    if((boolean)taskDataSnapshot.child("finished").getValue()){
+                        cantidadTareasCompletadas += 1;
+                    }
+                }
+
+                mCompletedTasksQuantity.setText(String.valueOf(cantidadTareasCompletadas));
+                mTasksQuantity.setText(String.valueOf(cantidadTareas));
             }
 
             @Override
@@ -436,7 +508,7 @@ public class UserProfileSetupActivity extends AppCompatActivity {
     }
 
     private boolean isAliasValid(String alias) {
-        return alias.matches("[A-Za-z]*");
+        return alias.matches("[A-Za-z0-9]*");
     }
 
     @Override

@@ -337,7 +337,7 @@ public class MainActivity extends AppCompatActivity
         TextView nav_name = hView.findViewById(R.id.nav_name);
         nav_photo = hView.findViewById(R.id.nav_photo);
 
-        if(!this.isDestroyed()){
+        if(!this.isDestroyed() && users.getImageURL() != null){
             Glide.with(MainActivity.this)
                     .load(users.getImageURL().trim())
                     .into(nav_photo);
@@ -468,7 +468,7 @@ public class MainActivity extends AppCompatActivity
                         .onRatingBarFormSumbit(new RatingDialog.Builder.RatingDialogFormListener() {
                             @Override
                             public void onFormSubmitted(String feedback) {
-                                Toast.makeText(MainActivity.this, feedback, Toast.LENGTH_SHORT).show();
+                                Toast.makeText(MainActivity.this, "¡Gracias por sus comentarios!", Toast.LENGTH_SHORT).show();
                             }
                         }).build();
                 ratingDialog.show();
@@ -491,9 +491,9 @@ public class MainActivity extends AppCompatActivity
                     Intent i = new Intent(Intent.ACTION_SEND);
                     i.setType("text/plain");
                     i.putExtra(Intent.EXTRA_SUBJECT, "GroupMeApp");
-                    String sAux = "\n¡Recomienda esta aplicación a tus conocidos!\n\n";
+                    String sAux = "¡Hey, descarga GroupMeApp y vive una nueva experiencia del trabajo en equipo!\n\n";
                     //sAux = sAux + "https://play.google.com/store/apps/details?id=the.package.id \n\n";
-                    sAux = sAux + "https://futurolink.com \n\n";
+                    sAux += "https://play.google.com/store/apps/details?id=com.andresdlg.groupmeapp";
                     i.putExtra(Intent.EXTRA_TEXT, sAux);
                     startActivity(Intent.createChooser(i, "Elije una opción"));
                 } catch(Exception e) {
