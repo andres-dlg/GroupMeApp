@@ -472,8 +472,9 @@ public class UserProfileSetupActivity extends AppCompatActivity {
     }
 
     private void createUserData(String alias,String userName,String job) {
-        mUserDatabase.child("alias").setValue(alias);
+        mUserDatabase.child("alias").setValue(alias.toLowerCase());
         mUserDatabase.child("name").setValue(userName);
+        mUserDatabase.child("lowerCaseName").setValue(userName.toLowerCase()); //para busquedas
         mUserDatabase.child("job").setValue(job);
         mUserDatabase.child("userid").setValue(mAuth.getCurrentUser().getUid());
         mUserDatabase.child("imageUrl").setValue(imageHoldUri.toString());

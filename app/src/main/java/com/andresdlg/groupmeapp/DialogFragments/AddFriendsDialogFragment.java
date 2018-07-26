@@ -97,7 +97,7 @@ public class AddFriendsDialogFragment extends DialogFragment {
 
         //TOOLBAR INITIALIZATION
         Toolbar toolbar = view.findViewById(R.id.toolbar);
-        toolbar.setTitle("Buscar por alias");
+        toolbar.setTitle("Buscar por nombre o alias");
         toolbar.setTitleTextColor(getResources().getColor(R.color.colorAccent));
 
         assert (getActivity()) != null;
@@ -120,7 +120,7 @@ public class AddFriendsDialogFragment extends DialogFragment {
         searchView.setVoiceSearch(true);
         searchView.setCursorDrawable(R.drawable.color_cursor_white);
 
-        FirebaseDatabase.getInstance().getReference("Users").addListenerForSingleValueEvent(new ValueEventListener() {
+        /*FirebaseDatabase.getInstance().getReference("Users").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 for(DataSnapshot data : dataSnapshot.getChildren()){
@@ -139,7 +139,7 @@ public class AddFriendsDialogFragment extends DialogFragment {
             public void onCancelled(DatabaseError databaseError) {
 
             }
-        });
+        });*/
 
         searchView.setHint("Buscar");
         searchView.setOnQueryTextListener(new MaterialSearchView.OnQueryTextListener() {
@@ -151,10 +151,12 @@ public class AddFriendsDialogFragment extends DialogFragment {
 
             @Override
             public boolean onQueryTextChange(final String newText) {
-                if(newText.length() > 0){
+                if(newText.length() > 0 ){
                     tvSearchUsers.setVisibility(View.GONE);
                 }else{
-                    tvSearchUsers.setVisibility(View.VISIBLE);
+                    if(rvContactsResult.getChildCount() == 0){
+                        tvSearchUsers.setVisibility(View.VISIBLE);
+                    }
                 }
                 //Do some magic
                 return false;
@@ -247,22 +249,32 @@ public class AddFriendsDialogFragment extends DialogFragment {
 
 
     private void firebaseUserSearch(final String query){
-
         //La query funciona bien
-        final Query firebaseQuery = mUserDatabase.orderByChild("alias")
-                                           .startAt(query)
-                                           .endAt(query + "\uf8ff")
-                                           .limitToFirst(100);
+
+        final Query firebaseQuery;
+        if(query.charAt(0) == '@'){
+            firebaseQuery = mUserDatabase.orderByChild("alias")
+                    .startAt(query.substring(1))
+                    .endAt(query.substring(1) + "\uf8ff")
+                    .limitToFirst(100);
+        }else{
+            firebaseQuery = mUserDatabase.orderByChild("lowerCaseName")
+                    .startAt(query)
+                    .endAt(query + "\uf8ff")
+                    .limitToFirst(100);
+        }
 
         //Esto es para esconder o no el textview
-        firebaseQuery.addListenerForSingleValueEvent(new ValueEventListener() {
+        firebaseQuery.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if(dataSnapshot.hasChildren()){
                     tvSearchUsers.setVisibility(View.GONE);
                 }else {
-                    tvSearchUsers.setVisibility(View.VISIBLE);
-                    tvSearchUsers.setText(String.format("No se encontraron contactos para la búsqueda: \"%s\"", query));
+                    if(rvContactsResult.getChildCount() == 0){
+                        tvSearchUsers.setVisibility(View.VISIBLE);
+                        tvSearchUsers.setText(String.format("No se encontraron contactos para la búsqueda: \"%s\"", query));
+                    }
                 }
             }
 

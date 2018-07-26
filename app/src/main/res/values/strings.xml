@@ -74,6 +74,10 @@
         Es posible que en algún momento debamos actualizar la aplicación. Existe la posibilidad de que se modifiquen los requisitos necesarios para el sistema, por lo que se recomienda descargar las actualizaciones si desea continuar utilizando la aplicación con normalidad y así evitar cualquier inconveniente. El desarrollador no garantiza las actualizaciones sean compatibles con la versión de Android instalada en su dispositivo. Si hay un cambio concerniente a las versiones del sistema operativo soportado se notificará al usuario con anterioridad. No obstante, usted garantiza que aceptará todas las actualizaciones de la aplicación cuando se le ofrezcan. También es posible que deje de ofrecerse la aplicación y se interrumpa su uso en cualquier momento sin previo aviso. A menos que se indique lo contrario, tras la terminación: (a) cesarán los derechos y las licencias concedidos mediante los presentes términos; (b) deberá suspender el uso de la aplicación y, si fuera necesario, eliminarla de su dispositivo.
 
     </string>
+    <string name="searchHint">
+        Ingrese un nombre o alias en la barra de búsqueda \n\n
+        Para buscar por alias comience con el símbolo \'@\'
+    </string>
 
 
 </resources>

@@ -20,7 +20,6 @@ import com.andresdlg.groupmeapp.Adapters.RVSearchContactAdapter;
 import com.andresdlg.groupmeapp.Entities.Users;
 import com.andresdlg.groupmeapp.R;
 import com.andresdlg.groupmeapp.Utils.FriendshipStatus;
-import com.andresdlg.groupmeapp.Utils.GroupStatus;
 import com.andresdlg.groupmeapp.firebasePackage.FireApp;
 import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
 import com.andresdlg.groupmeapp.uiPackage.ReciclerViewClickListener.RecyclerClick_Listener;
@@ -80,7 +79,7 @@ public class GroupAddMembersFragment extends Fragment implements RVSearchContact
         llm.setOrientation(LinearLayoutManager.VERTICAL);
         rvAddGroupMember.setLayoutManager(llm);
 
-        rvSearchContactAdapter = new RVSearchContactAdapter(users,getContext(),null);
+        rvSearchContactAdapter = new RVSearchContactAdapter(users,getContext(),null, ((FireApp) getActivity().getApplication()).getGroupKey(), null);
         rvAddGroupMember.setAdapter(rvSearchContactAdapter);
 
         searchView = view.findViewById(R.id.toolbar);

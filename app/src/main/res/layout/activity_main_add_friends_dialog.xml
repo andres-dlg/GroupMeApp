@@ -40,13 +40,13 @@
         android:id="@+id/tvSearchUsers"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:gravity="center"
-        android:text="Ingrese un alias en la barra de búsqueda"
-        android:layout_marginRight="20dp"
         android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"
         android:fontFamily="@font/simplifica"
-        android:textSize="40sp"
-        android:textColor="#e0e0e0"/>
+        android:gravity="center"
+        android:text="@string/searchHint"
+        android:textColor="#e0e0e0"
+        android:textSize="20sp" />
 
 </RelativeLayout>
 

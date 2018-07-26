@@ -2,7 +2,8 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:theme="@style/AppTheme.NoActionBar">
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -27,41 +28,12 @@
             android:scaleType="centerCrop"
             android:src="@drawable/login_background_vertical" />
 
-        <de.hdodenhof.circleimageview.CircleImageView
-            android:id="@+id/user_profile_photo"
-            android:layout_width="120dp"
-            android:layout_height="120dp"
-            android:layout_alignTop="@+id/profile_layout"
-            android:layout_centerHorizontal="true"
-            android:layout_marginTop="-60dp"
-            android:background="@drawable/profile_circular_border_imageview"
-            android:elevation="10dp"
-            android:scaleType="centerCrop"
-            android:transitionName="userPhoto"
-            android:src="@drawable/new_user" />
-
-        <android.support.design.widget.FloatingActionButton
-            android:id="@+id/floatingActionButton"
-            android:layout_width="35dp"
-            android:layout_height="35dp"
-            android:layout_alignRight="@id/user_profile_photo"
-            android:layout_alignBottom="@id/user_profile_photo"
-            app:backgroundTint="@color/colorAccent"
-            android:tint="@color/colorPrimary"
-            android:clickable="true"
-            app:layout_anchorGravity="bottom|right|end"
-            android:layout_above="@id/user_profile_photo"
-            app:elevation="10dp"
-            android:src="@drawable/ic_menu_camera"
-            android:scaleType="center"/>
-
         <RelativeLayout
             android:id="@+id/profile_layout"
             android:layout_width="match_parent"
             android:layout_height="140dp"
             android:layout_alignBottom="@+id/header_cover_image"
             android:background="#c83f51b5"
-            android:elevation="4dp"
             android:paddingBottom="24dp">
 
             <EditText
@@ -81,13 +53,37 @@
 
         </RelativeLayout>
 
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/user_profile_photo"
+            android:layout_width="120dp"
+            android:layout_height="120dp"
+            android:layout_alignTop="@+id/profile_layout"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="-60dp"
+            android:background="@drawable/profile_circular_border_imageview"
+            android:scaleType="centerCrop"
+            android:transitionName="userPhoto"
+            android:src="@drawable/new_user" />
+
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/floatingActionButton"
+            android:layout_width="35dp"
+            android:layout_height="35dp"
+            android:layout_alignRight="@id/user_profile_photo"
+            android:layout_alignBottom="@id/user_profile_photo"
+            android:tint="@color/colorPrimary"
+            android:background="#fff"
+            android:clickable="true"
+            android:src="@drawable/ic_menu_camera"
+            android:scaleType="center"
+            android:focusable="true" />
+
         <LinearLayout
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_below="@+id/profile_layout"
             android:layout_marginTop="5dp"
-            android:orientation="vertical"
-            android:padding="10dp">
+            android:orientation="vertical">
 
             <android.support.v7.widget.CardView
                 android:layout_width="match_parent"
