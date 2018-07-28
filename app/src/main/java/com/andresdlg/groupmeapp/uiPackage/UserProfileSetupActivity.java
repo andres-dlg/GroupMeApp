@@ -263,11 +263,11 @@ public class UserProfileSetupActivity extends AppCompatActivity {
                 mName.setText(u.getName());
                 mAlias.setText(u.getAlias());
                 mJob.setText(u.getJob());
-                supportPostponeEnterTransition();
-                RequestOptions requestOptions = new RequestOptions().dontAnimate();
+                //supportPostponeEnterTransition();
+                //RequestOptions requestOptions = new RequestOptions().dontAnimate();
                 Glide.with(UserProfileSetupActivity.this)
                         .load(u.getImageURL())
-                        .apply(requestOptions)
+                        //.apply(requestOptions)
                         .listener(new RequestListener<Drawable>() {
                             @Override
                             public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {

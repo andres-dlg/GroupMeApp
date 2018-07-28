@@ -1,6 +1,7 @@
 package com.andresdlg.groupmeapp.uiPackage;
 
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
@@ -21,10 +22,12 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.DisplayMetrics;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.WindowManager;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -127,6 +130,8 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
 
         value = 0;
+
+        adjustFontScale(getResources().getConfiguration());
 
         //FIREBASE DATABASE REFERENCE
         mDatabaseRef = FirebaseDatabase.getInstance().getReference().child("Users");
@@ -908,6 +913,15 @@ public class MainActivity extends AppCompatActivity
         }else{
             model.hideBadge();
         }
+    }
+
+    public  void adjustFontScale( Configuration configuration) {
+        configuration.fontScale = (float) 1.0;
+        DisplayMetrics metrics = getResources().getDisplayMetrics();
+        WindowManager wm = (WindowManager) getSystemService(WINDOW_SERVICE);
+        wm.getDefaultDisplay().getMetrics(metrics);
+        metrics.scaledDensity = configuration.fontScale * metrics.density;
+        getBaseContext().getResources().updateConfiguration(configuration, metrics);
     }
 
 }
