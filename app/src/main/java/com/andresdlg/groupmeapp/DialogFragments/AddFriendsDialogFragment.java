@@ -27,6 +27,7 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ImageButton;
+import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -77,8 +78,10 @@ public class AddFriendsDialogFragment extends DialogFragment {
     RecyclerView rvContactsResult;
     DatabaseReference mUserDatabase;
     TextView tvSearchUsers;
+    ProgressBar progressBar;
 
     List<String> results;
+    private boolean isSeaching;
 
     public AddFriendsDialogFragment(){
         setRetainInstance(true);
@@ -88,6 +91,8 @@ public class AddFriendsDialogFragment extends DialogFragment {
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.activity_main_add_friends_dialog, container, false);
+
+        progressBar = view.findViewById(R.id.progressBar);
 
         tvSearchUsers = view.findViewById(R.id.tvSearchUsers);
 
@@ -155,7 +160,9 @@ public class AddFriendsDialogFragment extends DialogFragment {
                     tvSearchUsers.setVisibility(View.GONE);
                 }else{
                     if(rvContactsResult.getChildCount() == 0){
-                        tvSearchUsers.setVisibility(View.VISIBLE);
+                        if(!isSeaching){
+                            tvSearchUsers.setVisibility(View.VISIBLE);
+                        }
                     }
                 }
                 //Do some magic
@@ -250,6 +257,9 @@ public class AddFriendsDialogFragment extends DialogFragment {
 
     private void firebaseUserSearch(final String query){
         //La query funciona bien
+        tvSearchUsers.setVisibility(View.GONE);
+        progressBar.setVisibility(View.VISIBLE);
+        isSeaching = true;
 
         final Query firebaseQuery;
         if(query.charAt(0) == '@'){
@@ -268,6 +278,8 @@ public class AddFriendsDialogFragment extends DialogFragment {
         firebaseQuery.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
+                progressBar.setVisibility(View.GONE);
+                isSeaching = false;
                 if(dataSnapshot.hasChildren()){
                     tvSearchUsers.setVisibility(View.GONE);
                 }else {
