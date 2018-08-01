@@ -249,31 +249,32 @@ public class RVSearchContactAdapter extends RecyclerView.Adapter<RVSearchContact
 
             btn = mView.findViewById(R.id.btn_menu);
 
-            FirebaseDatabase.getInstance().getReference("Users").child(iduser).child("groups").child(groupKey).child("status").addListenerForSingleValueEvent(new ValueEventListener() {
-                @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
-                    if(dataSnapshot.getValue() != null && dataSnapshot.getValue().toString().equals(GroupStatus.PENDING.toString())){
+            if(groupKey != null){
+                FirebaseDatabase.getInstance().getReference("Users").child(iduser).child("groups").child(groupKey).child("status").addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        if(dataSnapshot.getValue() != null && dataSnapshot.getValue().toString().equals(GroupStatus.PENDING.toString())){
 
-                        View.OnClickListener clickListener = new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-                                Toast.makeText(context, "Ya has enviado invitación a este contacto", Toast.LENGTH_SHORT).show();
-                            }
-                        };
-                        Drawable mDrawablePending = ContextCompat.getDrawable(context,R.drawable.ic_timer_sand_black_24dp);
-                        btn.setImageDrawable(mDrawablePending);
-                        btn.setVisibility(View.VISIBLE);
-                        btn.setOnClickListener(clickListener);
-                        rl.setOnClickListener(clickListener);
+                            View.OnClickListener clickListener = new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    Toast.makeText(context, "Ya has enviado invitación a este contacto", Toast.LENGTH_SHORT).show();
+                                }
+                            };
+                            Drawable mDrawablePending = ContextCompat.getDrawable(context,R.drawable.ic_timer_sand_black_24dp);
+                            btn.setImageDrawable(mDrawablePending);
+                            btn.setVisibility(View.VISIBLE);
+                            btn.setOnClickListener(clickListener);
+                            rl.setOnClickListener(clickListener);
+                        }
                     }
-                }
 
-                @Override
-                public void onCancelled(DatabaseError databaseError) {
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
 
-                }
-            });
-
+                    }
+                });
+            }
         }
 
         void setDrawable(boolean selected, Drawable drawable) {

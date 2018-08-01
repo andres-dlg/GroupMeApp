@@ -20,6 +20,7 @@ import android.widget.Toast;
 
 import com.andresdlg.groupmeapp.Entities.Task;
 import com.andresdlg.groupmeapp.R;
+import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.DataSnapshot;
@@ -266,7 +267,7 @@ public class SubGroupNewTaskDialogFragment extends DialogFragment {
             if(databaseMode == INSERT){
                 String taskKey = subGroupsTasksRef.push().getKey();
 
-                Task task = new Task(taskKey,input,startDateInMillis,endDateInMillis,false,taskDescription);
+                Task task = new Task(taskKey,input,startDateInMillis,endDateInMillis,false,taskDescription,StaticFirebaseSettings.currentUserId);
 
                 Map<String,Object> map = new HashMap<>();
                 map.put("taskKey",task.getTaskKey());
@@ -275,6 +276,7 @@ public class SubGroupNewTaskDialogFragment extends DialogFragment {
                 map.put("endDate",task.getEndDate());
                 map.put("finished",task.getFinished());
                 map.put("taskDescription",task.getTaskDescription());
+                map.put("author", task.getAuthor());
 
                 subGroupsTasksRef.child(taskKey).updateChildren(map).addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
@@ -306,7 +308,6 @@ public class SubGroupNewTaskDialogFragment extends DialogFragment {
                     }
                 });
             }
-
             dismiss();
         }else{
             Toast.makeText(getContext(), "Revise las fechas ingresadas", Toast.LENGTH_SHORT).show();

@@ -89,13 +89,13 @@ public class GroupsFragment extends Fragment implements View.OnClickListener, He
 
     }
 
-    private void getAllGroups(){
+    private void getAllGroups(final boolean saved){
         mUserGroupsRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 for(DataSnapshot data : dataSnapshot.getChildren()){
                     if(data.child("status").getValue().toString().equals(GroupStatus.ACCEPTED.toString())){
-                        getGroup(data.getKey());
+                        getGroup(data.getKey(), saved);
                     }
                 }
 
@@ -116,14 +116,14 @@ public class GroupsFragment extends Fragment implements View.OnClickListener, He
         rv.setAdapter(adapter);
     }
 
-    private void getGroup(String key) {
+    private void getGroup(String key, final boolean saved) {
         DatabaseReference groupRef = groupsRef.child(key);
         groupRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if(dataSnapshot.getValue()!=null){
                     Group u = dataSnapshot.getValue(Group.class);
-                    updateGroups(u);
+                    updateGroups(u,saved);
                 }
             }
 
@@ -152,7 +152,7 @@ public class GroupsFragment extends Fragment implements View.OnClickListener, He
     @Override
     public void onResume() {
         super.onResume();
-        getAllGroups();
+        getAllGroups(false);
     }
 
     private void showHeaderDialogFragment() {
@@ -167,7 +167,7 @@ public class GroupsFragment extends Fragment implements View.OnClickListener, He
     @Override
     public void onSavedGroup(boolean saved) {
         if(saved){
-            getAllGroups();
+            getAllGroups(saved);
         }
     }
 
@@ -183,7 +183,7 @@ public class GroupsFragment extends Fragment implements View.OnClickListener, He
         }
     }
 
-    private void updateGroups(Group group) {
+    private void updateGroups(Group group, boolean saved) {
         boolean exists = false;
         for(int i=0; i < groups.size(); i++){
             if(groups.get(i).getGroupKey().equals(group.getGroupKey())){
@@ -198,9 +198,14 @@ public class GroupsFragment extends Fragment implements View.OnClickListener, He
             adapter.notifyDataSetChanged();
 
             //PARA NOTIFICACIONES
-            Map<String,Integer> map = ((FireApp) getContext().getApplicationContext()).getGroupsIds();
-            map.put(group.getGroupKey(),value);
-            value += 1;
+            if(getContext() != null) {
+                Map<String, Integer> map = ((FireApp) getContext().getApplicationContext()).getGroupsIds();
+                map.put(group.getGroupKey(), value);
+                value += 1;
+            }
+        }
+        if(saved){
+            rv.scrollToPosition(groups.size()-1);
         }
     }
 }

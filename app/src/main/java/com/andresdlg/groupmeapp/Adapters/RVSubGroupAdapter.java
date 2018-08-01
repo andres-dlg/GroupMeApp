@@ -375,10 +375,16 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
 
         @SuppressLint("SetTextI18n")
         private void addTaskToList(List<Task> tasks) {
+
+            linearLayout_childItems.removeAllViews();
+            boolean amIsubGroupAdmin = amIsubGroupAdmin(subGroups.get(position).getMembers());
+
             for(final Task task : tasks){
+                boolean amIauthor = amIauthor(task.getAuthor());
+
                 View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.list_item_sub_group_task, parent, false);
                 FrameLayout fl = v.findViewById(R.id.fltask);
-                if(isSubGroupMember){
+                if(isSubGroupMember && (amIauthor || amIsubGroupAdmin)){
                     fl.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
@@ -559,6 +565,11 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
                     btnMenu.setEnabled(true);
                     btnMenu.setColorFilter(ContextCompat.getColor(context, R.color.black), android.graphics.PorterDuff.Mode.SRC_IN);
                 }
+                if(amIauthor || amIsubGroupAdmin){
+                    btnMenu.setVisibility(View.VISIBLE);
+                }else{
+                    btnMenu.setVisibility(View.GONE);
+                }
 
                 LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
                 int[] attrs = new int[]{R.attr.selectableItemBackground};
@@ -567,6 +578,23 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
                 typedArray.recycle();
                 fl.setBackgroundResource(backgroundResource);
                 linearLayout_childItems.addView(fl, layoutParams);
+            }
+        }
+
+        private boolean amIsubGroupAdmin(Map<String, String> members) {
+            for(Map.Entry<String, String> entry: members.entrySet()) {
+                if(entry.getKey().equals(StaticFirebaseSettings.currentUserId) && entry.getValue().equals(Roles.SUBGROUP_ADMIN.toString())){
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private boolean amIauthor(String author) {
+            if(author.equals(StaticFirebaseSettings.currentUserId)){
+                return true;
+            }else{
+                return false;
             }
         }
 
