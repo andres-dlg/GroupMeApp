@@ -6,6 +6,7 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Paint;
+import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
@@ -15,6 +16,7 @@ import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.TextInputLayout;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.CardView;
 import android.text.TextUtils;
@@ -43,6 +45,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
@@ -59,17 +62,20 @@ public class UserProfileSetupActivity extends AppCompatActivity {
     AutoCompleteTextView mAlias;
     EditText mName;
     AutoCompleteTextView mJob;
+    AutoCompleteTextView mPhone;
     Button mSaveButton;
     TextView mLater;
     Uri mCropImageUri;
     TextInputLayout mTextInputAlias;
     TextInputLayout mTextInputJob;
+    TextInputLayout mTextInputPhone;
     CardView mMetricsLinearLayout;
     TextView mGroupQuantity;
     TextView mSubGroupQuantity;
     TextView mTasksQuantity;
     TextView mCompletedTasksQuantity;
     ImageButton mEdit;
+    ImageButton mCall;
 
     //FIREBASE AUTHENTICATION FIELDS
     FirebaseAuth mAuth;
@@ -141,6 +147,10 @@ public class UserProfileSetupActivity extends AppCompatActivity {
 
         mJob =  findViewById(R.id.job);
 
+        mTextInputPhone = findViewById(R.id.til3);
+
+        mPhone = findViewById(R.id.phone);
+
         mMetricsLinearLayout = findViewById(R.id.statsCv);
 
         mGroupQuantity = findViewById(R.id.groupQuantityNumber);
@@ -152,6 +162,14 @@ public class UserProfileSetupActivity extends AppCompatActivity {
         mCompletedTasksQuantity = findViewById(R.id.completedTasksQuantityNumber);
 
         mEdit = findViewById(R.id.edit);
+
+        mCall = findViewById(R.id.callBtn);
+        mCall.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialContactPhone(mPhone.getText().toString().trim());
+            }
+        });
 
         mSaveButton = findViewById(R.id.save);
         mLater = findViewById(R.id.later);
@@ -196,13 +214,16 @@ public class UserProfileSetupActivity extends AppCompatActivity {
             }
         });
 
+        //Si iduser es null es porque entra a configurar el perfil por primera vez
         if(iduser != null){
 
             getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
 
             mTextInputAlias.setEnabled(false);
             mTextInputJob.setEnabled(false);
-            mJob.setEnabled(false);
+            mTextInputPhone.setEnabled(false);
+            //mJob.setEnabled(false);
+            //mPhone.setEnabled(false);
 
             if(!iduser.equals(StaticFirebaseSettings.currentUserId)){
                 mSaveButton.setVisibility(View.GONE);
@@ -216,14 +237,16 @@ public class UserProfileSetupActivity extends AppCompatActivity {
                         if(!editMode){
                             mTextInputAlias.setEnabled(true);
                             mTextInputJob.setEnabled(true);
-                            mJob.setEnabled(true);
+                            mTextInputPhone.setEnabled(true);
+                            //mJob.setEnabled(true);
 
-                            Drawable i = getResources().getDrawable(R.drawable.ic_check_black_24dp);
+                            Drawable i = getResources().getDrawable(R.drawable.check_green);
                             mEdit.setImageDrawable(i);
                         }else{
                             mTextInputAlias.setEnabled(false);
                             mTextInputJob.setEnabled(false);
-                            mJob.setEnabled(false);
+                            mTextInputPhone.setEnabled(false);
+                            //mJob.setEnabled(false);
 
                             Drawable i = getResources().getDrawable(R.drawable.ic_pen_black_24dp);
                             mEdit.setImageDrawable(i);
@@ -239,12 +262,17 @@ public class UserProfileSetupActivity extends AppCompatActivity {
 
     }
 
+    private void dialContactPhone(String phoneNumber) {
+        startActivity(new Intent(Intent.ACTION_DIAL, Uri.fromParts("tel", phoneNumber, null)));
+    }
+
     private void setUserData() {
 
         mUserDatabase.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
 
+                //PARA LAS ESTADISTICAS
                 int groupQuantity = (int)dataSnapshot.child("groups").getChildrenCount();
                 mGroupQuantity.setText(String.valueOf(groupQuantity));
 
@@ -263,6 +291,11 @@ public class UserProfileSetupActivity extends AppCompatActivity {
                 mName.setText(u.getName());
                 mAlias.setText(u.getAlias());
                 mJob.setText(u.getJob());
+                mPhone.setText(u.getPhone());
+
+                if(!TextUtils.isEmpty(mPhone.getText().toString().trim()) && !u.getUserid().equals(StaticFirebaseSettings.currentUserId)){
+                    mCall.setVisibility(View.VISIBLE);
+                }
                 //supportPostponeEnterTransition();
                 //RequestOptions requestOptions = new RequestOptions().dontAnimate();
                 Glide.with(UserProfileSetupActivity.this)
@@ -370,27 +403,33 @@ public class UserProfileSetupActivity extends AppCompatActivity {
     }
 
     private void saveUserProfile() {
-        final String alias, userName, job;
+        final String alias, userName, job, phone;
         alias = mAlias.getText().toString().trim();
         userName = mName.getText().toString().trim();
         job = mJob.getText().toString().trim();
+        phone = mPhone.getText().toString().trim();
 
         pass = false;
         View focusView;
 
-        if (TextUtils.isEmpty(alias)) {
-            mAlias.setError("Este campo es necesario");
-            focusView = mAlias;
-            focusView.requestFocus();
-            pass = true;
-        }if (TextUtils.isEmpty(userName)) {
+        if (TextUtils.isEmpty(userName)) {
             mName.setError("Este campo es necesario");
             focusView = mName;
+            focusView.requestFocus();
+            pass = true;
+        }else if (TextUtils.isEmpty(alias)) {
+            mAlias.setError("Este campo es necesario");
+            focusView = mAlias;
             focusView.requestFocus();
             pass = true;
         }else if(!isAliasValid(alias)){
             mAlias.setError("Sin espacios ni caracteres especiales");
             focusView = mAlias;
+            focusView.requestFocus();
+            pass = true;
+        }else if(!isValidPhone(phone)){
+            mPhone.setError("Formato de teléfono inválido");
+            focusView = mPhone;
             focusView.requestFocus();
             pass = true;
         }
@@ -443,7 +482,7 @@ public class UserProfileSetupActivity extends AppCompatActivity {
                                 public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                                     imageHoldUri = taskSnapshot.getDownloadUrl();
                                     mProgress.dismiss();
-                                    createUserData(alias,userName,job);
+                                    createUserData(alias,userName,job,phone);
                                 }
                             });
                         }else{
@@ -453,7 +492,7 @@ public class UserProfileSetupActivity extends AppCompatActivity {
                                 imageHoldUri = Uri.parse(u.getImageURL());
                             }
                             mProgress.dismiss();
-                            createUserData(alias,userName,job);
+                            createUserData(alias,userName,job,phone);
                         }
                     }else{
                         View focusView;
@@ -471,11 +510,12 @@ public class UserProfileSetupActivity extends AppCompatActivity {
         }
     }
 
-    private void createUserData(String alias,String userName,String job) {
+    private void createUserData(String alias,String userName,String job, String phone) {
         mUserDatabase.child("alias").setValue(alias.toLowerCase());
         mUserDatabase.child("name").setValue(userName);
         mUserDatabase.child("lowerCaseName").setValue(userName.toLowerCase()); //para busquedas
         mUserDatabase.child("job").setValue(job);
+        mUserDatabase.child("phone").setValue(phone);
         mUserDatabase.child("userid").setValue(mAuth.getCurrentUser().getUid());
         mUserDatabase.child("imageUrl").setValue(imageHoldUri.toString());
 
@@ -510,6 +550,15 @@ public class UserProfileSetupActivity extends AppCompatActivity {
 
     private boolean isAliasValid(String alias) {
         return alias.matches("[A-Za-z0-9]*");
+    }
+
+    public boolean isValidPhone(CharSequence phone) {
+        if (TextUtils.isEmpty(phone)) {
+            //return false;
+            return true;
+        } else {
+            return android.util.Patterns.PHONE.matcher(phone).matches();
+        }
     }
 
     @Override

@@ -65,14 +65,15 @@
             android:transitionName="userPhoto"
             android:src="@drawable/new_user" />
 
+
         <android.support.design.widget.FloatingActionButton
             android:id="@+id/floatingActionButton"
             android:layout_width="35dp"
             android:layout_height="35dp"
             android:layout_alignRight="@id/user_profile_photo"
             android:layout_alignBottom="@id/user_profile_photo"
+            app:backgroundTint="#fff"
             android:tint="@color/colorPrimary"
-            android:background="#fff"
             android:clickable="true"
             android:src="@drawable/ic_menu_camera"
             android:scaleType="center"
@@ -135,35 +136,112 @@
                         android:layout_marginRight="15dp"
                         android:background="@color/bg_add_photo" />
 
-                    <android.support.design.widget.TextInputLayout
+                    <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:textColorHint="#757575"
-                        android:layout_marginTop="8dp"
-                        android:id="@+id/til">
-                        <AutoCompleteTextView
-                            android:id="@+id/alias"
-                            android:layout_width="fill_parent"
-                            android:singleLine="true"
-                            android:layout_height="wrap_content"
-                            android:textColor="@drawable/edit_text_selector"
-                            android:hint="Alias"/>
-                    </android.support.design.widget.TextInputLayout>
+                        android:orientation="horizontal"
+                        android:weightSum="1">
 
-                    <android.support.design.widget.TextInputLayout
+                        <ImageView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight=".1"
+                            android:layout_gravity="center_vertical"
+                            android:layout_marginTop="4dp"
+                            android:src="@drawable/ic_at_grey600_24dp" />
+
+                        <android.support.design.widget.TextInputLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight=".9"
+                            android:textColorHint="#757575"
+                            android:layout_marginTop="8dp"
+                            android:id="@+id/til">
+                            <AutoCompleteTextView
+                                android:id="@+id/alias"
+                                android:layout_width="fill_parent"
+                                android:singleLine="true"
+                                android:layout_height="wrap_content"
+                                android:textColor="@drawable/edit_text_selector"
+                                android:hint="Alias"/>
+                        </android.support.design.widget.TextInputLayout>
+
+                    </LinearLayout>
+
+                    <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:textColorHint="#757575"
-                        android:layout_marginTop="4dp"
-                        android:id="@+id/til2">
-                        <AutoCompleteTextView
-                            android:id="@+id/job"
-                            android:layout_width="fill_parent"
-                            android:singleLine="true"
-                            android:textColor="@drawable/edit_text_selector"
+                        android:orientation="horizontal"
+                        android:weightSum="1">
+
+                        <ImageView
+                            android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            android:hint="Profesión" />
-                    </android.support.design.widget.TextInputLayout>
+                            android:layout_weight=".1"
+                            android:layout_gravity="center_vertical"
+                            android:layout_marginTop="4dp"
+                            android:src="@drawable/ic_briefcase_grey600_24dp" />
+
+                        <android.support.design.widget.TextInputLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight=".9"
+                            android:textColorHint="#757575"
+                            android:layout_marginTop="4dp"
+                            android:id="@+id/til2">
+                            <AutoCompleteTextView
+                                android:id="@+id/job"
+                                android:layout_width="fill_parent"
+                                android:singleLine="true"
+                                android:textColor="@drawable/edit_text_selector"
+                                android:layout_height="wrap_content"
+                                android:hint="Profesión" />
+                        </android.support.design.widget.TextInputLayout>
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:weightSum="1">
+
+                        <ImageView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight=".1"
+                            android:layout_marginTop="4dp"
+                            android:layout_gravity="center_vertical"
+                            android:src="@drawable/ic_cellphone_grey600_24dp" />
+
+                        <android.support.design.widget.TextInputLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight=".8"
+                            android:textColorHint="#757575"
+                            android:layout_marginTop="4dp"
+                            android:id="@+id/til3">
+                            <AutoCompleteTextView
+                                android:id="@+id/phone"
+                                android:layout_width="fill_parent"
+                                android:singleLine="true"
+                                android:inputType="phone"
+                                android:textColor="@drawable/edit_text_selector"
+                                android:layout_height="wrap_content"
+                                android:hint="Teléfono" />
+                        </android.support.design.widget.TextInputLayout>
+
+                        <ImageButton
+                            android:id="@+id/callBtn"
+                            android:layout_width="0dp"
+                            android:visibility="gone"
+                            android:layout_height="match_parent"
+                            android:layout_weight=".1"
+                            android:background="?android:attr/selectableItemBackgroundBorderless"
+                            android:layout_gravity="center_vertical"
+                            android:src="@drawable/ic_phone_grey600_24dp" />
+
+                    </LinearLayout>
 
                 </LinearLayout>
 

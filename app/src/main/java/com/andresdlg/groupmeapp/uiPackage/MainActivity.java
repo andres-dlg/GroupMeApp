@@ -233,7 +233,7 @@ public class MainActivity extends AppCompatActivity
 
         FragmentPagerItemAdapter adapter = new FragmentPagerItemAdapter(
                 getSupportFragmentManager(), FragmentPagerItems.with(this)
-                .add(R.string.news_fragment, NewsFragment.class)
+                //.add(R.string.news_fragment, NewsFragment.class)
                 .add(R.string.groups_fragment, GroupsFragment.class)
                 .add(R.string.notifications_fragment, NotificationFragment.class)
                 .add(R.string.messages_fragment, MessagesFragment.class)
@@ -245,14 +245,14 @@ public class MainActivity extends AppCompatActivity
 
         navigationTabBar = findViewById(R.id.ntb);
         models = new ArrayList<>();
-        models.add(
+        /*models.add(
                 new NavigationTabBar.Model.Builder(
                         ContextCompat.getDrawable(this,R.drawable.newspaper),
                         Color.parseColor(colors[2])
                 ).title("Noticias")
                         .badgeTitle("NTB")
                         .build()
-        );
+        );*/
         models.add(
                 new NavigationTabBar.Model.Builder(
                         ContextCompat.getDrawable(this,R.drawable.account_multiple),
@@ -281,7 +281,7 @@ public class MainActivity extends AppCompatActivity
         navigationTabBar.setInactiveColor(getResources().getColor(R.color.cardview_dark_background));
         navigationTabBar.setIsSwiped(true);
         navigationTabBar.setIsTitled(true);
-        navigationTabBar.setTitleMode(NavigationTabBar.TitleMode.ACTIVE);
+        //navigationTabBar.setTitleMode(NavigationTabBar.TitleMode.ALL_INDEX);
         //navigationTabBar.setTypeface(customFont);
         navigationTabBar.setTitleSize(10 * getResources().getDisplayMetrics().density);
         navigationTabBar.setIconSizeFraction((float) 0.5);
@@ -573,7 +573,7 @@ public class MainActivity extends AppCompatActivity
                 .build();
 
         // 2) TARGET PESTAÑA NOTICIAS
-        oneLocation = new int[2];
+        /*oneLocation = new int[2];
         navigationTabBar.getLocationInWindow(oneLocation);
         oneX = oneLocation[0] + navigationTabBar.getWidth() / 2f;
         oneY = oneLocation[1] + navigationTabBar.getHeight() / 2f;
@@ -582,7 +582,7 @@ public class MainActivity extends AppCompatActivity
                 .setShape(new RoundRectangle(0,oneLocation[1],navigationTabBar.getWidth()/4,navigationTabBar.getHeight()))
                 .setTitle("Sección de noticias")
                 .setDescription("Aquí podrás visualizar todas las noticias publicadas en tus grupos")
-                .build();
+                .build();*/
 
         // 3) TARGET CONTACTOS
         //View contacts = toolbar.findViewById(R.id.contacts);
@@ -612,7 +612,7 @@ public class MainActivity extends AppCompatActivity
 
 
         // TARGET BOTON DE FILTRO EN FRAGMENT DE NOTICIAS
-        FragmentManager fragmentManager = getSupportFragmentManager();
+        /*FragmentManager fragmentManager = getSupportFragmentManager();
         List<Fragment> fragments = fragmentManager.getFragments();
         View fabFilter = fragments.get(0).getView().findViewById(R.id.fabFilter);
         oneLocation = new int[2];
@@ -624,7 +624,7 @@ public class MainActivity extends AppCompatActivity
                 .setShape(new Circle(200f))
                 .setTitle("Filtro")
                 .setDescription("Aquí podrás elegir que publicaciones ver")
-                .build();
+                .build();*/
 
 
         //EMPIEZA LA PRIMER PARTE DEL SHOW
@@ -633,7 +633,8 @@ public class MainActivity extends AppCompatActivity
                 .setDuration(1000L)
                 .setAnimation(new DecelerateInterpolator(2f))
                 //Agrego los targets
-                .setTargets(tabBarTarget,tabBarNewsTarget,contactsTarget,addContactsTarget,simpleTarget)
+                //.setTargets(tabBarTarget,tabBarNewsTarget,contactsTarget,addContactsTarget,simpleTarget)
+                .setTargets(tabBarTarget,contactsTarget,addContactsTarget)
                 .setClosedOnTouchedOutside(true)
                 .setOnSpotlightStateListener(new OnSpotlightStateChangedListener() {
                     @Override
@@ -881,7 +882,8 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onNewNotificationSet(int notificationQuantity) {
-        NavigationTabBar.Model model = models.get(2);
+        //NavigationTabBar.Model model = models.get(2);
+        NavigationTabBar.Model model = models.get(1);
         if(notificationQuantity > 0){
             model.showBadge();
             //model.setBadgeTitle(String.valueOf(notificationQuantity));
@@ -893,19 +895,20 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onNewPostSet(int postQuantity) {
-        NavigationTabBar.Model model = models.get(0);
+        /*NavigationTabBar.Model model = models.get(0);
         if(postQuantity > 0){
             model.showBadge();
             //model.setBadgeTitle(String.valueOf(postQuantity));
             model.setBadgeTitle(String.valueOf(1));
         }else{
             model.hideBadge();
-        }
+        }*/
     }
 
     @Override
     public void onNewMessage(int messageQuantity) {
-        NavigationTabBar.Model model = models.get(3);
+        //NavigationTabBar.Model model = models.get(3);
+        NavigationTabBar.Model model = models.get(2);
         if(messageQuantity > 0){
             model.showBadge();
             //model.setBadgeTitle(String.valueOf(messageQuantity));

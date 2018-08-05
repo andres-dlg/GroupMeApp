@@ -43,6 +43,7 @@
         app:ntb_badge_use_typeface="true"
         app:ntb_badged="true"
         app:ntb_bg_color="@color/colorAccent"
+        app:ntb_title_mode="all"
         android:elevation="50dp"/>
 
     <View

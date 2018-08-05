@@ -13,15 +13,19 @@ public class Users {
     private String job;
     private String name;
     private String userid;
+    private String phone;
+    private String token_id;
 
     private Users() {}
 
-    public Users(String alias, String imageUrl, String job, String name, String userid){
+    public Users(String alias, String imageUrl, String job, String name, String userid, String phone, String token_id){
         this.alias = alias;
         this.imageUrl = imageUrl;
         this.job = job;
         this.name = name;
         this.userid = userid;
+        this.phone = phone;
+        this.token_id = token_id;
     }
 
     public String getAlias() {
@@ -73,4 +77,19 @@ public class Users {
     }
 
 
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+    public String getToken_id() {
+        return token_id;
+    }
+
+    public void setToken_id(String token_id) {
+        this.token_id = token_id;
+    }
 }

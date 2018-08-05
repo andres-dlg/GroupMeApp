@@ -157,9 +157,10 @@ public class RVContactAdapter extends RecyclerView.Adapter<RVContactAdapter.Cont
                     final Menu menu = popupMenu.getMenu();
 
                     popupMenu.getMenuInflater().inflate(R.menu.fragment_contact_menu, menu);
+                    popupMenu.getMenu().removeItem(R.id.add_to_group);
 
                     if(fromNewsFragment){
-                        popupMenu.getMenu().removeItem(R.id.add_to_group);
+                        //popupMenu.getMenu().removeItem(R.id.add_to_group);
                         popupMenu.getMenu().removeItem(R.id.delete);
                     }
 

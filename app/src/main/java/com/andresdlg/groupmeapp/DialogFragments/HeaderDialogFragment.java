@@ -174,7 +174,7 @@ public class HeaderDialogFragment extends DialogFragment implements GroupAddMemb
         navigationTabBar.setInactiveColor(getResources().getColor(R.color.cardview_dark_background));
         navigationTabBar.setIsSwiped(true);
         navigationTabBar.setIsTitled(true);
-        navigationTabBar.setTitleMode(NavigationTabBar.TitleMode.ACTIVE);
+        //navigationTabBar.setTitleMode(NavigationTabBar.TitleMode.ACTIVE);
         navigationTabBar.setTypeface("@font/simplifica_font");
         navigationTabBar.setTitleSize(25);
         navigationTabBar.setIconSizeFraction((float) 0.5);
@@ -206,7 +206,8 @@ public class HeaderDialogFragment extends DialogFragment implements GroupAddMemb
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if(type == GroupType.GROUP){
-            Fragment fragment = getFragmentManager().getFragments().get(1);
+            //Fragment fragment = getFragmentManager().getFragments().get(1);
+            Fragment fragment = getFragmentManager().getFragments().get(0);
             onAttachToParentFragment(fragment);
         }
     }
@@ -506,10 +507,10 @@ public class HeaderDialogFragment extends DialogFragment implements GroupAddMemb
                                             }
                                             if(!isAlreadySaved){
                                                 createGroupData(finalGroupKey,nameText.getText().toString(),objetiveText.getText().toString(),map);
+                                                mOnSaveGroupListener.onSavedGroup(true);
                                             }
                                             isAlreadySaved = true;
                                             mProgressBar.setVisibility(View.INVISIBLE);
-                                            mOnSaveGroupListener.onSavedGroup(true);
                                             dismiss();
                                         }
                                     });
@@ -532,9 +533,9 @@ public class HeaderDialogFragment extends DialogFragment implements GroupAddMemb
                                             }
                                             if(!isAlreadySaved) {
                                                 createGroupData(finalGroupKey1, nameText.getText().toString(), objetiveText.getText().toString(), map);
+                                                mOnSaveGroupListener.onSavedGroup(true);
                                             }
                                             mProgressBar.setVisibility(View.INVISIBLE);
-                                            mOnSaveGroupListener.onSavedGroup(true);
                                             isAlreadySaved = true;
                                             dismiss();
                                         }
