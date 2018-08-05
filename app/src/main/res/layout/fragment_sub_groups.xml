@@ -7,7 +7,8 @@
     android:fitsSystemWindows="true"
     android:theme="@style/AppTheme.DialogFragment"
     android:layout_marginTop="24dp"
-    android:background="#FAFAFA">
+    android:background="#FAFAFA"
+    android:animateLayoutChanges="true">
 
     <FrameLayout
         android:layout_width="match_parent"
@@ -55,7 +56,8 @@
         android:tint="@color/common_google_signin_btn_text_dark"
         app:backgroundTint="@color/colorPrimaryDark"
         app:fabSize="normal"
-        app:srcCompat="@android:drawable/ic_input_add" />
+        app:srcCompat="@android:drawable/ic_input_add"
+        android:visibility="gone"/>
 
 
 </RelativeLayout>

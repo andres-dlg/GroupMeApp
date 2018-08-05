@@ -41,7 +41,7 @@ public class GroupNewsFragment extends Fragment {
 
     DatabaseReference postsRef;
 
-    FloatingActionButton fab;
+    //FloatingActionButton fab;
     ProgressBar progressBar;
     TextView tvNoNews;
 
@@ -76,14 +76,14 @@ public class GroupNewsFragment extends Fragment {
 
         tvNoNews = view.findViewById(R.id.tvNoNews);
 
-        fab = view.findViewById(R.id.fabNewPost);
+        /*fab = view.findViewById(R.id.fabNewPost);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Intent i = new Intent(getContext(), NewPostActivity.class);
                 getContext().startActivity(i);
             }
-        });
+        });*/
 
         //String groupKey = ((FireApp) getContext().getApplicationContext()).getGroupKey();
 
@@ -229,7 +229,7 @@ public class GroupNewsFragment extends Fragment {
         this.isVisibleToUser = isVisibleToUser;
         if(isAdded()){
             if(isVisibleToUser){
-                fab.show();
+                //fab.show();
             }else{
                 for(Post p : posts){
                     List<String> seenBy = p.getSeenBy();
@@ -249,7 +249,7 @@ public class GroupNewsFragment extends Fragment {
 
                 postQuantity = 0;
 
-                fab.hide();
+                //fab.hide();
             }
         }
     }

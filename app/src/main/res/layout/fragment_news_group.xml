@@ -56,6 +56,7 @@
         android:src="@drawable/ic_create_post"
         app:backgroundTint="@color/colorPrimaryDark"
         app:fabSize="normal"
-        android:focusable="true" />
+        android:focusable="true"
+        android:visibility="gone"/>
 
 </RelativeLayout>
