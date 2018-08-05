@@ -32,6 +32,7 @@
         app:ntb_badge_bg_color="#ffff0000"
         app:ntb_badge_gravity="top"
         app:ntb_badge_position="left"
+        app:ntb_title_mode="all"
         app:ntb_badge_title_color="#ffffffff"
         app:ntb_badge_use_typeface="true"
         app:ntb_badged="true"

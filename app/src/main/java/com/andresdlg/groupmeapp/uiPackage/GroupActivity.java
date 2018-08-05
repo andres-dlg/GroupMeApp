@@ -220,7 +220,7 @@ public class GroupActivity extends AppCompatActivity implements GroupChatFragmen
         navigationTabBar.setInactiveColor(getResources().getColor(R.color.cardview_dark_background));
         navigationTabBar.setIsSwiped(true);
         navigationTabBar.setIsTitled(true);
-        navigationTabBar.setTitleMode(NavigationTabBar.TitleMode.ACTIVE);
+        //navigationTabBar.setTitleMode(NavigationTabBar.TitleMode.ACTIVE);
         //navigationTabBar.setTypeface(customFont);
         navigationTabBar.setTitleSize(10 * getResources().getDisplayMetrics().density);
         navigationTabBar.setIconSizeFraction((float) 0.5);
@@ -263,7 +263,7 @@ public class GroupActivity extends AppCompatActivity implements GroupChatFragmen
                     valueAnimator.setDuration(300);
                     valueAnimator.start();
 
-                }else if(position == 1){
+                }else if(position == 1 || position == 0){
 
                     if(viewPagerWasInChatPage){
 

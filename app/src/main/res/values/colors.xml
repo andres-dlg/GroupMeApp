@@ -11,6 +11,7 @@
     <color name="gray_edit_text">#757575</color>
     <color name="gray_noti">#696969</color>
     <color name="gray_400">#bdbdbd</color>
+    <color name="gray_300">#e0e0e0</color>
     <color name="gray_200">#eeeeee</color>
 
     <color name="theme_primary_text_inverted">#ffffff</color>

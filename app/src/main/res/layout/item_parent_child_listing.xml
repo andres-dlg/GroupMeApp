@@ -100,7 +100,7 @@
                 android:layout_height="match_parent"
                 android:layout_gravity="center_vertical"
                 android:id="@+id/chat"
-                android:src="@drawable/message"
+                android:src="@drawable/baseline_chat_black_24"
                 android:background="?android:attr/selectableItemBackground"/>
 
             <View
@@ -129,7 +129,7 @@
 
             <ImageButton
                 android:id="@+id/files"
-                android:src="@drawable/file_multiple"
+                android:src="@drawable/file_document"
                 android:layout_height="match_parent"
                 android:layout_columnWeight="0.25"
                 android:layout_row="0"

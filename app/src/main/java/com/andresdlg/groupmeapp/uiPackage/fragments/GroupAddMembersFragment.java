@@ -20,7 +20,6 @@ import com.andresdlg.groupmeapp.Adapters.RVSearchContactAdapter;
 import com.andresdlg.groupmeapp.Entities.Users;
 import com.andresdlg.groupmeapp.R;
 import com.andresdlg.groupmeapp.Utils.FriendshipStatus;
-import com.andresdlg.groupmeapp.Utils.GroupStatus;
 import com.andresdlg.groupmeapp.firebasePackage.FireApp;
 import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
 import com.andresdlg.groupmeapp.uiPackage.ReciclerViewClickListener.RecyclerClick_Listener;
@@ -32,7 +31,9 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by andresdlg on 05/02/18.
@@ -61,6 +62,8 @@ public class GroupAddMembersFragment extends Fragment implements RVSearchContact
 
     List<Users> groupUsers;
 
+    Map<String, String> userIdsWithStatus;
+
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -74,13 +77,14 @@ public class GroupAddMembersFragment extends Fragment implements RVSearchContact
         rvAddGroupMember.setItemAnimator(new DefaultItemAnimator());
 
         users = new ArrayList<>();
+        userIdsWithStatus = new HashMap<>();
         //groupUsers = new ArrayList<>();
 
         LinearLayoutManager llm = new LinearLayoutManager(getContext());
         llm.setOrientation(LinearLayoutManager.VERTICAL);
         rvAddGroupMember.setLayoutManager(llm);
 
-        rvSearchContactAdapter = new RVSearchContactAdapter(users,getContext(),null);
+        rvSearchContactAdapter = new RVSearchContactAdapter(users,getContext(),null, ((FireApp) getActivity().getApplication()).getGroupKey(), userIdsWithStatus);
         rvAddGroupMember.setAdapter(rvSearchContactAdapter);
 
         searchView = view.findViewById(R.id.toolbar);

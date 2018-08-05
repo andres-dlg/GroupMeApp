@@ -15,7 +15,9 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.PopupMenu;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.andresdlg.groupmeapp.Entities.Users;
@@ -52,10 +54,12 @@ public class RVContactAdapter extends RecyclerView.Adapter<RVContactAdapter.Cont
 
     private List<Users> users;
     private Context context;
+    private boolean fromNewsFragment;
 
-    public RVContactAdapter(List<Users> users, Context context){
+    public RVContactAdapter(List<Users> users, Context context, boolean fromNewsFragment){
         this.users = users;
         this.context = context;
+        this.fromNewsFragment = fromNewsFragment;
     }
 
     @NonNull
@@ -68,7 +72,7 @@ public class RVContactAdapter extends RecyclerView.Adapter<RVContactAdapter.Cont
     @Override
     public void onBindViewHolder(@NonNull final ContactsViewHolder contactsViewHolder, final int position) {
         Users u = users.get(position);
-        contactsViewHolder.setDetails(context,u.getName(),u.getAlias(),u.getImageURL(),u.getUserid());
+        contactsViewHolder.setDetails(context,u.getName(),u.getAlias(),u.getImageURL(),u.getUserid(),fromNewsFragment);
     }
 
     @Override
@@ -94,10 +98,11 @@ public class RVContactAdapter extends RecyclerView.Adapter<RVContactAdapter.Cont
             mView = itemView;
         }
 
-        void setDetails(final Context context, String contactName, final String contactAlias, final String contactPhoto, final String iduser){
+        void setDetails(final Context context, String contactName, final String contactAlias, final String contactPhoto, final String iduser, final boolean fromNewsFragment){
             final CircleImageView mContactPhoto = mView.findViewById(R.id.contact_photo);
             TextView mContactName = mView.findViewById(R.id.contact_name);
             TextView mContactAlias = mView.findViewById(R.id.contact_alias);
+            RelativeLayout rl = mView.findViewById(R.id.rl);
 
             mContactAlias.setText(String.format("@%s", contactAlias));
             mContactAlias.setSelected(true);
@@ -105,7 +110,7 @@ public class RVContactAdapter extends RecyclerView.Adapter<RVContactAdapter.Cont
             mContactName.setText(contactName);
             mContactName.setSelected(true);
 
-            mContactPhoto.setOnClickListener(new View.OnClickListener() {
+            rl.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     Intent userProfileIntent = new Intent(context, UserProfileSetupActivity.class);
@@ -134,6 +139,17 @@ public class RVContactAdapter extends RecyclerView.Adapter<RVContactAdapter.Cont
                     .into(mContactPhoto);
 
             ImageButton btn = mView.findViewById(R.id.btn_menu);
+
+            if(iduser.equals(StaticFirebaseSettings.currentUserId)){
+                LinearLayout.LayoutParams param = new LinearLayout.LayoutParams(
+                        RelativeLayout.LayoutParams.MATCH_PARENT,
+                        RelativeLayout.LayoutParams.MATCH_PARENT,
+                        1.0f
+                );
+                btn.setVisibility(View.GONE);
+                rl.setLayoutParams(param);
+            }
+
             btn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
@@ -141,6 +157,13 @@ public class RVContactAdapter extends RecyclerView.Adapter<RVContactAdapter.Cont
                     final Menu menu = popupMenu.getMenu();
 
                     popupMenu.getMenuInflater().inflate(R.menu.fragment_contact_menu, menu);
+                    popupMenu.getMenu().removeItem(R.id.add_to_group);
+
+                    if(fromNewsFragment){
+                        //popupMenu.getMenu().removeItem(R.id.add_to_group);
+                        popupMenu.getMenu().removeItem(R.id.delete);
+                    }
+
                     popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
                         @Override
                         public boolean onMenuItemClick(MenuItem menuItem) {

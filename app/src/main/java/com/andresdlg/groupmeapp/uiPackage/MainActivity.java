@@ -1,6 +1,7 @@
 package com.andresdlg.groupmeapp.uiPackage;
 
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
@@ -21,10 +22,12 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.DisplayMetrics;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.WindowManager;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -128,6 +131,8 @@ public class MainActivity extends AppCompatActivity
 
         value = 0;
 
+        adjustFontScale(getResources().getConfiguration());
+
         //FIREBASE DATABASE REFERENCE
         mDatabaseRef = FirebaseDatabase.getInstance().getReference().child("Users");
 
@@ -228,7 +233,7 @@ public class MainActivity extends AppCompatActivity
 
         FragmentPagerItemAdapter adapter = new FragmentPagerItemAdapter(
                 getSupportFragmentManager(), FragmentPagerItems.with(this)
-                .add(R.string.news_fragment, NewsFragment.class)
+                //.add(R.string.news_fragment, NewsFragment.class)
                 .add(R.string.groups_fragment, GroupsFragment.class)
                 .add(R.string.notifications_fragment, NotificationFragment.class)
                 .add(R.string.messages_fragment, MessagesFragment.class)
@@ -240,14 +245,14 @@ public class MainActivity extends AppCompatActivity
 
         navigationTabBar = findViewById(R.id.ntb);
         models = new ArrayList<>();
-        models.add(
+        /*models.add(
                 new NavigationTabBar.Model.Builder(
                         ContextCompat.getDrawable(this,R.drawable.newspaper),
                         Color.parseColor(colors[2])
                 ).title("Noticias")
                         .badgeTitle("NTB")
                         .build()
-        );
+        );*/
         models.add(
                 new NavigationTabBar.Model.Builder(
                         ContextCompat.getDrawable(this,R.drawable.account_multiple),
@@ -276,7 +281,7 @@ public class MainActivity extends AppCompatActivity
         navigationTabBar.setInactiveColor(getResources().getColor(R.color.cardview_dark_background));
         navigationTabBar.setIsSwiped(true);
         navigationTabBar.setIsTitled(true);
-        navigationTabBar.setTitleMode(NavigationTabBar.TitleMode.ACTIVE);
+        //navigationTabBar.setTitleMode(NavigationTabBar.TitleMode.ALL_INDEX);
         //navigationTabBar.setTypeface(customFont);
         navigationTabBar.setTitleSize(10 * getResources().getDisplayMetrics().density);
         navigationTabBar.setIconSizeFraction((float) 0.5);
@@ -331,13 +336,13 @@ public class MainActivity extends AppCompatActivity
     }
 
 
-    private void fillDrawer(Users users) {
+    private void fillDrawer(final Users users) {
         View hView =  navigationView.getHeaderView(0);
         TextView nav_user = hView.findViewById(R.id.nav_user);
         TextView nav_name = hView.findViewById(R.id.nav_name);
         nav_photo = hView.findViewById(R.id.nav_photo);
 
-        if(!this.isDestroyed()){
+        if(!this.isDestroyed() && users.getImageURL() != null){
             Glide.with(MainActivity.this)
                     .load(users.getImageURL().trim())
                     .into(nav_photo);
@@ -346,8 +351,18 @@ public class MainActivity extends AppCompatActivity
         if(users !=null){
             nav_user.setText(String.format("@%s", users.getAlias()));
             nav_name.setText(users.getName());
+            nav_photo.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent userProfileIntent = new Intent(MainActivity.this, UserProfileSetupActivity.class);
+                    userProfileIntent.putExtra("iduser",users.getUserid());
+                    Pair<View, String> p1 = Pair.create((View)nav_photo, "userPhoto");
+                    ActivityOptionsCompat options = ActivityOptionsCompat.
+                            makeSceneTransitionAnimation(MainActivity.this, p1);
+                    startActivity(userProfileIntent, options.toBundle());
+                }
+            });
         }
-
     }
 
     @Override
@@ -458,7 +473,7 @@ public class MainActivity extends AppCompatActivity
                         .onRatingBarFormSumbit(new RatingDialog.Builder.RatingDialogFormListener() {
                             @Override
                             public void onFormSubmitted(String feedback) {
-                                Toast.makeText(MainActivity.this, feedback, Toast.LENGTH_SHORT).show();
+                                Toast.makeText(MainActivity.this, "¡Gracias por sus comentarios!", Toast.LENGTH_SHORT).show();
                             }
                         }).build();
                 ratingDialog.show();
@@ -481,9 +496,9 @@ public class MainActivity extends AppCompatActivity
                     Intent i = new Intent(Intent.ACTION_SEND);
                     i.setType("text/plain");
                     i.putExtra(Intent.EXTRA_SUBJECT, "GroupMeApp");
-                    String sAux = "\n¡Recomienda esta aplicación a tus conocidos!\n\n";
+                    String sAux = "¡Hey, descarga GroupMeApp y vive una nueva experiencia del trabajo en equipo!\n\n";
                     //sAux = sAux + "https://play.google.com/store/apps/details?id=the.package.id \n\n";
-                    sAux = sAux + "https://futurolink.com \n\n";
+                    sAux += "https://play.google.com/store/apps/details?id=com.andresdlg.groupmeapp";
                     i.putExtra(Intent.EXTRA_TEXT, sAux);
                     startActivity(Intent.createChooser(i, "Elije una opción"));
                 } catch(Exception e) {
@@ -558,7 +573,7 @@ public class MainActivity extends AppCompatActivity
                 .build();
 
         // 2) TARGET PESTAÑA NOTICIAS
-        oneLocation = new int[2];
+        /*oneLocation = new int[2];
         navigationTabBar.getLocationInWindow(oneLocation);
         oneX = oneLocation[0] + navigationTabBar.getWidth() / 2f;
         oneY = oneLocation[1] + navigationTabBar.getHeight() / 2f;
@@ -567,7 +582,7 @@ public class MainActivity extends AppCompatActivity
                 .setShape(new RoundRectangle(0,oneLocation[1],navigationTabBar.getWidth()/4,navigationTabBar.getHeight()))
                 .setTitle("Sección de noticias")
                 .setDescription("Aquí podrás visualizar todas las noticias publicadas en tus grupos")
-                .build();
+                .build();*/
 
         // 3) TARGET CONTACTOS
         //View contacts = toolbar.findViewById(R.id.contacts);
@@ -597,7 +612,7 @@ public class MainActivity extends AppCompatActivity
 
 
         // TARGET BOTON DE FILTRO EN FRAGMENT DE NOTICIAS
-        FragmentManager fragmentManager = getSupportFragmentManager();
+        /*FragmentManager fragmentManager = getSupportFragmentManager();
         List<Fragment> fragments = fragmentManager.getFragments();
         View fabFilter = fragments.get(0).getView().findViewById(R.id.fabFilter);
         oneLocation = new int[2];
@@ -609,7 +624,7 @@ public class MainActivity extends AppCompatActivity
                 .setShape(new Circle(200f))
                 .setTitle("Filtro")
                 .setDescription("Aquí podrás elegir que publicaciones ver")
-                .build();
+                .build();*/
 
 
         //EMPIEZA LA PRIMER PARTE DEL SHOW
@@ -618,7 +633,8 @@ public class MainActivity extends AppCompatActivity
                 .setDuration(1000L)
                 .setAnimation(new DecelerateInterpolator(2f))
                 //Agrego los targets
-                .setTargets(tabBarTarget,tabBarNewsTarget,contactsTarget,addContactsTarget,simpleTarget)
+                //.setTargets(tabBarTarget,tabBarNewsTarget,contactsTarget,addContactsTarget,simpleTarget)
+                .setTargets(tabBarTarget,contactsTarget,addContactsTarget)
                 .setClosedOnTouchedOutside(true)
                 .setOnSpotlightStateListener(new OnSpotlightStateChangedListener() {
                     @Override
@@ -866,7 +882,8 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onNewNotificationSet(int notificationQuantity) {
-        NavigationTabBar.Model model = models.get(2);
+        //NavigationTabBar.Model model = models.get(2);
+        NavigationTabBar.Model model = models.get(1);
         if(notificationQuantity > 0){
             model.showBadge();
             //model.setBadgeTitle(String.valueOf(notificationQuantity));
@@ -878,19 +895,20 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onNewPostSet(int postQuantity) {
-        NavigationTabBar.Model model = models.get(0);
+        /*NavigationTabBar.Model model = models.get(0);
         if(postQuantity > 0){
             model.showBadge();
             //model.setBadgeTitle(String.valueOf(postQuantity));
             model.setBadgeTitle(String.valueOf(1));
         }else{
             model.hideBadge();
-        }
+        }*/
     }
 
     @Override
     public void onNewMessage(int messageQuantity) {
-        NavigationTabBar.Model model = models.get(3);
+        //NavigationTabBar.Model model = models.get(3);
+        NavigationTabBar.Model model = models.get(2);
         if(messageQuantity > 0){
             model.showBadge();
             //model.setBadgeTitle(String.valueOf(messageQuantity));
@@ -898,6 +916,15 @@ public class MainActivity extends AppCompatActivity
         }else{
             model.hideBadge();
         }
+    }
+
+    public  void adjustFontScale( Configuration configuration) {
+        configuration.fontScale = (float) 1.0;
+        DisplayMetrics metrics = getResources().getDisplayMetrics();
+        WindowManager wm = (WindowManager) getSystemService(WINDOW_SERVICE);
+        wm.getDefaultDisplay().getMetrics(metrics);
+        metrics.scaledDensity = configuration.fontScale * metrics.density;
+        getBaseContext().getResources().updateConfiguration(configuration, metrics);
     }
 
 }

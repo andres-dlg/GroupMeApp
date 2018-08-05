@@ -17,14 +17,16 @@ public class Task implements Parcelable {
     private long endDate;
     private Boolean finished;
     private String taskDescription;
+    private String author;
 
-    public Task(String taskKey, String name,long startDate ,long endDate, Boolean finished, String taskDescription){
+    public Task(String taskKey, String name,long startDate ,long endDate, Boolean finished, String taskDescription, String author){
         this.taskKey = taskKey;
         this.name = name;
         this.startDate = startDate;
         this.endDate = endDate;
         this.finished = finished;
         this.taskDescription = taskDescription;
+        this.author = author;
     }
 
     public Task(){
@@ -110,6 +112,14 @@ public class Task implements Parcelable {
 
     public void setTaskDescription(String taskDescription) {
         this.taskDescription = taskDescription;
+    }
+
+    public String getAuthor() {
+        return author;
+    }
+
+    public void setAuthor(String author) {
+        this.author = author;
     }
 
     /*public boolean isFinished() {

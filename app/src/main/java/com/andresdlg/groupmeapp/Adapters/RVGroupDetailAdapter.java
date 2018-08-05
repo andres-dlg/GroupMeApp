@@ -7,7 +7,10 @@ import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityOptionsCompat;
+import android.support.v4.util.Pair;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -16,6 +19,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.PopupMenu;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -26,6 +30,7 @@ import com.andresdlg.groupmeapp.Utils.Roles;
 import com.andresdlg.groupmeapp.firebasePackage.FireApp;
 import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
 import com.andresdlg.groupmeapp.uiPackage.MainActivity;
+import com.andresdlg.groupmeapp.uiPackage.UserProfileSetupActivity;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.DataSource;
 import com.bumptech.glide.load.engine.GlideException;
@@ -135,6 +140,7 @@ public class RVGroupDetailAdapter extends RecyclerView.Adapter<RVGroupDetailAdap
             TextView mContactAlias = mView.findViewById(R.id.tvUserAlias);
             final TextView mContactRol = mView.findViewById(R.id.tvRol);
             final ImageButton btnMenu = mView.findViewById(R.id.btn_menu);
+            RelativeLayout rl = mView.findViewById(R.id.rl);
 
             btnMenu.setVisibility(View.GONE);
 
@@ -143,6 +149,18 @@ public class RVGroupDetailAdapter extends RecyclerView.Adapter<RVGroupDetailAdap
 
             mContactName.setText(contactName);
             mContactName.setSelected(true);
+
+            rl.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent userProfileIntent = new Intent(context, UserProfileSetupActivity.class);
+                    userProfileIntent.putExtra("iduser",iduser);
+                    Pair<View, String> p1 = Pair.create((View)mContactPhoto, "userPhoto");
+                    ActivityOptionsCompat options = ActivityOptionsCompat.
+                            makeSceneTransitionAnimation((AppCompatActivity)context, p1);
+                    context.startActivity(userProfileIntent, options.toBundle());
+                }
+            });
 
             setMyRol();
             if(myRol != null){

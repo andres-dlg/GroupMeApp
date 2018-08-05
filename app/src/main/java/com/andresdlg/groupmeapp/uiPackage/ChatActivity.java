@@ -101,6 +101,16 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
                                     .child(m.getId())
                                     .child("seenBy")
                                     .setValue(seenBy);
+                            FirebaseDatabase
+                                    .getInstance()
+                                    .getReference("Users")
+                                    .child(StaticFirebaseSettings.currentUserId)
+                                    .child("conversation")
+                                    .child(conversationKey)
+                                    .child("messages")
+                                    .child(m.getId())
+                                    .child("seenBy")
+                                    .setValue(seenBy);
                         }
                     }
                 }

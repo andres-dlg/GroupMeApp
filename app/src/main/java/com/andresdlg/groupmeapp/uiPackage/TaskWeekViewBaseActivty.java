@@ -20,6 +20,7 @@ import com.andresdlg.groupmeapp.Entities.Task;
 import com.andresdlg.groupmeapp.Entities.WeekViewEventGroupMeApp;
 import com.andresdlg.groupmeapp.R;
 import com.andresdlg.groupmeapp.firebasePackage.FireApp;
+import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -88,7 +89,7 @@ public class TaskWeekViewBaseActivty extends AppCompatActivity implements WeekVi
                 String taskDescription = weekViewEventGroupMeApp.getmTaskDesc();
                 boolean taskFinished = weekViewEventGroupMeApp.ismTaskFinished();
 
-                Task task = new Task(taskKey,weekViewEventGroupMeApp.getName(),weekViewEventGroupMeApp.getStartTime().getTimeInMillis(),weekViewEventGroupMeApp.getEndTime().getTimeInMillis(),taskFinished,taskDescription);
+                Task task = new Task(taskKey,weekViewEventGroupMeApp.getName(),weekViewEventGroupMeApp.getStartTime().getTimeInMillis(),weekViewEventGroupMeApp.getEndTime().getTimeInMillis(),taskFinished,taskDescription, StaticFirebaseSettings.currentUserId);
 
                 FragmentManager fragmentManager = getSupportFragmentManager();
                 SubGroupNewTaskDialogFragment newFragment4 = new SubGroupNewTaskDialogFragment(subGroupKey,groupKey, task, true);

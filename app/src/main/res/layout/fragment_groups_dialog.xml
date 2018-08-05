@@ -33,7 +33,7 @@
         <android.support.v7.widget.Toolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
+            android:layout_height="?android:attr/actionBarSize"
             app:layout_scrollFlags="scroll"
             android:theme="@style/ThemeOverlay.AppCompat.Dark"
             >
@@ -98,6 +98,7 @@
         app:ntb_badged="true"
         app:ntb_bg_color="@color/colorAccent"
         app:ntb_typeface="@font/simplifica_font"
+        app:ntb_title_mode="all"
         android:elevation="100dp"/>
 
     <View

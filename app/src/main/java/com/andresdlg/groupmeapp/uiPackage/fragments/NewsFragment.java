@@ -139,6 +139,29 @@ public class NewsFragment extends Fragment {
         rvPosts.setDrawingCacheEnabled(true);
         rvPosts.setDrawingCacheQuality(View.DRAWING_CACHE_QUALITY_HIGH);
 
+        rvPosts.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+                if(newState == RecyclerView.SCROLL_STATE_IDLE){
+                    if(llm.findLastCompletelyVisibleItemPosition() != posts.size()-1){
+                        fabFilter.show();
+                        if(selectedItems.length > 0){
+                            fabClear.show();
+                        }
+                    }
+                }
+                super.onScrollStateChanged(recyclerView, newState);
+            }
+
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                if(dy > 0 || dx < 0 && fabFilter.isShown()){
+                    fabClear.hide();
+                    fabFilter.hide();
+                }
+            }
+        });
+
         groupsRef = FirebaseDatabase.getInstance().getReference("Groups");
 
         return view;

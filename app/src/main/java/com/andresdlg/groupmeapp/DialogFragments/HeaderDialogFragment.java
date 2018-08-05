@@ -75,6 +75,7 @@ public class HeaderDialogFragment extends DialogFragment implements GroupAddMemb
     GroupType type;
     String parentGroupKey;
     private OnSaveGroupListener mOnSaveGroupListener;
+    private boolean isAlreadySaved;
 
     public HeaderDialogFragment(GroupType type){
         setRetainInstance(true);
@@ -91,6 +92,8 @@ public class HeaderDialogFragment extends DialogFragment implements GroupAddMemb
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_groups_dialog, container, false);
+
+        isAlreadySaved = false;
 
         userIds = new ArrayList<>();
 
@@ -171,7 +174,7 @@ public class HeaderDialogFragment extends DialogFragment implements GroupAddMemb
         navigationTabBar.setInactiveColor(getResources().getColor(R.color.cardview_dark_background));
         navigationTabBar.setIsSwiped(true);
         navigationTabBar.setIsTitled(true);
-        navigationTabBar.setTitleMode(NavigationTabBar.TitleMode.ACTIVE);
+        //navigationTabBar.setTitleMode(NavigationTabBar.TitleMode.ACTIVE);
         navigationTabBar.setTypeface("@font/simplifica_font");
         navigationTabBar.setTitleSize(25);
         navigationTabBar.setIconSizeFraction((float) 0.5);
@@ -203,7 +206,8 @@ public class HeaderDialogFragment extends DialogFragment implements GroupAddMemb
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if(type == GroupType.GROUP){
-            Fragment fragment = getFragmentManager().getFragments().get(1);
+            //Fragment fragment = getFragmentManager().getFragments().get(1);
+            Fragment fragment = getFragmentManager().getFragments().get(0);
             onAttachToParentFragment(fragment);
         }
     }
@@ -346,7 +350,7 @@ public class HeaderDialogFragment extends DialogFragment implements GroupAddMemb
         mGroupsDatabase.child(parentGroupKey).child("subgroups").child(subGroupKey).setValue(map).addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void aVoid) {
-                Toast.makeText(getContext(),"Subgrupo guardado",Toast.LENGTH_SHORT).show();
+                //Toast.makeText(getContext(),"Subgrupo guardado",Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -360,7 +364,7 @@ public class HeaderDialogFragment extends DialogFragment implements GroupAddMemb
                 mUsersDatabase.child(id).child("groups").child(parentGroupKey).child("subgroups").child(subGroupKey).updateChildren(map2).addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
-                        Toast.makeText(getContext(),"Subgrupo guardado en "+id,Toast.LENGTH_SHORT).show();
+                        //Toast.makeText(getContext(),"Subgrupo guardado en "+id,Toast.LENGTH_SHORT).show();
                     }
                 });
 
@@ -415,7 +419,7 @@ public class HeaderDialogFragment extends DialogFragment implements GroupAddMemb
                 mUsersDatabase.child(id).child("groups").child(groupKey).updateChildren(map2).addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
-                        Toast.makeText(getContext(),"Grupo guardado en "+id,Toast.LENGTH_SHORT).show();
+                        //Toast.makeText(getContext(),"Grupo guardado en "+id,Toast.LENGTH_SHORT).show();
                     }
                 });
 
@@ -446,7 +450,7 @@ public class HeaderDialogFragment extends DialogFragment implements GroupAddMemb
         mUsersDatabase.child(StaticFirebaseSettings.currentUserId).child("groups").child(groupKey).updateChildren(map2).addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void aVoid) {
-                Toast.makeText(getContext(),"Grupo guardado en "+StaticFirebaseSettings.currentUserId,Toast.LENGTH_SHORT).show();
+                //Toast.makeText(getContext(),"Grupo guardado en "+StaticFirebaseSettings.currentUserId,Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -501,9 +505,12 @@ public class HeaderDialogFragment extends DialogFragment implements GroupAddMemb
                                                     map.put(id,Roles.MEMBER);
                                                 }
                                             }
-                                            createGroupData(finalGroupKey,nameText.getText().toString(),objetiveText.getText().toString(),map);
+                                            if(!isAlreadySaved){
+                                                createGroupData(finalGroupKey,nameText.getText().toString(),objetiveText.getText().toString(),map);
+                                                mOnSaveGroupListener.onSavedGroup(true);
+                                            }
+                                            isAlreadySaved = true;
                                             mProgressBar.setVisibility(View.INVISIBLE);
-                                            mOnSaveGroupListener.onSavedGroup(true);
                                             dismiss();
                                         }
                                     });
@@ -524,9 +531,12 @@ public class HeaderDialogFragment extends DialogFragment implements GroupAddMemb
                                                     map.put(id,Roles.MEMBER);
                                                 }
                                             }
-                                            createGroupData(finalGroupKey1,nameText.getText().toString(),objetiveText.getText().toString(),map);
+                                            if(!isAlreadySaved) {
+                                                createGroupData(finalGroupKey1, nameText.getText().toString(), objetiveText.getText().toString(), map);
+                                                mOnSaveGroupListener.onSavedGroup(true);
+                                            }
                                             mProgressBar.setVisibility(View.INVISIBLE);
-                                            mOnSaveGroupListener.onSavedGroup(true);
+                                            isAlreadySaved = true;
                                             dismiss();
                                         }
                                     });

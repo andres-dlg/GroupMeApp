@@ -64,6 +64,8 @@ public class SearchContactActivity extends AppCompatActivity {
 
     Map<String, String> members;
 
+    Map<String, String> userIdsWithStatus;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -88,6 +90,8 @@ public class SearchContactActivity extends AppCompatActivity {
             members = ((FireApp) this.getApplication()).getMembers();
         }
 
+        userIdsWithStatus = new HashMap<>();
+
         //RECYCLERVIEW INITIALIZATION
         rvAddGroupMember = findViewById(R.id.rvAddGroupMember);
         rvAddGroupMember.setHasFixedSize(true);
@@ -99,7 +103,7 @@ public class SearchContactActivity extends AppCompatActivity {
         llm.setOrientation(LinearLayoutManager.VERTICAL);
         rvAddGroupMember.setLayoutManager(llm);
 
-        rvSearchContactAdapter = new RVSearchContactAdapter(users,this,null);
+        rvSearchContactAdapter = new RVSearchContactAdapter(users,this,null, groupKey, userIdsWithStatus);
         rvAddGroupMember.setAdapter(rvSearchContactAdapter);
 
         SearchView searchView = findViewById(R.id.toolbar);
@@ -142,8 +146,6 @@ public class SearchContactActivity extends AppCompatActivity {
     }
 
     private void sendInvitations() {
-
-
 
         List<String> selectedMembersId = rvSearchContactAdapter.getSelectedIds();
 
@@ -264,20 +266,18 @@ public class SearchContactActivity extends AppCompatActivity {
                 }
             });
         }else{
-
             for(Users groupUser : groupUsers){
-                boolean isInGroupButAndInSubgroup = false;
+                boolean isInGroupButNoInSubgroup = false;
                 for(Map.Entry<String, String> entry : members.entrySet()) {
                     String memberId = entry.getKey();
                     if(memberId.equals(groupUser.getUserid())){
-                        isInGroupButAndInSubgroup = true;
+                        isInGroupButNoInSubgroup = true;
                     }
                 }
-                if(!isInGroupButAndInSubgroup){
+                if(!isInGroupButNoInSubgroup){
                     users.add(groupUser);
                 }
             }
-            //users.addAll(groupUsers);
         }
 
 
@@ -291,8 +291,17 @@ public class SearchContactActivity extends AppCompatActivity {
                 Users u = dataSnapshot.getValue(Users.class);
                 if(!users.contains(u) && !validateExistingMembers(u)){
                     users.add(u);
+
+
+                    String status = null ;
+
+                    if(dataSnapshot.child("groups").child(groupKey).child("status").getValue() != null){
+                        status = dataSnapshot.child("groups").child(groupKey).child("status").getValue().toString();
+                    }
+
+                    userIdsWithStatus.put(u.getUserid(),status);
+
                     rvSearchContactAdapter.notifyDataSetChanged();
-                    //rvSearchContactAdapter.setUsers(users);
                 }
             }
 
@@ -347,6 +356,6 @@ public class SearchContactActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        ((FireApp) this.getApplication()).setMembers(null);
+        //((FireApp) this.getApplication()).setMembers(null);
     }
 }

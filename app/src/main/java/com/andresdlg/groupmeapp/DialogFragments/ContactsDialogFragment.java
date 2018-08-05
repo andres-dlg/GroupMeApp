@@ -109,7 +109,7 @@ public class ContactsDialogFragment extends DialogFragment implements FriendRequ
         navigationTabBar.setInactiveColor(getResources().getColor(R.color.cardview_dark_background));
         navigationTabBar.setIsSwiped(true);
         navigationTabBar.setIsTitled(true);
-        navigationTabBar.setTitleMode(NavigationTabBar.TitleMode.ACTIVE);
+        //navigationTabBar.setTitleMode(NavigationTabBar.TitleMode.ACTIVE);
         //navigationTabBar.setTypeface(customFont);
         navigationTabBar.setTitleSize(10 * getResources().getDisplayMetrics().density);
         navigationTabBar.setIconSizeFraction((float) 0.5);

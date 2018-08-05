@@ -8,8 +8,10 @@ import android.os.Bundle;
 import android.speech.RecognizerIntent;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.util.Pair;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -25,6 +27,8 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ImageButton;
+import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -35,6 +39,7 @@ import com.andresdlg.groupmeapp.Utils.NotificationStatus;
 import com.andresdlg.groupmeapp.Utils.NotificationTypes;
 import com.andresdlg.groupmeapp.firebasePackage.FilterableFirebaseArray;
 import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
+import com.andresdlg.groupmeapp.uiPackage.UserProfileSetupActivity;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.DataSource;
 import com.bumptech.glide.load.engine.GlideException;
@@ -73,8 +78,10 @@ public class AddFriendsDialogFragment extends DialogFragment {
     RecyclerView rvContactsResult;
     DatabaseReference mUserDatabase;
     TextView tvSearchUsers;
+    ProgressBar progressBar;
 
     List<String> results;
+    private boolean isSeaching;
 
     public AddFriendsDialogFragment(){
         setRetainInstance(true);
@@ -85,6 +92,8 @@ public class AddFriendsDialogFragment extends DialogFragment {
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.activity_main_add_friends_dialog, container, false);
 
+        progressBar = view.findViewById(R.id.progressBar);
+
         tvSearchUsers = view.findViewById(R.id.tvSearchUsers);
 
         results = new ArrayList<>();
@@ -93,7 +102,7 @@ public class AddFriendsDialogFragment extends DialogFragment {
 
         //TOOLBAR INITIALIZATION
         Toolbar toolbar = view.findViewById(R.id.toolbar);
-        toolbar.setTitle("Buscar por alias");
+        toolbar.setTitle("Buscar por nombre o alias");
         toolbar.setTitleTextColor(getResources().getColor(R.color.colorAccent));
 
         assert (getActivity()) != null;
@@ -116,7 +125,7 @@ public class AddFriendsDialogFragment extends DialogFragment {
         searchView.setVoiceSearch(true);
         searchView.setCursorDrawable(R.drawable.color_cursor_white);
 
-        FirebaseDatabase.getInstance().getReference("Users").addListenerForSingleValueEvent(new ValueEventListener() {
+        /*FirebaseDatabase.getInstance().getReference("Users").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 for(DataSnapshot data : dataSnapshot.getChildren()){
@@ -135,7 +144,7 @@ public class AddFriendsDialogFragment extends DialogFragment {
             public void onCancelled(DatabaseError databaseError) {
 
             }
-        });
+        });*/
 
         searchView.setHint("Buscar");
         searchView.setOnQueryTextListener(new MaterialSearchView.OnQueryTextListener() {
@@ -147,10 +156,14 @@ public class AddFriendsDialogFragment extends DialogFragment {
 
             @Override
             public boolean onQueryTextChange(final String newText) {
-                if(newText.length() > 0){
+                if(newText.length() > 0 ){
                     tvSearchUsers.setVisibility(View.GONE);
                 }else{
-                    tvSearchUsers.setVisibility(View.VISIBLE);
+                    if(rvContactsResult.getChildCount() == 0){
+                        if(!isSeaching){
+                            tvSearchUsers.setVisibility(View.VISIBLE);
+                        }
+                    }
                 }
                 //Do some magic
                 return false;
@@ -243,22 +256,37 @@ public class AddFriendsDialogFragment extends DialogFragment {
 
 
     private void firebaseUserSearch(final String query){
-
         //La query funciona bien
-        final Query firebaseQuery = mUserDatabase.orderByChild("alias")
-                                           .startAt(query)
-                                           .endAt(query + "\uf8ff")
-                                           .limitToFirst(100);
+        tvSearchUsers.setVisibility(View.GONE);
+        progressBar.setVisibility(View.VISIBLE);
+        isSeaching = true;
+
+        final Query firebaseQuery;
+        if(query.charAt(0) == '@'){
+            firebaseQuery = mUserDatabase.orderByChild("alias")
+                    .startAt(query.substring(1))
+                    .endAt(query.substring(1) + "\uf8ff")
+                    .limitToFirst(100);
+        }else{
+            firebaseQuery = mUserDatabase.orderByChild("lowerCaseName")
+                    .startAt(query)
+                    .endAt(query + "\uf8ff")
+                    .limitToFirst(100);
+        }
 
         //Esto es para esconder o no el textview
-        firebaseQuery.addListenerForSingleValueEvent(new ValueEventListener() {
+        firebaseQuery.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
+                progressBar.setVisibility(View.GONE);
+                isSeaching = false;
                 if(dataSnapshot.hasChildren()){
                     tvSearchUsers.setVisibility(View.GONE);
                 }else {
-                    tvSearchUsers.setVisibility(View.VISIBLE);
-                    tvSearchUsers.setText(String.format("No se encontraron contactos para la búsqueda: \"%s\"", query));
+                    if(rvContactsResult.getChildCount() == 0){
+                        tvSearchUsers.setVisibility(View.VISIBLE);
+                        tvSearchUsers.setText(String.format("No se encontraron contactos para la búsqueda: \"%s\"", query));
+                    }
                 }
             }
 
@@ -309,10 +337,11 @@ public class AddFriendsDialogFragment extends DialogFragment {
             mContactAdd = mView.findViewById(R.id.btn_add_contact);
         }
 
-        void setDetails(final Context context, String contactName, final String contactAlias, final String contactPhoto, String id){
+        void setDetails(final Context context, String contactName, final String contactAlias, final String contactPhoto, final String id){
             final CircleImageView mContactPhoto = mView.findViewById(R.id.contact_photo);
             TextView mContactName = mView.findViewById(R.id.contact_name);
             TextView mContactAlias = mView.findViewById(R.id.contact_alias);
+            RelativeLayout rl = mView.findViewById(R.id.rl);
 
             //Reviso si ya se envio la solicitud al usuario. En ese caso cambio el icono y deshabilito envio
             wasSent(id, context);
@@ -322,6 +351,18 @@ public class AddFriendsDialogFragment extends DialogFragment {
 
             mContactName.setText(contactName);
             mContactName.setSelected(true);
+
+            rl.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent userProfileIntent = new Intent(context, UserProfileSetupActivity.class);
+                    userProfileIntent.putExtra("iduser",id);
+                    Pair<View, String> p1 = Pair.create((View)mContactPhoto, "userPhoto");
+                    ActivityOptionsCompat options = ActivityOptionsCompat.
+                            makeSceneTransitionAnimation((AppCompatActivity)context, p1);
+                    context.startActivity(userProfileIntent, options.toBundle());
+                }
+            });
 
             Glide.with(context)
                     .load(contactPhoto)

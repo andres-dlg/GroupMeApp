@@ -115,19 +115,21 @@ public class RVMessageAdapter extends RecyclerView.Adapter<RVMessageAdapter.Mess
                 userValueEventListener = new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
-                        Users u = dataSnapshot.getValue(Users.class);
-                        messageViewHolder.userAlias.setText(String.format("@%s", u.getAlias()));
-                        messageViewHolder.setPhoto(context, u.getImageURL());
-                        messageViewHolder.messageText.setText(conversations.get(position).getMessage().getText());
+                        if(conversations.size() > 0){
+                            Users u = dataSnapshot.getValue(Users.class);
+                            messageViewHolder.userAlias.setText(String.format("@%s", u.getAlias()));
+                            messageViewHolder.setPhoto(context, u.getImageURL());
+                            messageViewHolder.messageText.setText(conversations.get(position).getMessage().getText());
 
-                        Calendar calendar = Calendar.getInstance();
-                        calendar.setTimeInMillis(conversations.get(position).getMessage().getTimestamp());
-                        String date = prettyTime.format(calendar);
-                        messageViewHolder.messageDate.setText(date);
+                            Calendar calendar = Calendar.getInstance();
+                            calendar.setTimeInMillis(conversations.get(position).getMessage().getTimestamp());
+                            String date = prettyTime.format(calendar);
+                            messageViewHolder.messageDate.setText(date);
 
-                        messageViewHolder.setNewMessageIndicator(conversations.get(position));
-                        //removeUsersListener();
-                        //removeConversationListener();
+                            messageViewHolder.setNewMessageIndicator(conversations.get(position));
+                            //removeUsersListener();
+                            //removeConversationListener();
+                        }
                     }
 
                     @Override

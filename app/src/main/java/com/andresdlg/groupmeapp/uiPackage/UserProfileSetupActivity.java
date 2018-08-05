@@ -6,6 +6,7 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Paint;
+import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
@@ -15,14 +16,16 @@ import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.TextInputLayout;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.CardView;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.LinearLayout;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 import com.andresdlg.groupmeapp.Entities.Users;
@@ -42,6 +45,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
@@ -53,25 +57,32 @@ import de.hdodenhof.circleimageview.CircleImageView;
 public class UserProfileSetupActivity extends AppCompatActivity {
 
     //FIELDS DECLARATION
-    CircleImageView mBack;
+    ImageButton mBack;
     CircleImageView mCircleImageView;
     AutoCompleteTextView mAlias;
     EditText mName;
     AutoCompleteTextView mJob;
+    AutoCompleteTextView mPhone;
     Button mSaveButton;
     TextView mLater;
     Uri mCropImageUri;
     TextInputLayout mTextInputAlias;
     TextInputLayout mTextInputJob;
-    LinearLayout mMetricsLinearLayout;
+    TextInputLayout mTextInputPhone;
+    CardView mMetricsLinearLayout;
     TextView mGroupQuantity;
     TextView mSubGroupQuantity;
+    TextView mTasksQuantity;
+    TextView mCompletedTasksQuantity;
+    ImageButton mEdit;
+    ImageButton mCall;
 
     //FIREBASE AUTHENTICATION FIELDS
     FirebaseAuth mAuth;
 
     //FIREBASE DATABASE FIELDS
     DatabaseReference mUserDatabase;
+    DatabaseReference mGroupsRef;
     StorageReference mStorageReference;
 
     //FIREBASE STORAGE FIELDS
@@ -90,6 +101,10 @@ public class UserProfileSetupActivity extends AppCompatActivity {
     boolean exists = false;
     boolean imageSetted = false;
     boolean yaPasoPorAca = false;
+    boolean editMode = false;
+
+    int cantidadTareas;
+    int cantidadTareasCompletadas;
 
     String iduser;
     Users u;
@@ -101,6 +116,9 @@ public class UserProfileSetupActivity extends AppCompatActivity {
 
         /*getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);*/
+
+        cantidadTareas = 0;
+        cantidadTareasCompletadas = 0;
 
         iduser = getIntent().getStringExtra("iduser");
 
@@ -129,11 +147,29 @@ public class UserProfileSetupActivity extends AppCompatActivity {
 
         mJob =  findViewById(R.id.job);
 
-        mMetricsLinearLayout = findViewById(R.id.metricsLlo);
+        mTextInputPhone = findViewById(R.id.til3);
+
+        mPhone = findViewById(R.id.phone);
+
+        mMetricsLinearLayout = findViewById(R.id.statsCv);
 
         mGroupQuantity = findViewById(R.id.groupQuantityNumber);
 
         mSubGroupQuantity = findViewById(R.id.subgroupQuantityNumber);
+
+        mTasksQuantity = findViewById(R.id.taskQuantityNumber);
+
+        mCompletedTasksQuantity = findViewById(R.id.completedTasksQuantityNumber);
+
+        mEdit = findViewById(R.id.edit);
+
+        mCall = findViewById(R.id.callBtn);
+        mCall.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialContactPhone(mPhone.getText().toString().trim());
+            }
+        });
 
         mSaveButton = findViewById(R.id.save);
         mLater = findViewById(R.id.later);
@@ -151,6 +187,7 @@ public class UserProfileSetupActivity extends AppCompatActivity {
             mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Users").child(mAuth.getCurrentUser().getUid());
         }else {
             mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Users").child(iduser);
+            mGroupsRef = FirebaseDatabase.getInstance().getReference().child("Groups");
         }
 
         mStorageReference = FirebaseStorage.getInstance().getReference();
@@ -177,17 +214,46 @@ public class UserProfileSetupActivity extends AppCompatActivity {
             }
         });
 
+        //Si iduser es null es porque entra a configurar el perfil por primera vez
         if(iduser != null){
 
             getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
 
+            mTextInputAlias.setEnabled(false);
+            mTextInputJob.setEnabled(false);
+            mTextInputPhone.setEnabled(false);
+            //mJob.setEnabled(false);
+            //mPhone.setEnabled(false);
+
             if(!iduser.equals(StaticFirebaseSettings.currentUserId)){
                 mSaveButton.setVisibility(View.GONE);
                 fab.setVisibility(View.GONE);
-                mTextInputAlias.setEnabled(false);
-                mTextInputJob.setEnabled(false);
-                mJob.setEnabled(false);
                 mName.setEnabled(false);
+            }else{
+                mEdit.setVisibility(View.VISIBLE);
+                mEdit.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        if(!editMode){
+                            mTextInputAlias.setEnabled(true);
+                            mTextInputJob.setEnabled(true);
+                            mTextInputPhone.setEnabled(true);
+                            //mJob.setEnabled(true);
+
+                            Drawable i = getResources().getDrawable(R.drawable.check_green);
+                            mEdit.setImageDrawable(i);
+                        }else{
+                            mTextInputAlias.setEnabled(false);
+                            mTextInputJob.setEnabled(false);
+                            mTextInputPhone.setEnabled(false);
+                            //mJob.setEnabled(false);
+
+                            Drawable i = getResources().getDrawable(R.drawable.ic_pen_black_24dp);
+                            mEdit.setImageDrawable(i);
+                        }
+                        editMode = !editMode;
+                    }
+                });
             }
             setUserData();
         }else{
@@ -196,31 +262,45 @@ public class UserProfileSetupActivity extends AppCompatActivity {
 
     }
 
+    private void dialContactPhone(String phoneNumber) {
+        startActivity(new Intent(Intent.ACTION_DIAL, Uri.fromParts("tel", phoneNumber, null)));
+    }
+
     private void setUserData() {
 
         mUserDatabase.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
 
+                //PARA LAS ESTADISTICAS
                 int groupQuantity = (int)dataSnapshot.child("groups").getChildrenCount();
                 mGroupQuantity.setText(String.valueOf(groupQuantity));
 
                 int subgroupQuantity = 0;
-                for(DataSnapshot data : dataSnapshot.child("groups").getChildren()){
-                    subgroupQuantity += (int)data.child("subgroups").getChildrenCount();
+                for(DataSnapshot groupDataSnapshot : dataSnapshot.child("groups").getChildren()){
+
+                    for(DataSnapshot subGroupDataSnapshot : groupDataSnapshot.child("subgroups").getChildren()){
+                        getTasksStats(groupDataSnapshot.getKey(),subGroupDataSnapshot.getKey());
+                    }
+
+                    subgroupQuantity += (int)groupDataSnapshot.child("subgroups").getChildrenCount();
                 }
                 mSubGroupQuantity.setText(String.valueOf(subgroupQuantity));
-
 
                 u = dataSnapshot.getValue(Users.class);
                 mName.setText(u.getName());
                 mAlias.setText(u.getAlias());
                 mJob.setText(u.getJob());
-                supportPostponeEnterTransition();
-                RequestOptions requestOptions = new RequestOptions().dontAnimate();
+                mPhone.setText(u.getPhone());
+
+                if(!TextUtils.isEmpty(mPhone.getText().toString().trim()) && !u.getUserid().equals(StaticFirebaseSettings.currentUserId)){
+                    mCall.setVisibility(View.VISIBLE);
+                }
+                //supportPostponeEnterTransition();
+                //RequestOptions requestOptions = new RequestOptions().dontAnimate();
                 Glide.with(UserProfileSetupActivity.this)
                         .load(u.getImageURL())
-                        .apply(requestOptions)
+                        //.apply(requestOptions)
                         .listener(new RequestListener<Drawable>() {
                             @Override
                             public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
@@ -242,6 +322,31 @@ public class UserProfileSetupActivity extends AppCompatActivity {
                         new PhotoFullPopupWindow(UserProfileSetupActivity.this, R.layout.popup_photo_full, mCircleImageView, u.getImageURL(), null);
                     }
                 });
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
+    }
+
+    private void getTasksStats(String groupKey, final String subGroupKey) {
+
+        mGroupsRef.child(groupKey).child("subgroups").child(subGroupKey).child("tasks").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                cantidadTareas += (int)dataSnapshot.getChildrenCount();
+
+                for(DataSnapshot taskDataSnapshot : dataSnapshot.getChildren()){
+                    if((boolean)taskDataSnapshot.child("finished").getValue()){
+                        cantidadTareasCompletadas += 1;
+                    }
+                }
+
+                mCompletedTasksQuantity.setText(String.valueOf(cantidadTareasCompletadas));
+                mTasksQuantity.setText(String.valueOf(cantidadTareas));
             }
 
             @Override
@@ -298,27 +403,33 @@ public class UserProfileSetupActivity extends AppCompatActivity {
     }
 
     private void saveUserProfile() {
-        final String alias, userName, job;
+        final String alias, userName, job, phone;
         alias = mAlias.getText().toString().trim();
         userName = mName.getText().toString().trim();
         job = mJob.getText().toString().trim();
+        phone = mPhone.getText().toString().trim();
 
         pass = false;
         View focusView;
 
-        if (TextUtils.isEmpty(alias)) {
-            mAlias.setError("Este campo es necesario");
-            focusView = mAlias;
-            focusView.requestFocus();
-            pass = true;
-        }if (TextUtils.isEmpty(userName)) {
+        if (TextUtils.isEmpty(userName)) {
             mName.setError("Este campo es necesario");
             focusView = mName;
+            focusView.requestFocus();
+            pass = true;
+        }else if (TextUtils.isEmpty(alias)) {
+            mAlias.setError("Este campo es necesario");
+            focusView = mAlias;
             focusView.requestFocus();
             pass = true;
         }else if(!isAliasValid(alias)){
             mAlias.setError("Sin espacios ni caracteres especiales");
             focusView = mAlias;
+            focusView.requestFocus();
+            pass = true;
+        }else if(!isValidPhone(phone)){
+            mPhone.setError("Formato de teléfono inválido");
+            focusView = mPhone;
             focusView.requestFocus();
             pass = true;
         }
@@ -371,7 +482,7 @@ public class UserProfileSetupActivity extends AppCompatActivity {
                                 public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                                     imageHoldUri = taskSnapshot.getDownloadUrl();
                                     mProgress.dismiss();
-                                    createUserData(alias,userName,job);
+                                    createUserData(alias,userName,job,phone);
                                 }
                             });
                         }else{
@@ -381,7 +492,7 @@ public class UserProfileSetupActivity extends AppCompatActivity {
                                 imageHoldUri = Uri.parse(u.getImageURL());
                             }
                             mProgress.dismiss();
-                            createUserData(alias,userName,job);
+                            createUserData(alias,userName,job,phone);
                         }
                     }else{
                         View focusView;
@@ -399,10 +510,12 @@ public class UserProfileSetupActivity extends AppCompatActivity {
         }
     }
 
-    private void createUserData(String alias,String userName,String job) {
-        mUserDatabase.child("alias").setValue(alias);
+    private void createUserData(String alias,String userName,String job, String phone) {
+        mUserDatabase.child("alias").setValue(alias.toLowerCase());
         mUserDatabase.child("name").setValue(userName);
+        mUserDatabase.child("lowerCaseName").setValue(userName.toLowerCase()); //para busquedas
         mUserDatabase.child("job").setValue(job);
+        mUserDatabase.child("phone").setValue(phone);
         mUserDatabase.child("userid").setValue(mAuth.getCurrentUser().getUid());
         mUserDatabase.child("imageUrl").setValue(imageHoldUri.toString());
 
@@ -436,7 +549,16 @@ public class UserProfileSetupActivity extends AppCompatActivity {
     }
 
     private boolean isAliasValid(String alias) {
-        return alias.matches("[A-Za-z]*");
+        return alias.matches("[A-Za-z0-9]*");
+    }
+
+    public boolean isValidPhone(CharSequence phone) {
+        if (TextUtils.isEmpty(phone)) {
+            //return false;
+            return true;
+        } else {
+            return android.util.Patterns.PHONE.matcher(phone).matches();
+        }
     }
 
     @Override
