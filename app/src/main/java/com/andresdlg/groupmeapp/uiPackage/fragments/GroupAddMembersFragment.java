@@ -249,7 +249,7 @@ public class GroupAddMembersFragment extends Fragment implements RVSearchContact
     }
 
     public interface OnUserSelectionSetListener{
-        public void onUserSelectionSet(List<String> userIds);
+        void onUserSelectionSet(List<String> userIds);
     }
 
     public void onAttachToParentFragment(Fragment fragment){
@@ -257,7 +257,8 @@ public class GroupAddMembersFragment extends Fragment implements RVSearchContact
             mOnUserSelectionSetListener = (OnUserSelectionSetListener) fragment;
         }
         catch (ClassCastException e){
-            throw new ClassCastException(fragment.toString() + " must implement OnUserSelectionSetListener");
+            throw new ClassCastException(e.getMessage());
+            //throw new ClassCastException(fragment.toString() + " must implement OnUserSelectionSetListener");
         }
     }
 

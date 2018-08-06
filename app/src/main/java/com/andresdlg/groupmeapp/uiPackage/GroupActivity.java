@@ -8,7 +8,6 @@ import android.os.Handler;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.app.DialogFragment;
-import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
@@ -26,12 +25,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
 import android.view.animation.DecelerateInterpolator;
 import android.view.animation.Transformation;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.alamkanak.weekview.WeekViewEvent;
 import com.andresdlg.groupmeapp.DialogFragments.HeaderDialogFragment;
@@ -62,7 +59,6 @@ import com.ogaclejapan.smarttablayout.utils.v4.FragmentPagerItemAdapter;
 import com.ogaclejapan.smarttablayout.utils.v4.FragmentPagerItems;
 import com.takusemba.spotlight.OnSpotlightStateChangedListener;
 import com.takusemba.spotlight.Spotlight;
-import com.takusemba.spotlight.shape.Circle;
 import com.takusemba.spotlight.target.SimpleTarget;
 import com.wangjie.rapidfloatingactionbutton.RapidFloatingActionButton;
 import com.wangjie.rapidfloatingactionbutton.RapidFloatingActionHelper;
@@ -106,8 +102,6 @@ public class GroupActivity extends AppCompatActivity implements GroupChatFragmen
     private RapidFloatingActionLayout rfaLayout;
     private RapidFloatingActionButton rfaBtn;
     Animation fadeIn;
-    Animation fadeOut;
-
 
     String groupName;
     String groupPhotoUrl;
@@ -935,9 +929,12 @@ public class GroupActivity extends AppCompatActivity implements GroupChatFragmen
 
                     }
                 };
-
                 subGroupsRef.addValueEventListener(subGroupsValueEventListener);
                 break;
+            case 4:
+                Intent meetingsIntent = new Intent(this,MeetingsActivity.class);
+                meetingsIntent.putExtra("groupKey",groupKey);
+                startActivity(meetingsIntent);
         }
 
         //Toast.makeText(this, "clicked label: " + position, Toast.LENGTH_SHORT).show();
@@ -957,12 +954,6 @@ public class GroupActivity extends AppCompatActivity implements GroupChatFragmen
         fadeIn.setDuration(300);
         fadeIn.setFillEnabled(true);
         fadeIn.setFillAfter(true);
-
-        fadeOut = new AlphaAnimation(1, 0);
-        fadeOut.setInterpolator(new DecelerateInterpolator()); //add this
-        fadeOut.setDuration(300);
-        fadeOut.setFillEnabled(true);
-        fadeOut.setFillAfter(true);
     }
 
     private void showHeaderDialogFragment() {

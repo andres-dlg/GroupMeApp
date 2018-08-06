@@ -84,6 +84,12 @@
         <item name="android:background">@android:color/white</item>
     </style>
 
+    <style name="datepicker" parent="Theme.AppCompat.Light.Dialog">
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/celestito</item>
+    </style>
+
 
     <style name="MaterialSearchViewStyle">
         <!-- Background for the search bar-->

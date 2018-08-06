@@ -1,12 +1,13 @@
 package com.andresdlg.groupmeapp.DialogFragments;
 
 import android.annotation.SuppressLint;
-import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.DialogFragment;
+import android.support.v4.view.ViewPager;
 import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -16,48 +17,43 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.DatePicker;
 import android.widget.EditText;
-import android.widget.LinearLayout;
-import android.widget.Toast;
 
-import com.andresdlg.groupmeapp.Entities.Task;
+import com.andresdlg.groupmeapp.Entities.Meeting;
 import com.andresdlg.groupmeapp.R;
-import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
+import com.andresdlg.groupmeapp.uiPackage.fragments.GroupAddMembersFragment;
+import com.andresdlg.groupmeapp.uiPackage.fragments.MeetingSetupFragment;
+import com.ogaclejapan.smarttablayout.utils.v4.FragmentPagerItemAdapter;
+import com.ogaclejapan.smarttablayout.utils.v4.FragmentPagerItems;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
+
+import devlight.io.library.ntb.NavigationTabBar;
 
 /**
  * Created by andresdlg on 15/04/18.
  */
 
-public class SubGroupNewTaskDialogFragment extends DialogFragment {
+public class NewMeetingDialogFragment extends DialogFragment implements GroupAddMembersFragment.OnUserSelectionSetListener{
 
     final int MODE_START_DATE = 1;
     final int MODE_END_DATE = 2;
     final int INSERT = 3;
     final int UPDATE = 4;
 
-    private String subGroupKey;
     private String groupKey;
-    private Task task;
-    private boolean fromWeekView;
+    private Meeting meeting;
 
-    EditText taskStartDate;
-    EditText taskEndDate;
-    EditText taskFinished;
-    EditText subgroupName;
-    EditText taskDecription;
-    EditText taskName;
+    EditText meetingStartDate;
+    EditText meetingStartTime;
+    EditText meetingEndDate;
+    EditText meetingEndTime;
+    EditText meetingFinished;
+    EditText meetingDetails;
+    EditText meetingTitle;
 
     Calendar startDateCalendar;
     Calendar endDateCalendar;
@@ -65,22 +61,13 @@ public class SubGroupNewTaskDialogFragment extends DialogFragment {
     int dateMode;
     int databaseMode;
 
-    public SubGroupNewTaskDialogFragment(String subGroupKey, String groupKey) {
-        this.subGroupKey = subGroupKey;
+    public NewMeetingDialogFragment(String groupKey) {
         this.groupKey = groupKey;
     }
 
-    public SubGroupNewTaskDialogFragment(String subGroupKey, String groupKey, Task task) {
-        this.subGroupKey = subGroupKey;
+    public NewMeetingDialogFragment(String groupKey, Meeting meeting) {
         this.groupKey = groupKey;
-        this.task = task;
-    }
-
-    public SubGroupNewTaskDialogFragment(String subGroupKey, String groupKey, Task task, boolean fromWeekView) {
-        this.subGroupKey = subGroupKey;
-        this.groupKey = groupKey;
-        this.task = task;
-        this.fromWeekView = fromWeekView;
+        this.meeting = meeting;
     }
 
     @Override
@@ -92,9 +79,83 @@ public class SubGroupNewTaskDialogFragment extends DialogFragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        final View v;
-        if(fromWeekView){
-            v = inflater.inflate(R.layout.fragment_subgroup_task_details, container, false);
+        final View view = inflater.inflate(R.layout.activity_meetings_dialog_meeting, container, false);
+
+        Toolbar toolbar = view.findViewById(R.id.toolbar_chats);
+        if(meeting != null) {
+            toolbar.setTitle("Detalles de la reunion");
+            toolbar.setSubtitle("25 invitados");
+        }else{
+            toolbar.setTitle("Nueva reunion");
+            toolbar.setSubtitle("25 invitados");
+        }
+        toolbar.inflateMenu(R.menu.fragment_subgroup_new_task);
+        if(meeting != null){
+            toolbar.getMenu().removeItem(R.id.save);
+        }else{
+            toolbar.getMenu().getItem(0).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+                @Override
+                public boolean onMenuItemClick(MenuItem item) {
+                    /*if(!taskName.getText().toString().isEmpty()){
+                        saveTask(taskName.getText().toString(),taskDecription.getText().toString());
+                    }else{
+                        Toast.makeText(getContext(), "Debe insertar un nombre para la tarea", Toast.LENGTH_SHORT).show();
+                    }*/
+                    return true;
+                }
+            });
+        }
+        toolbar.setNavigationIcon(R.drawable.ic_arrow_left_white_24dp);
+        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                dismiss();
+            }
+        });
+
+        final String[] colors = getResources().getStringArray(R.array.default_preview);
+
+        FragmentPagerItemAdapter adapter = new FragmentPagerItemAdapter(
+                getChildFragmentManager(), FragmentPagerItems.with(getContext())
+                .add("Setup", MeetingSetupFragment.class)
+                .add("Add contacts", GroupAddMembersFragment.class)
+                .create());
+
+        ViewPager viewPager = view.findViewById(R.id.viewpager);
+        viewPager.setAdapter(adapter);
+        //viewPager.setOffscreenPageLimit(2);
+
+        final NavigationTabBar navigationTabBar =  view.findViewById(R.id.ntb);
+        final ArrayList<NavigationTabBar.Model> models = new ArrayList<>();
+        models.add(
+                new NavigationTabBar.Model.Builder(
+                        getResources().getDrawable(R.drawable.pen),
+                        Color.parseColor(colors[2])
+                ).title("Editar")
+                        .badgeTitle("NTB")
+                        .build()
+        );
+        models.add(
+                new NavigationTabBar.Model.Builder(
+                        getResources().getDrawable(R.drawable.account_multiple),
+                        Color.parseColor(colors[2])
+                ).title("Invitados")
+                        .badgeTitle("with")
+                        .build()
+        );
+        navigationTabBar.setModels(models);
+        navigationTabBar.setViewPager(viewPager, 0);
+        navigationTabBar.setInactiveColor(getResources().getColor(R.color.cardview_dark_background));
+        navigationTabBar.setIsSwiped(true);
+        navigationTabBar.setIsTitled(true);
+        //navigationTabBar.setTitleMode(NavigationTabBar.TitleMode.ACTIVE);
+        navigationTabBar.setTypeface("@font/simplifica_font");
+        navigationTabBar.setTitleSize(25);
+        navigationTabBar.setIconSizeFraction((float) 0.5);
+
+
+
+        /*if(meeting != null){
 
             taskFinished = v.findViewById(R.id.task_finished);
             if(task.getFinished()){
@@ -147,11 +208,11 @@ public class SubGroupNewTaskDialogFragment extends DialogFragment {
         container = v.findViewById(R.id.container);
         if(fromWeekView){
             container.setEnabled(false);
-            taskName.setEnabled(false);
-            taskDecription.setEnabled(false);
-            taskStartDate.setEnabled(false);
-            taskEndDate.setEnabled(false);
-            taskFinished.setEnabled(false);
+            meetingName.setEnabled(false);
+            meetingDecription.setEnabled(false);
+            meetingStartDate.setEnabled(false);
+            meetingEndDate.setEnabled(false);
+            meetingFinished.setEnabled(false);
             subgroupName.setEnabled(false);
         }
 
@@ -205,12 +266,12 @@ public class SubGroupNewTaskDialogFragment extends DialogFragment {
             databaseMode = UPDATE;
         }else{
             databaseMode = INSERT;
-        }
+        }*/
 
-        return v;
+        return view;
     }
 
-    private void showDatePickerDialog(final EditText date) {
+    /*private void showDatePickerDialog(final EditText date) {
         DatePickerFragment newFragment = DatePickerFragment.newInstance(new DatePickerDialog.OnDateSetListener() {
             @Override
             public void onDateSet(DatePicker datePicker, int year, int month, int day) {
@@ -229,9 +290,9 @@ public class SubGroupNewTaskDialogFragment extends DialogFragment {
             }
         });
         newFragment.show(getActivity().getSupportFragmentManager(), "datePicker");
-    }
+    }*/
 
-    private boolean checkDateRange() {
+    /*private boolean checkDateRange() {
         if( (endDateCalendar!= null && endDateCalendar.before(startDateCalendar)) ||
                 (startDateCalendar!= null && startDateCalendar.after(endDateCalendar)) ){
             taskEndDate.setError("Rango de fechas invalido");
@@ -242,9 +303,9 @@ public class SubGroupNewTaskDialogFragment extends DialogFragment {
             taskStartDate.setError(null);
             return true;
         }
-    }
+    }*/
 
-        private void saveTask(String input, String taskDescription) {
+    /*private void saveTask(String input, String taskDescription) {
 
         long startDateInMillis = 0;
         long endDateInMillis = 0;
@@ -313,7 +374,7 @@ public class SubGroupNewTaskDialogFragment extends DialogFragment {
         }else{
             Toast.makeText(getContext(), "Revise las fechas ingresadas", Toast.LENGTH_SHORT).show();
         }
-    }
+    }*/
 
     @NonNull
     @Override
@@ -323,6 +384,11 @@ public class SubGroupNewTaskDialogFragment extends DialogFragment {
         dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
         dialog.setCanceledOnTouchOutside(false);
         return dialog;
+    }
+
+    @Override
+    public void onUserSelectionSet(List<String> userIds) {
+
     }
 
 
@@ -347,7 +413,7 @@ public class SubGroupNewTaskDialogFragment extends DialogFragment {
             int day = c.get(Calendar.DAY_OF_MONTH);
 
             // Create a new instance of DatePickerDialog and return it
-            return new DatePickerDialog(getActivity(),R.style.datepicker, listener, year, month, day);
+            return new DatePickerDialog(getActivity(), listener, year, month, day);
         }
 
 
