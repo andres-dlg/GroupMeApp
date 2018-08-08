@@ -1,7 +1,5 @@
 package com.andresdlg.groupmeapp.DialogFragments;
 
-import android.annotation.SuppressLint;
-import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -9,27 +7,32 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.view.ViewPager;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.DatePicker;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import com.andresdlg.groupmeapp.Entities.Meeting;
 import com.andresdlg.groupmeapp.R;
+import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
 import com.andresdlg.groupmeapp.uiPackage.fragments.GroupAddMembersFragment;
 import com.andresdlg.groupmeapp.uiPackage.fragments.MeetingSetupFragment;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.ogaclejapan.smarttablayout.utils.v4.FragmentPagerItemAdapter;
 import com.ogaclejapan.smarttablayout.utils.v4.FragmentPagerItems;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import devlight.io.library.ntb.NavigationTabBar;
 
@@ -37,37 +40,35 @@ import devlight.io.library.ntb.NavigationTabBar;
  * Created by andresdlg on 15/04/18.
  */
 
-public class NewMeetingDialogFragment extends DialogFragment implements GroupAddMembersFragment.OnUserSelectionSetListener{
-
-    final int MODE_START_DATE = 1;
-    final int MODE_END_DATE = 2;
-    final int INSERT = 3;
-    final int UPDATE = 4;
+public class NewMeetingDialogFragment extends DialogFragment implements GroupAddMembersFragment.OnUserSelectionSetListener, MeetingSetupFragment.OnTimeSetListener{
 
     private String groupKey;
     private Meeting meeting;
 
+    Toolbar toolbar;
     EditText meetingStartDate;
     EditText meetingStartTime;
     EditText meetingEndDate;
     EditText meetingEndTime;
-    EditText meetingFinished;
     EditText meetingDetails;
     EditText meetingTitle;
+    EditText meetingPlace;
 
-    Calendar startDateCalendar;
-    Calendar endDateCalendar;
-
-    int dateMode;
-    int databaseMode;
+    private boolean timeRangeIsOk;
+    private long startTimeInMillis;
+    private long endTimeInMillis;
+    int usersQuantity;
+    private List<String> userIds;
 
     public NewMeetingDialogFragment(String groupKey) {
         this.groupKey = groupKey;
+        usersQuantity = 0;
     }
 
     public NewMeetingDialogFragment(String groupKey, Meeting meeting) {
         this.groupKey = groupKey;
         this.meeting = meeting;
+        usersQuantity = 0;
     }
 
     @Override
@@ -81,13 +82,11 @@ public class NewMeetingDialogFragment extends DialogFragment implements GroupAdd
                              Bundle savedInstanceState) {
         final View view = inflater.inflate(R.layout.activity_meetings_dialog_meeting, container, false);
 
-        Toolbar toolbar = view.findViewById(R.id.toolbar_chats);
+        toolbar = view.findViewById(R.id.toolbar_chats);
         if(meeting != null) {
             toolbar.setTitle("Detalles de la reunion");
-            toolbar.setSubtitle("25 invitados");
         }else{
             toolbar.setTitle("Nueva reunion");
-            toolbar.setSubtitle("25 invitados");
         }
         toolbar.inflateMenu(R.menu.fragment_subgroup_new_task);
         if(meeting != null){
@@ -96,11 +95,19 @@ public class NewMeetingDialogFragment extends DialogFragment implements GroupAdd
             toolbar.getMenu().getItem(0).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
                 @Override
                 public boolean onMenuItemClick(MenuItem item) {
-                    /*if(!taskName.getText().toString().isEmpty()){
-                        saveTask(taskName.getText().toString(),taskDecription.getText().toString());
+                    View setupFragmentView = getChildFragmentManager().getFragments().get(0).getView();
+                    meetingTitle = setupFragmentView.findViewById(R.id.meeting_title);
+                    meetingStartDate = setupFragmentView.findViewById(R.id.start_date);
+                    meetingStartTime = setupFragmentView.findViewById(R.id.start_time);
+                    meetingEndDate = setupFragmentView.findViewById(R.id.end_date);
+                    meetingEndTime = setupFragmentView.findViewById(R.id.end_time);
+                    meetingDetails = setupFragmentView.findViewById(R.id.meeting_details);
+                    meetingPlace = setupFragmentView.findViewById(R.id.meeting_place);
+                    if(validateFields()){
+                        saveNewMeeting();
                     }else{
-                        Toast.makeText(getContext(), "Debe insertar un nombre para la tarea", Toast.LENGTH_SHORT).show();
-                    }*/
+                        Toast.makeText(getContext(), "Revise los datos ingresados", Toast.LENGTH_SHORT).show();
+                    }
                     return true;
                 }
             });
@@ -268,42 +275,83 @@ public class NewMeetingDialogFragment extends DialogFragment implements GroupAdd
             databaseMode = INSERT;
         }*/
 
+        /*Fragment fragment = adapter.getItem(0);
+        View setupFragmentView = fragment.getView();
+        meetingTitle = setupFragmentView.findViewById(R.id.meeting_title);
+        meetingStartDate = setupFragmentView.findViewById(R.id.start_date);
+        meetingStartTime = setupFragmentView.findViewById(R.id.start_time);
+        meetingEndDate = setupFragmentView.findViewById(R.id.end_date);
+        meetingEndTime = setupFragmentView.findViewById(R.id.end_time);*/
+
         return view;
     }
 
-    /*private void showDatePickerDialog(final EditText date) {
-        DatePickerFragment newFragment = DatePickerFragment.newInstance(new DatePickerDialog.OnDateSetListener() {
+    private void saveNewMeeting() {
+        DatabaseReference groupMeetingsRef = FirebaseDatabase
+                .getInstance()
+                .getReference("Groups")
+                .child(groupKey)
+                .child("meetings");
+
+        String meetingKey = groupMeetingsRef.push().getKey();
+
+        Map<String, Object> meetingMap = new HashMap<>();
+        meetingMap.put("meetingKey",meetingKey);
+        meetingMap.put("title",meetingTitle.getText().toString().trim());
+        meetingMap.put("startTime",startTimeInMillis);
+        meetingMap.put("endTime",endTimeInMillis);
+        meetingMap.put("details",meetingDetails.getText().toString().trim());
+        meetingMap.put("finished",false);
+        meetingMap.put("authorId", StaticFirebaseSettings.currentUserId);
+        meetingMap.put("guestsIds",userIds);
+        meetingMap.put("place",meetingPlace.getText().toString().trim());
+
+        groupMeetingsRef.child(meetingKey).setValue(meetingMap).addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
-            public void onDateSet(DatePicker datePicker, int year, int month, int day) {
-                // +1 because january is zero
-                final String selectedDate = day + " / " + (month+1) + " / " + year;
-                if(dateMode == MODE_START_DATE){
-                    startDateCalendar = Calendar.getInstance();
-                    startDateCalendar.set(year,month,day,0,0,0);
-                    checkDateRange();
-                }else{
-                    endDateCalendar = Calendar.getInstance();
-                    endDateCalendar.set(year,month,day,23,59,59);
-                    checkDateRange();
-                }
-                date.setText(selectedDate);
+            public void onSuccess(Void aVoid) {
+                Toast.makeText(getContext(), "Reunión agendada", Toast.LENGTH_SHORT).show();
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Toast.makeText(getContext(), "Error al agendar reunión", Toast.LENGTH_SHORT).show();
             }
         });
-        newFragment.show(getActivity().getSupportFragmentManager(), "datePicker");
-    }*/
 
-    /*private boolean checkDateRange() {
-        if( (endDateCalendar!= null && endDateCalendar.before(startDateCalendar)) ||
-                (startDateCalendar!= null && startDateCalendar.after(endDateCalendar)) ){
-            taskEndDate.setError("Rango de fechas invalido");
-            taskStartDate.setError("Rango de fechas invalido");
+        dismiss();
+    }
+
+    private boolean validateFields() {
+        if(meetingTitle.getText().toString().isEmpty()){
+            meetingTitle.setError("Ingrese título");
+            return false;
+        }else if(TextUtils.isEmpty(meetingStartDate.getText().toString().trim())){
+            meetingStartDate.setError("Ingrese fecha desde");
+            return false;
+        }else if(TextUtils.isEmpty(meetingStartTime.getText().toString().trim())){
+            meetingStartTime.setError("Ingrese hora desde");
+            return false;
+        }else if(TextUtils.isEmpty(meetingEndDate.getText().toString().trim())){
+            meetingEndDate.setError("Ingrese fecha hasta");
+            return false;
+        }else if(TextUtils.isEmpty(meetingEndTime.getText().toString().trim())){
+            meetingEndTime.setError("Ingrese hora hasta");
+            return false;
+        }else if(!timeRangeIsOk){
+            meetingEndDate.setError("Rango de fechas invalido");
+            meetingStartDate.setError("Rango de fechas invalido");
+            meetingStartTime.setError("Rango de fechas invalido");
+            meetingEndTime.setError("Rango de fechas invalido");
+            Toast.makeText(getContext(), "Revise el rango de fechas ingresado", Toast.LENGTH_SHORT).show();
+            return false;
+        }else if(usersQuantity == 0){
+            Toast.makeText(getContext(), "Debe haber por lo menos un invitado", Toast.LENGTH_SHORT).show();
             return false;
         }else{
-            taskEndDate.setError(null);
-            taskStartDate.setError(null);
             return true;
         }
-    }*/
+    }
+
 
     /*private void saveTask(String input, String taskDescription) {
 
@@ -388,50 +436,19 @@ public class NewMeetingDialogFragment extends DialogFragment implements GroupAdd
 
     @Override
     public void onUserSelectionSet(List<String> userIds) {
-
-    }
-
-
-    public static class DatePickerFragment extends DialogFragment
-            implements DatePickerDialog.OnDateSetListener {
-
-        private DatePickerDialog.OnDateSetListener listener;
-
-        public static DatePickerFragment newInstance(DatePickerDialog.OnDateSetListener listener) {
-            DatePickerFragment fragment = new DatePickerFragment();
-            fragment.setListener(listener);
-            return fragment;
-        }
-
-        @NonNull
-        @Override
-        public Dialog onCreateDialog(Bundle savedInstanceState) {
-            // Use the current date as the default date in the picker
-            final Calendar c = Calendar.getInstance();
-            int year = c.get(Calendar.YEAR);
-            int month = c.get(Calendar.MONTH);
-            int day = c.get(Calendar.DAY_OF_MONTH);
-
-            // Create a new instance of DatePickerDialog and return it
-            return new DatePickerDialog(getActivity(), listener, year, month, day);
-        }
-
-
-        public void setListener(DatePickerDialog.OnDateSetListener listener) {
-            this.listener = listener;
-        }
-
-        @Override
-        public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
-
+        this.userIds = userIds;
+        usersQuantity = userIds.size();
+        if(usersQuantity > 0){
+            toolbar.setSubtitle(usersQuantity + (usersQuantity == 1 ?  " invitado" : " invitados"));
+        }else {
+            toolbar.setSubtitle(null);
         }
     }
 
-    private String formatDate(long timeInMillis){
-        Date date = new Date(timeInMillis);
-        //SimpleDateFormat simpleDateFormater = new SimpleDateFormat("dd-MM-yyyy HH:mm")  ;
-        @SuppressLint("SimpleDateFormat") SimpleDateFormat simpleDateFormater = new SimpleDateFormat("dd/MM/yyyy")  ;
-        return simpleDateFormater.format(date);
+    @Override
+    public void onTimeSet(boolean timeRangeIsOk, long startTimeInMillis, long endTimeInMillis) {
+        this.timeRangeIsOk = timeRangeIsOk;
+        this.startTimeInMillis = startTimeInMillis;
+        this.endTimeInMillis = endTimeInMillis;
     }
-
 }

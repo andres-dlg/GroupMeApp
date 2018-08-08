@@ -4,22 +4,26 @@ import java.util.List;
 
 public class Meeting {
 
+    private String meetingKey;
     private String title;
     private long startTime;
-    private long entTime;
+    private long endTime;
     private String details;
     private boolean finished;
     private String authorId;
     private List<String> guestsIds;
+    private String place;
 
-    public Meeting(String title, long startTime, long entTime, String details, boolean finished, String authorId, List<String> guestsIds){
+    public Meeting(String meetingKey, String title, long startTime, long endTime, String details, boolean finished, String authorId, List<String> guestsIds, String place){
+        this.meetingKey = meetingKey;
         this.title = title;
         this.startTime = startTime;
-        this.entTime = entTime;
+        this.endTime = endTime;
         this.details = details;
         this.finished = finished;
         this.authorId = authorId;
         this.guestsIds = guestsIds;
+        this.place = place;
     }
 
     public String getDetails() {
@@ -30,12 +34,12 @@ public class Meeting {
         this.details = details;
     }
 
-    public long getEntTime() {
-        return entTime;
+    public long getEndTime() {
+        return endTime;
     }
 
-    public void setEntTime(long entTime) {
-        this.entTime = entTime;
+    public void setEndTime(long endTime) {
+        this.endTime = endTime;
     }
 
     public long getStartTime() {
@@ -76,5 +80,21 @@ public class Meeting {
 
     public void setGuestsIds(List<String> guestsIds) {
         this.guestsIds = guestsIds;
+    }
+
+    public String getMeetingKey() {
+        return meetingKey;
+    }
+
+    public void setMeetingKey(String meetingKey) {
+        this.meetingKey = meetingKey;
+    }
+
+    public String getPlace() {
+        return place;
+    }
+
+    public void setPlace(String place) {
+        this.place = place;
     }
 }

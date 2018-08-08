@@ -136,20 +136,22 @@ public class SubGroupsFragment extends Fragment {
                                 public void run() {
                                     rfaLayout.setVisibility(View.VISIBLE);
                                 }
-                            }, 300);
+                            }, 100);
                         }
                         //rfaBtn.setVisibility(View.VISIBLE);
                         //fab.show();
                     }else{
-                        if (!recyclerView.canScrollVertically(1)) {
-                            rfaBtn.startAnimation(fadeOut);
-                            handler.postDelayed(new Runnable() {
-                                @Override
-                                public void run() {
-                                    rfaLayout.setVisibility(View.GONE);
-                                }
-                            }, 300);
-                            estabaEnElUltimoElemento = true;
+                        if(recyclerView.canScrollVertically(-1) || recyclerView.canScrollVertically(1)){
+                            if (!recyclerView.canScrollVertically(1)) {
+                                rfaBtn.startAnimation(fadeOut);
+                                handler.postDelayed(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        rfaLayout.setVisibility(View.GONE);
+                                    }
+                                }, 200);
+                                estabaEnElUltimoElemento = true;
+                            }
                         }
                     }
                 }
@@ -334,13 +336,13 @@ public class SubGroupsFragment extends Fragment {
     private void setAnimations(){
         fadeIn = new AlphaAnimation(0, 1);
         fadeIn.setInterpolator(new DecelerateInterpolator()); //add this
-        fadeIn.setDuration(300);
+        fadeIn.setDuration(100);
         fadeIn.setFillEnabled(true);
         fadeIn.setFillAfter(true);
 
         fadeOut = new AlphaAnimation(1, 0);
         fadeOut.setInterpolator(new DecelerateInterpolator()); //add this
-        fadeOut.setDuration(300);
+        fadeOut.setDuration(200);
         fadeOut.setFillEnabled(true);
         fadeOut.setFillAfter(true);
     }

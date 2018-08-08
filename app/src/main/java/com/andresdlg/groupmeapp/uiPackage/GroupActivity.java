@@ -357,8 +357,9 @@ public class GroupActivity extends AppCompatActivity implements GroupChatFragmen
                 .setResId(R.drawable.ic_pen_white_24dp)
                 .setIconNormalColor(0xff3F51B5)
                 .setIconPressedColor(0xff303F9F)
-                .setLabelBackgroundDrawable(ABShape.generateCornerShapeDrawable(0xaa000000, ABTextUtil.dip2px(this, 4)))
-                .setLabelColor(Color.WHITE)
+                //.setLabelBackgroundDrawable(ABShape.generateCornerShapeDrawable(0xaa000000, ABTextUtil.dip2px(this, 4)))
+                //.setLabelColor(Color.WHITE)
+                .setLabelColor(Color.BLACK)
                 .setWrapper(0)
         );
         items.add(new RFACLabelItem<Integer>()
@@ -366,9 +367,10 @@ public class GroupActivity extends AppCompatActivity implements GroupChatFragmen
                 .setResId(R.drawable.ic_account_multiple_white_24dp)
                 .setIconNormalColor(0xff3F51B5)
                 .setIconPressedColor(0xff303F9F)
-                .setLabelColor(Color.WHITE)
                 .setLabelSizeSp(14)
-                .setLabelBackgroundDrawable(ABShape.generateCornerShapeDrawable(0xaa000000, ABTextUtil.dip2px(this, 4)))
+                //.setLabelBackgroundDrawable(ABShape.generateCornerShapeDrawable(0xaa000000, ABTextUtil.dip2px(this, 4)))
+                //.setLabelColor(Color.WHITE)
+                .setLabelColor(Color.BLACK)
                 .setWrapper(1)
         );
         items.add(new RFACLabelItem<Integer>()
@@ -376,8 +378,9 @@ public class GroupActivity extends AppCompatActivity implements GroupChatFragmen
                 .setResId(R.drawable.ic_file_document_white_24dp)
                 .setIconNormalColor(0xff3F51B5)
                 .setIconPressedColor(0xff303F9F)
-                .setLabelColor(Color.WHITE)
-                .setLabelBackgroundDrawable(ABShape.generateCornerShapeDrawable(0xaa000000, ABTextUtil.dip2px(this, 4)))
+                //.setLabelBackgroundDrawable(ABShape.generateCornerShapeDrawable(0xaa000000, ABTextUtil.dip2px(this, 4)))
+                //.setLabelColor(Color.WHITE)
+                .setLabelColor(Color.BLACK)
                 .setWrapper(2)
         );
         items.add(new RFACLabelItem<Integer>()
@@ -385,8 +388,9 @@ public class GroupActivity extends AppCompatActivity implements GroupChatFragmen
                 .setResId(R.drawable.ic_calendar_range_white_24dp)
                 .setIconNormalColor(0xff3F51B5)
                 .setIconPressedColor(0xff303F9F)
-                .setLabelColor(Color.WHITE)
-                .setLabelBackgroundDrawable(ABShape.generateCornerShapeDrawable(0xaa000000, ABTextUtil.dip2px(this, 4)))
+                //.setLabelBackgroundDrawable(ABShape.generateCornerShapeDrawable(0xaa000000, ABTextUtil.dip2px(this, 4)))
+                //.setLabelColor(Color.WHITE)
+                .setLabelColor(Color.BLACK)
                 .setWrapper(3)
         );
         items.add(new RFACLabelItem<Integer>()
@@ -394,16 +398,16 @@ public class GroupActivity extends AppCompatActivity implements GroupChatFragmen
                 .setResId(R.drawable.ic_calendar_white_24dp)
                 .setIconNormalColor(0xff3F51B5)
                 .setIconPressedColor(0xff303F9F)
-                .setLabelColor(Color.WHITE)
-                .setLabelBackgroundDrawable(ABShape.generateCornerShapeDrawable(0xaa000000, ABTextUtil.dip2px(this, 4)))
+                //.setLabelBackgroundDrawable(ABShape.generateCornerShapeDrawable(0xaa000000, ABTextUtil.dip2px(this, 4)))
+                //.setLabelColor(Color.WHITE)
+                .setLabelColor(Color.BLACK)
                 .setWrapper(4)
         );
         rfaContent
                 .setItems(items)
                 .setIconShadowRadius(ABTextUtil.dip2px(this, 5))
                 .setIconShadowColor(0xff888888)
-                .setIconShadowDy(ABTextUtil.dip2px(this, 5))
-        ;
+                .setIconShadowDy(ABTextUtil.dip2px(this, 5));
         rfabHelper = new RapidFloatingActionHelper(
                 this,
                 rfaLayout,

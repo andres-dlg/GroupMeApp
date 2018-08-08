@@ -8,7 +8,11 @@
     android:clipToPadding="false"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     android:layout_below="@id/actionbar"
-    android:theme="@style/MyDialogTheme">
+    android:theme="@style/MyDialogTheme"
+    android:scrollbars="vertical"
+    android:fadeScrollbars="false"
+    android:scrollbarThumbVertical="@drawable/gradient_scrollbar"
+    android:scrollbarSize="4dp">
 
     <LinearLayout
         android:id="@+id/container"
@@ -21,12 +25,37 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textColorHint="#757575"
-            android:id="@+id/til">
+            android:id="@+id/til0"
+            app:counterEnabled="true"
+            app:counterMaxLength="30">
             <EditText
                 android:id="@+id/meeting_title"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Título de la reunión"
+                android:hint="Título"
+                android:imeActionId="@+id/login"
+                android:imeActionLabel="@string/action_sign_in_short"
+                android:imeOptions="actionUnspecified"
+                android:inputType="text"
+                android:textColor="@drawable/edit_text_selector"
+                android:maxLines="1"
+                android:textSize="16sp"
+                android:maxLength="30"
+                tools:ignore="InvalidImeActionId" />
+        </android.support.design.widget.TextInputLayout>
+
+        <android.support.design.widget.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColorHint="#757575"
+            android:id="@+id/til"
+            app:counterEnabled="true"
+            app:counterMaxLength="30">
+            <EditText
+                android:id="@+id/meeting_place"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Lugar"
                 android:imeActionId="@+id/login"
                 android:imeActionLabel="@string/action_sign_in_short"
                 android:imeOptions="actionUnspecified"
@@ -98,6 +127,7 @@
                     android:hint="Hora desde"
                     android:imeActionId="@+id/login"
                     android:imeActionLabel="@string/action_sign_in_short"
+                    android:enabled="false"
                     android:imeOptions="actionUnspecified"
                     android:inputType="time"
                     android:textColor="@drawable/edit_text_selector"
@@ -152,6 +182,7 @@
                     android:layout_height="wrap_content"
                     android:hint="Hora hasta"
                     android:imeActionId="@+id/login"
+                    android:enabled="false"
                     android:imeActionLabel="@string/action_sign_in_short"
                     android:imeOptions="actionUnspecified"
                     android:inputType="time"

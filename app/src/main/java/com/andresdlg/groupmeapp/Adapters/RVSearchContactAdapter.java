@@ -153,15 +153,17 @@ public class RVSearchContactAdapter extends RecyclerView.Adapter<RVSearchContact
     //Toggle selection methods
     public void toggleSelection(int position) {
         //selectView(position, !mSelectedItemsIds.get(position));
-        String value = usersIdsWIthStatus.get(usersFiltered.get(position).getUserid());
-        if(value == null){
-            String id = usersFiltered.get(position).getUserid();
-            if(!mSelectedItemsIds.contains(id)){
-                mSelectedItemsIds.add(id);
-            }else{
-                mSelectedItemsIds.remove(id);
+        if(position != -1){
+            String value = usersIdsWIthStatus.get(usersFiltered.get(position).getUserid());
+            if(value == null){
+                String id = usersFiltered.get(position).getUserid();
+                if(!mSelectedItemsIds.contains(id)){
+                    mSelectedItemsIds.add(id);
+                }else{
+                    mSelectedItemsIds.remove(id);
+                }
+                notifyDataSetChanged();
             }
-            notifyDataSetChanged();
         }
     }
 

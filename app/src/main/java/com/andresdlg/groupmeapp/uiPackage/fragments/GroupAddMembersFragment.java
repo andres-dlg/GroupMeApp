@@ -222,23 +222,26 @@ public class GroupAddMembersFragment extends Fragment implements RVSearchContact
 
     private void onListItemSelect(int position) {
 
-        mOnUserSelectionSetListener.onUserSelectionSet(rvSearchContactAdapter.getSelectedIds());
-
         rvSearchContactAdapter.toggleSelection(position);//Toggle the selection
         selected = rvSearchContactAdapter.getSelectedCount();
-        snackbar.setText( selected + ((selected > 1 ? " Seleccionados" : " Seleccionado")));
-        if(selected > 0 && !isShowing){
-            //rvAddGroupMember.setTranslationY(pxUp*-1);
-            rvAddGroupMember.setPadding(0,0,0,pxUp);
-            snackbar.show();
-            isShowing = true;
-            v.setPadding(0,0,0,pxUp);
-        }else if(selected == 0 && isShowing){
-            rvAddGroupMember.setPadding(0,0,0,0);
-            v.setPadding(0,0,0,0);
-            //rvAddGroupMember.setTranslationY(pxDown);
-            snackbar.dismiss();
-            isShowing = false;
+
+        mOnUserSelectionSetListener.onUserSelectionSet(rvSearchContactAdapter.getSelectedIds());
+
+        if(v!=null){
+            snackbar.setText( selected + ((selected > 1 ? " Seleccionados" : " Seleccionado")));
+            if(selected > 0 && !isShowing){
+                //rvAddGroupMember.setTranslationY(pxUp*-1);
+                rvAddGroupMember.setPadding(0,0,0,pxUp);
+                snackbar.show();
+                isShowing = true;
+                v.setPadding(0,0,0,pxUp);
+            }else if(selected == 0 && isShowing){
+                rvAddGroupMember.setPadding(0,0,0,0);
+                v.setPadding(0,0,0,0);
+                //rvAddGroupMember.setTranslationY(pxDown);
+                snackbar.dismiss();
+                isShowing = false;
+            }
         }
     }
 
