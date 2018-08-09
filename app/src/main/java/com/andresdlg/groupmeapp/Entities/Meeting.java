@@ -14,6 +14,8 @@ public class Meeting {
     private List<String> guestsIds;
     private String place;
 
+    public Meeting(){ }
+
     public Meeting(String meetingKey, String title, long startTime, long endTime, String details, boolean finished, String authorId, List<String> guestsIds, String place){
         this.meetingKey = meetingKey;
         this.title = title;

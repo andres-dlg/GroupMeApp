@@ -84,9 +84,9 @@ public class NewMeetingDialogFragment extends DialogFragment implements GroupAdd
 
         toolbar = view.findViewById(R.id.toolbar_chats);
         if(meeting != null) {
-            toolbar.setTitle("Detalles de la reunion");
+            toolbar.setTitle("Detalles del evento");
         }else{
-            toolbar.setTitle("Nueva reunion");
+            toolbar.setTitle("Nuevo evento");
         }
         toolbar.inflateMenu(R.menu.fragment_subgroup_new_task);
         if(meeting != null){
@@ -309,12 +309,12 @@ public class NewMeetingDialogFragment extends DialogFragment implements GroupAdd
         groupMeetingsRef.child(meetingKey).setValue(meetingMap).addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void aVoid) {
-                Toast.makeText(getContext(), "Reunión agendada", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), "Evento agendado", Toast.LENGTH_SHORT).show();
             }
         }).addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
-                Toast.makeText(getContext(), "Error al agendar reunión", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), "Error al agendar evento", Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -324,6 +324,9 @@ public class NewMeetingDialogFragment extends DialogFragment implements GroupAdd
     private boolean validateFields() {
         if(meetingTitle.getText().toString().isEmpty()){
             meetingTitle.setError("Ingrese título");
+            return false;
+        }else if(TextUtils.isEmpty(meetingPlace.getText().toString().trim())){
+            meetingPlace.setError("Ingrese lugar");
             return false;
         }else if(TextUtils.isEmpty(meetingStartDate.getText().toString().trim())){
             meetingStartDate.setError("Ingrese fecha desde");

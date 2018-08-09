@@ -219,7 +219,7 @@
             android:layout_height="wrap_content"
             android:scrollbars="vertical"
             android:padding="10dp"
-            android:hint="(Opcional) Ingrese detalles de la reunión..."
+            android:hint="(Opcional) Ingrese detalles del evento..."
             android:isScrollContainer="true"
             android:textColor="@drawable/edit_text_selector"
             android:background="@android:color/transparent"

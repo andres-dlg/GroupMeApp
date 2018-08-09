@@ -144,7 +144,7 @@
         <activity android:name=".uiPackage.GroupFilesActivity" />
         <activity
             android:name=".uiPackage.MeetingsActivity"
-            android:label="Reuniones"
+            android:label="Agenda"
             android:screenOrientation="portrait"/>
     </application>
 

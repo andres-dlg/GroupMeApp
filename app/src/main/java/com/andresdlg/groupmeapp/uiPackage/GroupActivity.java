@@ -349,6 +349,9 @@ public class GroupActivity extends AppCompatActivity implements GroupChatFragmen
         rfaLayout = findViewById(R.id.activity_main_rfal);
         rfaBtn = findViewById(R.id.activity_main_rfab);
 
+        rfaLayout.setFrameAlpha(0.8f);
+        rfaLayout.setFrameColor(0xff000000);
+
         RapidFloatingActionContentLabelList rfaContent = new RapidFloatingActionContentLabelList(this);
         rfaContent.setOnRapidFloatingActionContentLabelListListener(this);
         List<RFACLabelItem> items = new ArrayList<>();
@@ -359,7 +362,7 @@ public class GroupActivity extends AppCompatActivity implements GroupChatFragmen
                 .setIconPressedColor(0xff303F9F)
                 //.setLabelBackgroundDrawable(ABShape.generateCornerShapeDrawable(0xaa000000, ABTextUtil.dip2px(this, 4)))
                 //.setLabelColor(Color.WHITE)
-                .setLabelColor(Color.BLACK)
+                .setLabelColor(0xff303F9F)
                 .setWrapper(0)
         );
         items.add(new RFACLabelItem<Integer>()
@@ -370,7 +373,7 @@ public class GroupActivity extends AppCompatActivity implements GroupChatFragmen
                 .setLabelSizeSp(14)
                 //.setLabelBackgroundDrawable(ABShape.generateCornerShapeDrawable(0xaa000000, ABTextUtil.dip2px(this, 4)))
                 //.setLabelColor(Color.WHITE)
-                .setLabelColor(Color.BLACK)
+                .setLabelColor(0xff303F9F)
                 .setWrapper(1)
         );
         items.add(new RFACLabelItem<Integer>()
@@ -380,7 +383,7 @@ public class GroupActivity extends AppCompatActivity implements GroupChatFragmen
                 .setIconPressedColor(0xff303F9F)
                 //.setLabelBackgroundDrawable(ABShape.generateCornerShapeDrawable(0xaa000000, ABTextUtil.dip2px(this, 4)))
                 //.setLabelColor(Color.WHITE)
-                .setLabelColor(Color.BLACK)
+                .setLabelColor(0xff303F9F)
                 .setWrapper(2)
         );
         items.add(new RFACLabelItem<Integer>()
@@ -390,17 +393,17 @@ public class GroupActivity extends AppCompatActivity implements GroupChatFragmen
                 .setIconPressedColor(0xff303F9F)
                 //.setLabelBackgroundDrawable(ABShape.generateCornerShapeDrawable(0xaa000000, ABTextUtil.dip2px(this, 4)))
                 //.setLabelColor(Color.WHITE)
-                .setLabelColor(Color.BLACK)
+                .setLabelColor(0xff303F9F)
                 .setWrapper(3)
         );
         items.add(new RFACLabelItem<Integer>()
-                .setLabel("Reuniones")
+                .setLabel("Agenda")
                 .setResId(R.drawable.ic_calendar_white_24dp)
                 .setIconNormalColor(0xff3F51B5)
                 .setIconPressedColor(0xff303F9F)
                 //.setLabelBackgroundDrawable(ABShape.generateCornerShapeDrawable(0xaa000000, ABTextUtil.dip2px(this, 4)))
                 //.setLabelColor(Color.WHITE)
-                .setLabelColor(Color.BLACK)
+                .setLabelColor(0xff303F9F)
                 .setWrapper(4)
         );
         rfaContent
