@@ -112,6 +112,8 @@ public class RVNotificationAdapter extends RecyclerView.Adapter<RVNotificationAd
             type = NotificationTypes.TASK_FINISHED;
         }else if (notifications.get(position).getType().equals(NotificationTypes.NEW_FILE.toString())){
             type = NotificationTypes.NEW_FILE;
+        }else if (notifications.get(position).getType().equals(NotificationTypes.NEW_MEETING.toString())){
+            type = NotificationTypes.NEW_MEETING;
         }
 
         switch (type) {
@@ -347,6 +349,39 @@ public class RVNotificationAdapter extends RecyclerView.Adapter<RVNotificationAd
                 groupRef.addListenerForSingleValueEvent(groupsEventListener);
                 break;
 
+            case NEW_MEETING:
+                groupRef = groupsRef.child(notifications.get(position).getFrom());
+                groupsEventListener = new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        Group g = dataSnapshot.getValue(Group.class);
+                        notificationViewHolder.setPosition(position);
+                        notificationViewHolder.hideBtn(context, notifications.get(position).getType());
+                        notificationViewHolder.userAlias.setText(g.getName());
+                        notificationViewHolder.setImage(context, g.getImageUrl());
+                        notificationViewHolder.notificationMessage.setText(notifications.get(position).getMessage());
+                        notificationViewHolder.setNewNotification(notifications.get(position).getState());
+                        //String date = dateDifference(notifications.get(position).getDate());
+
+                        Calendar calendar = Calendar.getInstance();
+                        calendar.setTimeInMillis(notifications.get(position).getDate());
+                        String date = prettyTime.format(calendar);
+
+                        notificationViewHolder.notificationDate.setText(date);
+                        notificationViewHolder.setGroupKey(g.getGroupKey());
+                        notificationViewHolder.setNotificationKey(notifications.get(position).getNotificationKey());
+
+                        removeGroupsListener();
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                };
+                groupRef.addListenerForSingleValueEvent(groupsEventListener);
+                break;
+
         }
     }
 
@@ -460,6 +495,8 @@ public class RVNotificationAdapter extends RecyclerView.Adapter<RVNotificationAd
                 notiType = NotificationTypes.TASK_FINISHED;
             }else if (type.equals(NotificationTypes.NEW_FILE.toString())){
                 notiType = NotificationTypes.NEW_FILE;
+            }else if (type.equals(NotificationTypes.NEW_MEETING.toString())){
+                notiType = NotificationTypes.NEW_MEETING;
             }
 
             switch (notiType){
@@ -557,6 +594,11 @@ public class RVNotificationAdapter extends RecyclerView.Adapter<RVNotificationAd
                     break;
 
                 case NEW_FILE:
+                    menuBtn.setVisibility(View.GONE);
+                    rl.setLayoutParams(param);
+                    break;
+
+                case NEW_MEETING:
                     menuBtn.setVisibility(View.GONE);
                     rl.setLayoutParams(param);
                     break;

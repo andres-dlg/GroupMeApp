@@ -11,5 +11,8 @@ public enum NotificationTypes {
     NEWS,
     GROUP_INVITATION,
     SUBGROUP_INVITATION,
-    NEW_POST, TASK_FINISHED, NEW_FILE,
+    NEW_POST,
+    TASK_FINISHED,
+    NEW_FILE,
+    NEW_MEETING
 }

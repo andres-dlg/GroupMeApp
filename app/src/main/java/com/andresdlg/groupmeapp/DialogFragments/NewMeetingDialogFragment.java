@@ -19,17 +19,21 @@ import android.widget.Toast;
 
 import com.andresdlg.groupmeapp.Entities.Meeting;
 import com.andresdlg.groupmeapp.R;
+import com.andresdlg.groupmeapp.Utils.NotificationStatus;
+import com.andresdlg.groupmeapp.Utils.NotificationTypes;
 import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
 import com.andresdlg.groupmeapp.uiPackage.fragments.GroupAddMembersFragment;
 import com.andresdlg.groupmeapp.uiPackage.fragments.MeetingSetupFragment;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.ogaclejapan.smarttablayout.utils.v4.FragmentPagerItemAdapter;
 import com.ogaclejapan.smarttablayout.utils.v4.FragmentPagerItems;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -42,7 +46,10 @@ import devlight.io.library.ntb.NavigationTabBar;
 
 public class NewMeetingDialogFragment extends DialogFragment implements GroupAddMembersFragment.OnUserSelectionSetListener, MeetingSetupFragment.OnTimeSetListener{
 
+    private static final int DATABASE_MODE_INSERT = 1;
+    private static final int DATABASE_MODE_UPDATE = 2;
     private String groupKey;
+    private String groupName;
     private Meeting meeting;
 
     Toolbar toolbar;
@@ -59,14 +66,17 @@ public class NewMeetingDialogFragment extends DialogFragment implements GroupAdd
     private long endTimeInMillis;
     int usersQuantity;
     private List<String> userIds;
+    private DatabaseReference mUsersDatabase;
 
-    public NewMeetingDialogFragment(String groupKey) {
+    public NewMeetingDialogFragment(String groupKey, String groupName) {
         this.groupKey = groupKey;
+        this.groupName = groupName;
         usersQuantity = 0;
     }
 
-    public NewMeetingDialogFragment(String groupKey, Meeting meeting) {
+    public NewMeetingDialogFragment(String groupKey, String groupName, Meeting meeting) {
         this.groupKey = groupKey;
+        this.groupName = groupName;
         this.meeting = meeting;
         usersQuantity = 0;
     }
@@ -75,6 +85,7 @@ public class NewMeetingDialogFragment extends DialogFragment implements GroupAdd
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
+        mUsersDatabase = FirebaseDatabase.getInstance().getReference("Users");
     }
 
     @Override
@@ -89,29 +100,31 @@ public class NewMeetingDialogFragment extends DialogFragment implements GroupAdd
             toolbar.setTitle("Nuevo evento");
         }
         toolbar.inflateMenu(R.menu.fragment_subgroup_new_task);
-        if(meeting != null){
-            toolbar.getMenu().removeItem(R.id.save);
-        }else{
-            toolbar.getMenu().getItem(0).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
-                @Override
-                public boolean onMenuItemClick(MenuItem item) {
-                    View setupFragmentView = getChildFragmentManager().getFragments().get(0).getView();
-                    meetingTitle = setupFragmentView.findViewById(R.id.meeting_title);
-                    meetingStartDate = setupFragmentView.findViewById(R.id.start_date);
-                    meetingStartTime = setupFragmentView.findViewById(R.id.start_time);
-                    meetingEndDate = setupFragmentView.findViewById(R.id.end_date);
-                    meetingEndTime = setupFragmentView.findViewById(R.id.end_time);
-                    meetingDetails = setupFragmentView.findViewById(R.id.meeting_details);
-                    meetingPlace = setupFragmentView.findViewById(R.id.meeting_place);
-                    if(validateFields()){
-                        saveNewMeeting();
+
+        toolbar.getMenu().getItem(0).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                View setupFragmentView = getChildFragmentManager().getFragments().get(0).getView();
+                meetingTitle = setupFragmentView.findViewById(R.id.meeting_title);
+                meetingStartDate = setupFragmentView.findViewById(R.id.start_date);
+                meetingStartTime = setupFragmentView.findViewById(R.id.start_time);
+                meetingEndDate = setupFragmentView.findViewById(R.id.end_date);
+                meetingEndTime = setupFragmentView.findViewById(R.id.end_time);
+                meetingDetails = setupFragmentView.findViewById(R.id.meeting_details);
+                meetingPlace = setupFragmentView.findViewById(R.id.meeting_place);
+                if(validateFields()){
+                    if(meeting==null){
+                        saveNewMeeting(DATABASE_MODE_INSERT);
                     }else{
-                        Toast.makeText(getContext(), "Revise los datos ingresados", Toast.LENGTH_SHORT).show();
+                        saveNewMeeting(DATABASE_MODE_UPDATE);
                     }
-                    return true;
+                }else{
+                    Toast.makeText(getContext(), "Revise los datos ingresados", Toast.LENGTH_SHORT).show();
                 }
-            });
-        }
+                return true;
+            }
+        });
+
         toolbar.setNavigationIcon(R.drawable.ic_arrow_left_white_24dp);
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
@@ -122,10 +135,14 @@ public class NewMeetingDialogFragment extends DialogFragment implements GroupAdd
 
         final String[] colors = getResources().getStringArray(R.array.default_preview);
 
+        Bundle bundle = new Bundle();
+        Meeting meetingToPass = meeting;
+        bundle.putSerializable("meeting", meetingToPass);
+
         FragmentPagerItemAdapter adapter = new FragmentPagerItemAdapter(
                 getChildFragmentManager(), FragmentPagerItems.with(getContext())
-                .add("Setup", MeetingSetupFragment.class)
-                .add("Add contacts", GroupAddMembersFragment.class)
+                .add("Setup", MeetingSetupFragment.class, bundle)
+                .add("Add contacts", GroupAddMembersFragment.class, bundle)
                 .create());
 
         ViewPager viewPager = view.findViewById(R.id.viewpager);
@@ -162,8 +179,11 @@ public class NewMeetingDialogFragment extends DialogFragment implements GroupAdd
 
 
 
-        /*if(meeting != null){
+        if(meeting != null){
 
+        }
+
+        /*
             taskFinished = v.findViewById(R.id.task_finished);
             if(task.getFinished()){
                 taskFinished.setText("Finalizada");
@@ -286,17 +306,24 @@ public class NewMeetingDialogFragment extends DialogFragment implements GroupAdd
         return view;
     }
 
-    private void saveNewMeeting() {
+    private void saveNewMeeting(int databaseMode) {
         DatabaseReference groupMeetingsRef = FirebaseDatabase
                 .getInstance()
                 .getReference("Groups")
                 .child(groupKey)
                 .child("meetings");
 
-        String meetingKey = groupMeetingsRef.push().getKey();
-
         Map<String, Object> meetingMap = new HashMap<>();
-        meetingMap.put("meetingKey",meetingKey);
+
+        String meetingKey;
+        if(databaseMode == DATABASE_MODE_INSERT){
+            meetingKey = groupMeetingsRef.push().getKey();
+            meetingMap.put("meetingKey",meetingKey);
+        }else {
+            meetingKey = meeting.getMeetingKey();
+            meetingMap.put("meetingKey",meeting.getMeetingKey());
+        }
+
         meetingMap.put("title",meetingTitle.getText().toString().trim());
         meetingMap.put("startTime",startTimeInMillis);
         meetingMap.put("endTime",endTimeInMillis);
@@ -306,7 +333,7 @@ public class NewMeetingDialogFragment extends DialogFragment implements GroupAdd
         meetingMap.put("guestsIds",userIds);
         meetingMap.put("place",meetingPlace.getText().toString().trim());
 
-        groupMeetingsRef.child(meetingKey).setValue(meetingMap).addOnSuccessListener(new OnSuccessListener<Void>() {
+        groupMeetingsRef.child(meetingKey).updateChildren(meetingMap).addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void aVoid) {
                 Toast.makeText(getContext(), "Evento agendado", Toast.LENGTH_SHORT).show();
@@ -318,8 +345,34 @@ public class NewMeetingDialogFragment extends DialogFragment implements GroupAdd
             }
         });
 
+        sendNotification();
+
         dismiss();
     }
+
+    private void sendNotification() {
+        Map<String,Object> map;
+        if(!userIds.isEmpty()){
+            map = new HashMap<>();
+            for(final String id : userIds){
+
+                if(!id.equals(StaticFirebaseSettings.currentUserId)){
+                    DatabaseReference userToNotifications = mUsersDatabase.child(id).child("notifications");
+                    String notificationKey = userToNotifications.push().getKey();
+                    Map<String,Object> notification = new HashMap<>();
+                    notification.put("notificationKey",notificationKey);
+                    notification.put("title","Nuevo evento");
+                    notification.put("message","Se ha agendado un nuevo evento en " + groupName);
+                    notification.put("from", groupKey);
+                    notification.put("state", NotificationStatus.UNREAD);
+                    notification.put("date", Calendar.getInstance().getTimeInMillis());
+                    notification.put("type", NotificationTypes.NEW_MEETING);
+                    userToNotifications.child(notificationKey).setValue(notification);
+                }
+            }
+        }
+    }
+
 
     private boolean validateFields() {
         if(meetingTitle.getText().toString().isEmpty()){

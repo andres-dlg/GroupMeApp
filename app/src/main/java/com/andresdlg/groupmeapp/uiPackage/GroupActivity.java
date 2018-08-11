@@ -408,9 +408,12 @@ public class GroupActivity extends AppCompatActivity implements GroupChatFragmen
         );
         rfaContent
                 .setItems(items)
-                .setIconShadowRadius(ABTextUtil.dip2px(this, 5))
-                .setIconShadowColor(0xff888888)
-                .setIconShadowDy(ABTextUtil.dip2px(this, 5));
+                //.setIconShadowRadius(ABTextUtil.dip2px(this, 5))
+                //.setIconShadowColor(0xff888888)
+                //.setIconShadowDy(ABTextUtil.dip2px(this, 5));
+                .setIconShadowColor(0x00888888)
+                .setIconShadowRadius(0)
+                .setIconShadowDy(0);
         rfabHelper = new RapidFloatingActionHelper(
                 this,
                 rfaLayout,
@@ -941,6 +944,7 @@ public class GroupActivity extends AppCompatActivity implements GroupChatFragmen
             case 4:
                 Intent meetingsIntent = new Intent(this,MeetingsActivity.class);
                 meetingsIntent.putExtra("groupKey",groupKey);
+                meetingsIntent.putExtra("groupName",groupName);
                 startActivity(meetingsIntent);
         }
 

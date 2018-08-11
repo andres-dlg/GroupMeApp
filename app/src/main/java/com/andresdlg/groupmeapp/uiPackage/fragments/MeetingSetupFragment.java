@@ -16,6 +16,7 @@ import android.widget.EditText;
 import android.widget.TimePicker;
 
 import com.andresdlg.groupmeapp.DialogFragments.SubGroupNewTaskDialogFragment;
+import com.andresdlg.groupmeapp.Entities.Meeting;
 import com.andresdlg.groupmeapp.R;
 
 import java.text.MessageFormat;
@@ -40,6 +41,8 @@ public class MeetingSetupFragment extends Fragment {
 
     int dateMode;
 
+    Meeting meeting;
+
     private OnTimeSetListener mOnTimeSetListener;
 
     public MeetingSetupFragment() {
@@ -50,6 +53,8 @@ public class MeetingSetupFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         onAttachToParentFragment(getParentFragment());
+        Bundle bundle = getArguments();
+        meeting = (Meeting) bundle.getSerializable("meeting");
     }
 
     @Override
@@ -174,6 +179,27 @@ public class MeetingSetupFragment extends Fragment {
             @Override
             public void afterTextChanged(Editable s) { }
         });
+
+        if(meeting!=null){
+            startDateCalendar = Calendar.getInstance();
+            startDateCalendar.setTimeInMillis(meeting.getStartTime());
+
+            endDateCalendar = Calendar.getInstance();
+            endDateCalendar.setTimeInMillis(meeting.getEndTime());
+
+            mOnTimeSetListener.onTimeSet(true,startDateCalendar != null ? startDateCalendar.getTimeInMillis() : 0, endDateCalendar != null ? endDateCalendar.getTimeInMillis() : 0);
+
+            meetingTitle.setText(meeting.getTitle());
+            meetingPlace.setText(meeting.getPlace());
+            meetingStartDate.setText(MessageFormat.format("{0} / {1} / {2}", startDateCalendar.get(Calendar.DAY_OF_MONTH), startDateCalendar.get(Calendar.MONTH), String.valueOf(startDateCalendar.get(Calendar.YEAR))));
+            meetingEndDate.setText(MessageFormat.format("{0} / {1} / {2}", endDateCalendar.get(Calendar.DAY_OF_MONTH), endDateCalendar.get(Calendar.MONTH), String.valueOf(endDateCalendar.get(Calendar.YEAR))));
+            meetingStartTime.setText(MessageFormat.format("{0}:{1}", startDateCalendar.get(Calendar.HOUR_OF_DAY) > 9 ? startDateCalendar.get(Calendar.HOUR_OF_DAY) : "0"+startDateCalendar.get(Calendar.HOUR_OF_DAY), startDateCalendar.get(Calendar.MINUTE) > 9 ? startDateCalendar.get(Calendar.MINUTE) : "0"+startDateCalendar.get(Calendar.MINUTE)));
+            meetingStartTime.setEnabled(true);
+            meetingEndTime.setText(MessageFormat.format("{0}:{1}", endDateCalendar.get(Calendar.HOUR_OF_DAY) > 9 ? endDateCalendar.get(Calendar.HOUR_OF_DAY) : "0"+endDateCalendar.get(Calendar.HOUR_OF_DAY), endDateCalendar.get(Calendar.MINUTE) > 9 ? endDateCalendar.get(Calendar.MINUTE) : "0"+endDateCalendar.get(Calendar.MINUTE)));
+            meetingEndTime.setEnabled(true);
+            meetingDetails.setText(meeting.getDetails());
+
+        }
 
         return v;
     }

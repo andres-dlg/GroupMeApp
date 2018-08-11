@@ -223,7 +223,6 @@
                 android:layout_marginBottom="8dp"
                 android:layout_marginStart="4dp"
                 android:layout_marginTop="8dp"
-                android:text="10"
                 app:layout_constraintVertical_bias="0.555" />
 
             <TextView
@@ -234,7 +233,6 @@
                 android:layout_marginEnd="4dp"
                 android:layout_marginStart="4dp"
                 android:layout_marginTop="8dp"
-                android:text="invitados"
                 app:layout_constraintVertical_bias="0.555" />
 
         </LinearLayout>

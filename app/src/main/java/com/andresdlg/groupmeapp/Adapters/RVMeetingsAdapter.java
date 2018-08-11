@@ -1,6 +1,7 @@
 package com.andresdlg.groupmeapp.Adapters;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.support.annotation.NonNull;
@@ -10,6 +11,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.util.Pair;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
@@ -55,6 +57,8 @@ import org.ocpsoft.prettytime.PrettyTime;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 
@@ -70,11 +74,13 @@ public class RVMeetingsAdapter extends RecyclerView.Adapter<RVMeetingsAdapter.Me
     private Context context;
     private List<Meeting> meetings;
     private String groupKey;
+    private String groupName;
 
-    public RVMeetingsAdapter(Context context, List<Meeting> meetings, String groupKey){
+    public RVMeetingsAdapter(Context context, List<Meeting> meetings, String groupKey, String groupName){
         this.context = context;
         this.meetings = meetings;
         this.groupKey = groupKey;
+        this.groupName = groupName;
     }
 
     @NonNull
@@ -100,6 +106,22 @@ public class RVMeetingsAdapter extends RecyclerView.Adapter<RVMeetingsAdapter.Me
     @Override
     public void onAttachedToRecyclerView(@NonNull RecyclerView recyclerView) {
         super.onAttachedToRecyclerView(recyclerView);
+    }
+
+    public void sortMeetings() {
+        //Reordeno el array por si hubo cambio de fechas de comienzo
+        Collections.sort(meetings, new Comparator<Meeting>() {
+            @Override
+            public int compare(Meeting meeting1, Meeting meeting2) {
+                if(meeting1.getStartTime() >= meeting2.getStartTime()){
+                    return 1;
+                }else if(meeting1.getStartTime() == meeting2.getStartTime()){
+                    return 0;
+                }else{
+                    return -1;
+                }
+            }
+        });
     }
 
     class MeetingsViewHolder extends RecyclerView.ViewHolder {
@@ -178,7 +200,7 @@ public class RVMeetingsAdapter extends RecyclerView.Adapter<RVMeetingsAdapter.Me
             }
         }
 
-        void hideMenuButton(Meeting meeting) {
+        void hideMenuButton(final Meeting meeting) {
             if(!meeting.getAuthorId().equals(StaticFirebaseSettings.currentUserId)){
                 btnMenu.setVisibility(View.GONE);
             }else{
@@ -193,8 +215,10 @@ public class RVMeetingsAdapter extends RecyclerView.Adapter<RVMeetingsAdapter.Me
                             public boolean onMenuItemClick(MenuItem menuItem) {
                                 switch (menuItem.getItemId()){
                                     case R.id.edit:
+                                        showNewMeetingDialog(meeting);
                                         return true;
                                     case R.id.delete:
+                                        deleteMeeting(meeting);
                                         return true;
                                     default:
                                         return false;
@@ -208,9 +232,46 @@ public class RVMeetingsAdapter extends RecyclerView.Adapter<RVMeetingsAdapter.Me
         }
     }
 
+    private void deleteMeeting(final Meeting meeting) {
+        new AlertDialog.Builder(context,R.style.MyDialogTheme)
+                .setTitle("¿Seguro desea este evento?")
+                .setPositiveButton("Si", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        FirebaseDatabase
+                                .getInstance()
+                                .getReference("Groups")
+                                .child(groupKey)
+                                .child("meetings")
+                                .child(meeting.getMeetingKey())
+                                .removeValue()
+                                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                    @Override
+                                    public void onSuccess(Void aVoid) {
+                                        Toast.makeText(context, "Evento eliminado", Toast.LENGTH_SHORT).show();
+                                    }
+                                })
+                                .addOnFailureListener(new OnFailureListener() {
+                                    @Override
+                                    public void onFailure(@NonNull Exception e) {
+                                        Toast.makeText(context, "Error al eliminar evento", Toast.LENGTH_SHORT).show();
+                                    }
+                                });
+                    }
+                })
+                .setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                })
+                .setCancelable(false)
+                .show();
+    }
+
     private void showNewMeetingDialog(Meeting meeting) {
         FragmentManager fragmentManager = ((MeetingsActivity)context).getSupportFragmentManager();
-        NewMeetingDialogFragment newFragment = new NewMeetingDialogFragment(groupKey,meeting);
+        NewMeetingDialogFragment newFragment = new NewMeetingDialogFragment(groupKey,groupName,meeting);
         newFragment.setStyle(DialogFragment.STYLE_NORMAL,R.style.AppTheme_DialogFragment);
         FragmentTransaction transaction = fragmentManager.beginTransaction();
         transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);

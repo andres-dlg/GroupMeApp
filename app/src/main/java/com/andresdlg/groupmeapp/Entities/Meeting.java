@@ -1,8 +1,9 @@
 package com.andresdlg.groupmeapp.Entities;
 
+import java.io.Serializable;
 import java.util.List;
 
-public class Meeting {
+public class Meeting implements Serializable {
 
     private String meetingKey;
     private String title;
