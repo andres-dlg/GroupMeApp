@@ -26,6 +26,8 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -114,6 +116,12 @@ public class FriendRequestsFragment extends Fragment {
                 Users u = dataSnapshot.getValue(Users.class);
                 if(!users.contains(u)){
                     users.add(u);
+                    Collections.sort(users, new Comparator<Users>() {
+                        @Override
+                        public int compare(Users o1, Users o2) {
+                            return o1.getName().toLowerCase().compareTo(o2.getName().toLowerCase());
+                        }
+                    });
                     adapter.notifyDataSetChanged();
                     if(requestSeen.equals(NotificationStatus.UNREAD.toString())){
                         requestQuantity += 1;

@@ -13,6 +13,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.SectionIndexer;
 import android.widget.TextView;
 
 import com.andresdlg.groupmeapp.Entities.Group;
@@ -24,6 +25,7 @@ import com.bumptech.glide.load.engine.GlideException;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -31,8 +33,10 @@ import java.util.List;
  * Created by andresdlg on 11/07/17.
  */
 
-public class RVGroupAdapter extends RecyclerView.Adapter<RVGroupAdapter.GroupViewHolder> {
+public class RVGroupAdapter extends RecyclerView.Adapter<RVGroupAdapter.GroupViewHolder> implements SectionIndexer {
 
+    String[] sections;
+    List<String> sectionLetters=new ArrayList<>();
     private Context context;
     private List<Group> groups;
 
@@ -63,9 +67,33 @@ public class RVGroupAdapter extends RecyclerView.Adapter<RVGroupAdapter.GroupVie
         super.onAttachedToRecyclerView(recyclerView);
     }
 
+    public void updateSections(String firstLetter){
+        if(!sectionLetters.contains(firstLetter+"")){
+            sectionLetters.add(firstLetter+"");
+        }
+        ArrayList<String> sectionList = new ArrayList<>(sectionLetters);
+        sections = new String[sectionList.size()];
+        sectionList.toArray(sections);
+    }
+
     public void setGroups(List<Group> groups) {
         this.groups = groups;
         notifyDataSetChanged();
+    }
+
+    @Override
+    public Object[] getSections() {
+        return sections;
+    }
+
+    @Override
+    public int getPositionForSection(int sectionIndex) {
+        return sectionIndex;
+    }
+
+    @Override
+    public int getSectionForPosition(int position) {
+        return position;
     }
 
     static class GroupViewHolder extends RecyclerView.ViewHolder {

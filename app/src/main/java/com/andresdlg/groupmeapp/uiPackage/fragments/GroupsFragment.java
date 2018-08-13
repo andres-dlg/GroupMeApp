@@ -187,6 +187,9 @@ public class GroupsFragment extends Fragment implements View.OnClickListener, He
 
     private void updateGroups(Group group, boolean saved) {
         boolean exists = false;
+
+        adapter.updateSections(group.getName().toLowerCase().charAt(0)+"");
+
         for(int i=0; i < groups.size(); i++){
             if(groups.get(i).getGroupKey().equals(group.getGroupKey())){
                 exists = true;
