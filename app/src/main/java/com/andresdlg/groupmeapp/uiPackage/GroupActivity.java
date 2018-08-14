@@ -503,8 +503,12 @@ public class GroupActivity extends AppCompatActivity implements GroupChatFragmen
     @Override
     protected void onStop() {
         super.onStop();
-        groupRef.removeEventListener(groupsEventListener);
-        userRef.removeEventListener(userEventListener);
+        if(groupRef != null && groupsEventListener != null){
+            groupRef.removeEventListener(groupsEventListener);
+        }
+        if(userRef != null && userEventListener != null){
+            userRef.removeEventListener(userEventListener);
+        }
         if(subGroupsValueEventListener != null){
             subGroupsRef.removeEventListener(subGroupsValueEventListener);
         }

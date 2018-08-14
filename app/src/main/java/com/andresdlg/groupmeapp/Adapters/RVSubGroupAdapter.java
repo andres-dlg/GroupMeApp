@@ -45,6 +45,7 @@ import com.andresdlg.groupmeapp.DialogFragments.SubGroupNewTaskDialogFragment;
 import com.andresdlg.groupmeapp.Entities.SubGroup;
 import com.andresdlg.groupmeapp.Entities.Task;
 import com.andresdlg.groupmeapp.R;
+import com.andresdlg.groupmeapp.Utils.ContextValidator;
 import com.andresdlg.groupmeapp.Utils.NotificationStatus;
 import com.andresdlg.groupmeapp.Utils.NotificationTypes;
 import com.andresdlg.groupmeapp.Utils.Roles;
@@ -298,21 +299,23 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
             imageUrl = subGroups.get(position).getImageUrl();
 
             //PERFIL
-            Glide.with(context)
-                    .load(subGroups.get(position).getImageUrl())
-                    .listener(new RequestListener<Drawable>() {
-                        @Override
-                        public boolean onLoadFailed(@Nullable GlideException e, Object model, com.bumptech.glide.request.target.Target<Drawable> target, boolean isFirstResource) {
-                            return false;
-                        }
+            if(ContextValidator.isValidContextForGlide(itemView.getContext())){
+                Glide.with(itemView.getContext())
+                        .load(subGroups.get(position).getImageUrl())
+                        .listener(new RequestListener<Drawable>() {
+                            @Override
+                            public boolean onLoadFailed(@Nullable GlideException e, Object model, com.bumptech.glide.request.target.Target<Drawable> target, boolean isFirstResource) {
+                                return false;
+                            }
 
-                        @Override
-                        public boolean onResourceReady(Drawable resource, Object model, com.bumptech.glide.request.target.Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
-                            itemView.findViewById(R.id.homeprogress).setVisibility(View.GONE);
-                            return false;
-                        }
-                    })
-                    .into(subGroupPhoto);
+                            @Override
+                            public boolean onResourceReady(Drawable resource, Object model, com.bumptech.glide.request.target.Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
+                                itemView.findViewById(R.id.homeprogress).setVisibility(View.GONE);
+                                return false;
+                            }
+                        })
+                        .into(subGroupPhoto);
+            }
 
             //BACKGROUND
             SimpleTarget target = new SimpleTarget() {
@@ -340,16 +343,20 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
             //subGroupBg.setTag(target);
             //if(imageUrl.equals("https://firebasestorage.googleapis.com/v0/b/groupmeapp-5aaf6.appspot.com/o/ic_launcher.png?alt=media&token=9740457d-49b7-4463-b78c-4c3513d768a7")){
             if(imageUrl.equals("https://firebasestorage.googleapis.com/v0/b/groupmeapp-5aaf6.appspot.com/o/default_subgroup_photo.png?alt=media&token=db96a4ee-b336-4e94-9f74-6ef0e7d5c00e")){
-                Glide.with(contexto)
-                        .load("")
-                        .apply(requestOptions)
-                        .into(subGroupBg);
+                if(ContextValidator.isValidContextForGlide(itemView.getContext())){
+                    Glide.with(itemView.getContext())
+                            .load("")
+                            .apply(requestOptions)
+                            .into(subGroupBg);
+                }
             }else{
-                Glide.with(contexto)
-                        .load(imageUrl)
-                        //.apply(RequestOptions.bitmapTransform(new SupportRSBlurTransformation(25,1)))
-                        //.apply(requestOptions2)
-                        .into(target);
+                if(ContextValidator.isValidContextForGlide(itemView.getContext())){
+                    Glide.with(itemView.getContext())
+                            .load(imageUrl)
+                            //.apply(RequestOptions.bitmapTransform(new SupportRSBlurTransformation(25,1)))
+                            //.apply(requestOptions2)
+                            .into(target);
+                }
             }
 
         }

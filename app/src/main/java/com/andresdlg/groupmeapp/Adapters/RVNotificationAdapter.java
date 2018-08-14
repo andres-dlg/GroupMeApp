@@ -31,6 +31,7 @@ import com.andresdlg.groupmeapp.Entities.SubGroup;
 import com.andresdlg.groupmeapp.Entities.Task;
 import com.andresdlg.groupmeapp.Entities.Users;
 import com.andresdlg.groupmeapp.R;
+import com.andresdlg.groupmeapp.Utils.ContextValidator;
 import com.andresdlg.groupmeapp.Utils.GroupStatus;
 import com.andresdlg.groupmeapp.Utils.NotificationStatus;
 import com.andresdlg.groupmeapp.Utils.NotificationTypes;
@@ -449,22 +450,23 @@ public class RVNotificationAdapter extends RecyclerView.Adapter<RVNotificationAd
 
             this.imageURL = imageURL;
 
-            Glide.with(context)
-                    .load(imageURL)
-                    .listener(new RequestListener<Drawable>() {
-                        @Override
-                        public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
-                            return false;
-                        }
+            if(ContextValidator.isValidContextForGlide(itemView.getContext())){
+                Glide.with(itemView.getContext())
+                        .load(imageURL)
+                        .listener(new RequestListener<Drawable>() {
+                            @Override
+                            public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
+                                return false;
+                            }
 
-                        @Override
-                        public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
-                            itemView.findViewById(R.id.homeprogress).setVisibility(View.GONE);
-                            return false;
-                        }
-                    })
-                    .into(userPhoto);
-
+                            @Override
+                            public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
+                                itemView.findViewById(R.id.homeprogress).setVisibility(View.GONE);
+                                return false;
+                            }
+                        })
+                        .into(userPhoto);
+            }
         }
 
         void setGroupKey(String groupKey){

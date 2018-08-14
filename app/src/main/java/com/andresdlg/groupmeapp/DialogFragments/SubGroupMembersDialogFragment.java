@@ -2,6 +2,7 @@ package com.andresdlg.groupmeapp.DialogFragments;
 
 import android.app.Dialog;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.widget.LinearLayoutManager;
@@ -134,8 +135,6 @@ public class SubGroupMembersDialogFragment extends DialogFragment {
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     Users u = dataSnapshot.getValue(Users.class);
                     filterUsers(u);
-                    //users.add(u);
-                    //adapter.notifyDataSetChanged();
                     usersRef.removeEventListener(this);
                 }
 
@@ -159,12 +158,6 @@ public class SubGroupMembersDialogFragment extends DialogFragment {
         if(!exists){
             users.add(u);
         }
-        Collections.sort(users, new Comparator<Users>() {
-            @Override
-            public int compare(Users o1, Users o2) {
-                return o1.getName().toLowerCase().compareTo(o2.getName().toLowerCase());
-            }
-        });
         adapter.notifyDataSetChanged();
     }
 

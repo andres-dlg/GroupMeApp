@@ -383,7 +383,7 @@ public class HeaderDialogFragment extends DialogFragment implements GroupAddMemb
                     userToNotifications.child(notificationKey).setValue(notification).addOnSuccessListener(new OnSuccessListener<Void>() {
                         @Override
                         public void onSuccess(Void aVoid) {
-                            Toast.makeText(getContext(), "Noti de agregación a subgrupo enviada", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getContext(), "El usuario ha sido agregado al subgrupo", Toast.LENGTH_LONG).show();
                         }
                     });
                 }

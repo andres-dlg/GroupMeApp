@@ -118,9 +118,9 @@ public class NewMeetingDialogFragment extends DialogFragment implements GroupAdd
                     }else{
                         saveNewMeeting(DATABASE_MODE_UPDATE);
                     }
-                }else{
+                }/*else{
                     Toast.makeText(getContext(), "Revise los datos ingresados", Toast.LENGTH_SHORT).show();
-                }
+                }*/
                 return true;
             }
         });

@@ -13,6 +13,7 @@ import com.andresdlg.groupmeapp.Entities.Conversation;
 import com.andresdlg.groupmeapp.Entities.Message;
 import com.andresdlg.groupmeapp.Entities.Users;
 import com.andresdlg.groupmeapp.R;
+import com.andresdlg.groupmeapp.Utils.ContextValidator;
 import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
 import com.andresdlg.groupmeapp.uiPackage.ChatActivity;
 import com.bumptech.glide.Glide;
@@ -255,7 +256,9 @@ public class ListMessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
         }
 
         public void setAvatar(Context context,String currentUserUrl) {
-            Glide.with(context).load(currentUserUrl).into(avatar);
+            if(ContextValidator.isValidContextForGlide(itemView.getContext())){
+                Glide.with(itemView.getContext()).load(currentUserUrl).into(avatar);
+            }
         }
 
         public void setAvatarFromId(final Context context, String userId) {
@@ -263,9 +266,11 @@ public class ListMessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     Users u = dataSnapshot.getValue(Users.class);
-                    Glide.with(context)
-                            .load(u.getImageURL())
-                            .into(avatar);
+                    if(ContextValidator.isValidContextForGlide(itemView.getContext())){
+                        Glide.with(itemView.getContext())
+                                .load(u.getImageURL())
+                                .into(avatar);
+                    }
                 }
 
                 @Override
@@ -291,9 +296,11 @@ public class ListMessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
         }
 
         public void setAvatar(Context context,String userToUrl) {
-            Glide.with(context)
-                    .load(userToUrl)
-                    .into(avata);
+            if(ContextValidator.isValidContextForGlide(itemView.getContext())){
+                Glide.with(itemView.getContext())
+                        .load(userToUrl)
+                        .into(avata);
+            }
         }
 
         public void setAvatarFromId(final Context context, String userId) {
@@ -301,9 +308,11 @@ public class ListMessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     Users u = dataSnapshot.getValue(Users.class);
-                    Glide.with(context)
-                            .load(u.getImageURL())
-                            .into(avata);
+                    if(ContextValidator.isValidContextForGlide(itemView.getContext())){
+                        Glide.with(itemView.getContext())
+                                .load(u.getImageURL())
+                                .into(avata);
+                    }
                 }
 
                 @Override

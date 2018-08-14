@@ -34,8 +34,6 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -128,13 +126,24 @@ public class SearchContactActivity extends AppCompatActivity {
             }
         });
 
+        String textToShow;
+        if(subGroupKey==null){
+            textToShow = "INVITAR";
+        }else{
+            textToShow = "AGREGAR";
+        }
+
         snackbar = Snackbar
                     .make(coordinatorLayout, selected + " Seleccionados",Snackbar.LENGTH_INDEFINITE)
-                    .setAction("INVITAR", new View.OnClickListener() {
+                    .setAction(textToShow, new View.OnClickListener() {
                         @Override
                         public void onClick(View view) {
                             sendInvitations();
-                            Toast.makeText(SearchContactActivity.this, "Invitación enviada", Toast.LENGTH_SHORT).show();
+                            if(subGroupKey==null){
+                                Toast.makeText(SearchContactActivity.this, "Invitación enviada", Toast.LENGTH_SHORT).show();
+                            }else{
+                                Toast.makeText(SearchContactActivity.this, "Usuario agregado al subgrupo", Toast.LENGTH_SHORT).show();
+                            }
                             onBackPressed();
                         }
                     });
@@ -293,13 +302,6 @@ public class SearchContactActivity extends AppCompatActivity {
                 Users u = dataSnapshot.getValue(Users.class);
                 if(!users.contains(u) && !validateExistingMembers(u)){
                     users.add(u);
-
-                    Collections.sort(users, new Comparator<Users>() {
-                        @Override
-                        public int compare(Users o1, Users o2) {
-                            return o1.getName().toLowerCase().compareTo(o2.getName().toLowerCase());
-                        }
-                    });
 
                     String status = null ;
 

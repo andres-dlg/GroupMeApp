@@ -2,6 +2,7 @@ package com.andresdlg.groupmeapp.uiPackage.fragments;
 
 import android.content.res.Configuration;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -116,12 +117,6 @@ public class FriendRequestsFragment extends Fragment {
                 Users u = dataSnapshot.getValue(Users.class);
                 if(!users.contains(u)){
                     users.add(u);
-                    Collections.sort(users, new Comparator<Users>() {
-                        @Override
-                        public int compare(Users o1, Users o2) {
-                            return o1.getName().toLowerCase().compareTo(o2.getName().toLowerCase());
-                        }
-                    });
                     adapter.notifyDataSetChanged();
                     if(requestSeen.equals(NotificationStatus.UNREAD.toString())){
                         requestQuantity += 1;
