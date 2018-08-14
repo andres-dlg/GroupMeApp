@@ -6,6 +6,7 @@ import com.alamkanak.weekview.WeekViewEvent;
 import com.andresdlg.groupmeapp.Entities.Users;
 import com.andresdlg.groupmeapp.Entities.WeekViewEventGroupMeApp;
 import com.google.firebase.FirebaseApp;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.HashMap;
@@ -72,6 +73,12 @@ public class FireApp extends Application {
         }
         groupsIds = new HashMap<>();
         contactsIds = new HashMap<>();
+
+        String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        if(userId != null){
+            FirebaseContacts.getUserContacts(userId);
+        }
+
     }
 
     public String getGroupName() {
