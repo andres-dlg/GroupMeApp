@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v4.widget.NestedScrollView
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:clipToPadding="false"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    android:layout_below="@id/actionbar"
+    android:theme="@style/MyDialogTheme"
+    android:scrollbars="vertical"
+    android:fadeScrollbars="false"
+    android:scrollbarThumbVertical="@drawable/gradient_scrollbar"
+    android:scrollbarSize="4dp">
+
+    <LinearLayout
+        android:id="@+id/container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <android.support.design.widget.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColorHint="#757575"
+            android:id="@+id/til0"
+            app:counterEnabled="true"
+            app:counterMaxLength="30">
+            <EditText
+                android:id="@+id/meeting_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Título"
+                android:imeActionId="@+id/login"
+                android:imeActionLabel="@string/action_sign_in_short"
+                android:imeOptions="actionUnspecified"
+                android:inputType="text"
+                android:textColor="@drawable/edit_text_selector"
+                android:maxLines="1"
+                android:textSize="16sp"
+                android:maxLength="30"
+                tools:ignore="InvalidImeActionId" />
+        </android.support.design.widget.TextInputLayout>
+
+        <android.support.design.widget.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColorHint="#757575"
+            android:id="@+id/til"
+            app:counterEnabled="true"
+            app:counterMaxLength="30">
+            <EditText
+                android:id="@+id/meeting_place"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Lugar"
+                android:imeActionId="@+id/login"
+                android:imeActionLabel="@string/action_sign_in_short"
+                android:imeOptions="actionUnspecified"
+                android:inputType="text"
+                android:textColor="@drawable/edit_text_selector"
+                android:maxLines="1"
+                android:textSize="16sp"
+                android:maxLength="30"
+                tools:ignore="InvalidImeActionId" />
+        </android.support.design.widget.TextInputLayout>
+
+        <TextView
+            android:id="@+id/textDates"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="15sp"
+            android:text="Fechas"
+            android:layout_marginTop="16dp"
+            android:layout_marginLeft="4dp"
+            android:layout_marginBottom="2dp"
+            />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/bg_add_photo"
+            android:layout_marginBottom="4dp"/>
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:weightSum="1">
+
+            <android.support.design.widget.TextInputLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:textColorHint="#757575"
+                android:layout_weight="0.5"
+                android:layout_marginTop="4dp">
+                <EditText
+                    android:id="@+id/start_date"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Fecha desde"
+                    android:imeActionId="@+id/login"
+                    android:imeActionLabel="@string/action_sign_in_short"
+                    android:imeOptions="actionUnspecified"
+                    android:inputType="date"
+                    android:textColor="@drawable/edit_text_selector"
+                    android:maxLines="1"
+                    android:clickable="true"
+                    android:focusable="false"
+                    android:textSize="16sp"
+                    android:maxLength="30"
+                    tools:ignore="InvalidImeActionId" />
+            </android.support.design.widget.TextInputLayout>
+
+            <android.support.design.widget.TextInputLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:textColorHint="#757575"
+                android:layout_weight="0.5"
+                android:layout_marginTop="4dp">
+                <EditText
+                    android:id="@+id/start_time"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Hora desde"
+                    android:imeActionId="@+id/login"
+                    android:imeActionLabel="@string/action_sign_in_short"
+                    android:enabled="false"
+                    android:imeOptions="actionUnspecified"
+                    android:inputType="time"
+                    android:textColor="@drawable/edit_text_selector"
+                    android:maxLines="1"
+                    android:clickable="true"
+                    android:focusable="false"
+                    android:textSize="16sp"
+                    android:maxLength="30"
+                    tools:ignore="InvalidImeActionId" />
+            </android.support.design.widget.TextInputLayout>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:weightSum="1">
+
+            <android.support.design.widget.TextInputLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:textColorHint="#757575"
+                android:layout_weight="0.5"
+                android:layout_marginTop="4dp">
+                <EditText
+                    android:id="@+id/end_date"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Fecha hasta"
+                    android:imeActionId="@+id/login"
+                    android:imeActionLabel="@string/action_sign_in_short"
+                    android:imeOptions="actionUnspecified"
+                    android:inputType="date"
+                    android:textColor="@drawable/edit_text_selector"
+                    android:maxLines="1"
+                    android:clickable="true"
+                    android:focusable="false"
+                    android:textSize="16sp"
+                    android:maxLength="30"
+                    tools:ignore="InvalidImeActionId" />
+            </android.support.design.widget.TextInputLayout>
+
+            <android.support.design.widget.TextInputLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:textColorHint="#757575"
+                android:layout_weight="0.5"
+                android:layout_marginTop="4dp">
+                <EditText
+                    android:id="@+id/end_time"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Hora hasta"
+                    android:imeActionId="@+id/login"
+                    android:enabled="false"
+                    android:imeActionLabel="@string/action_sign_in_short"
+                    android:imeOptions="actionUnspecified"
+                    android:inputType="time"
+                    android:textColor="@drawable/edit_text_selector"
+                    android:maxLines="1"
+                    android:clickable="true"
+                    android:focusable="false"
+                    android:textSize="16sp"
+                    android:maxLength="30"
+                    tools:ignore="InvalidImeActionId" />
+            </android.support.design.widget.TextInputLayout>
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/textObjetive"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="15sp"
+            android:text="Detalles"
+            android:layout_marginTop="16dp"
+            android:layout_marginLeft="4dp"
+            android:layout_marginBottom="2dp"
+            />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/bg_add_photo" />
+
+        <EditText
+            android:id="@+id/meeting_details"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:scrollbars="vertical"
+            android:padding="10dp"
+            android:hint="(Opcional) Ingrese detalles del evento..."
+            android:isScrollContainer="true"
+            android:textColor="@drawable/edit_text_selector"
+            android:background="@android:color/transparent"
+            android:textSize="16sp"
+            android:maxLength="5000"/>
+
+    </LinearLayout>
+
+</android.support.v4.widget.NestedScrollView>

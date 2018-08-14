@@ -150,7 +150,7 @@ public class AddFriendsDialogFragment extends DialogFragment {
         searchView.setOnQueryTextListener(new MaterialSearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
-                firebaseUserSearch(query);
+                firebaseUserSearch(query.toLowerCase());
                 return false;
             }
 

@@ -13,10 +13,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.SectionIndexer;
 import android.widget.TextView;
 
 import com.andresdlg.groupmeapp.Entities.Group;
 import com.andresdlg.groupmeapp.R;
+import com.andresdlg.groupmeapp.Utils.ContextValidator;
 import com.andresdlg.groupmeapp.uiPackage.GroupActivity;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.DataSource;
@@ -24,6 +26,7 @@ import com.bumptech.glide.load.engine.GlideException;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -31,8 +34,10 @@ import java.util.List;
  * Created by andresdlg on 11/07/17.
  */
 
-public class RVGroupAdapter extends RecyclerView.Adapter<RVGroupAdapter.GroupViewHolder> {
+public class RVGroupAdapter extends RecyclerView.Adapter<RVGroupAdapter.GroupViewHolder> implements SectionIndexer {
 
+    String[] sections;
+    List<String> sectionLetters=new ArrayList<>();
     private Context context;
     private List<Group> groups;
 
@@ -63,9 +68,33 @@ public class RVGroupAdapter extends RecyclerView.Adapter<RVGroupAdapter.GroupVie
         super.onAttachedToRecyclerView(recyclerView);
     }
 
+    public void updateSections(String firstLetter){
+        if(!sectionLetters.contains(firstLetter+"")){
+            sectionLetters.add(firstLetter+"");
+        }
+        ArrayList<String> sectionList = new ArrayList<>(sectionLetters);
+        sections = new String[sectionList.size()];
+        sectionList.toArray(sections);
+    }
+
     public void setGroups(List<Group> groups) {
         this.groups = groups;
         notifyDataSetChanged();
+    }
+
+    @Override
+    public Object[] getSections() {
+        return sections;
+    }
+
+    @Override
+    public int getPositionForSection(int sectionIndex) {
+        return sectionIndex;
+    }
+
+    @Override
+    public int getSectionForPosition(int position) {
+        return position;
     }
 
     static class GroupViewHolder extends RecyclerView.ViewHolder {
@@ -82,22 +111,24 @@ public class RVGroupAdapter extends RecyclerView.Adapter<RVGroupAdapter.GroupVie
 
         void setDetails(final Context context, final String name, final String imageUrl, final String groupKey) {
             groupName.setText(name);
+            if(ContextValidator.isValidContextForGlide(itemView.getContext())){
+                Glide.with(itemView.getContext())
+                        .load(imageUrl)
+                        .listener(new RequestListener<Drawable>() {
+                            @Override
+                            public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
+                                return false;
+                            }
 
-            Glide.with(context)
-                    .load(imageUrl)
-                    .listener(new RequestListener<Drawable>() {
-                        @Override
-                        public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
-                            return false;
-                        }
+                            @Override
+                            public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
+                                itemView.findViewById(R.id.homeprogress).setVisibility(View.GONE);
+                                return false;
+                            }
+                        })
+                        .into(groupPhoto);
+            }
 
-                        @Override
-                        public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
-                            itemView.findViewById(R.id.homeprogress).setVisibility(View.GONE);
-                            return false;
-                        }
-                    })
-                    .into(groupPhoto);
 
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override

@@ -1,6 +1,7 @@
 package com.andresdlg.groupmeapp.DialogFragments;
 
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.os.Bundle;
@@ -346,7 +347,7 @@ public class SubGroupNewTaskDialogFragment extends DialogFragment {
             int day = c.get(Calendar.DAY_OF_MONTH);
 
             // Create a new instance of DatePickerDialog and return it
-            return new DatePickerDialog(getActivity(), listener, year, month, day);
+            return new DatePickerDialog(getActivity(),R.style.datepicker, listener, year, month, day);
         }
 
 

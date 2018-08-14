@@ -22,6 +22,7 @@ import android.widget.Toast;
 
 import com.andresdlg.groupmeapp.Entities.Users;
 import com.andresdlg.groupmeapp.R;
+import com.andresdlg.groupmeapp.Utils.ContextValidator;
 import com.andresdlg.groupmeapp.Utils.FriendshipStatus;
 import com.andresdlg.groupmeapp.Utils.NotificationStatus;
 import com.andresdlg.groupmeapp.Utils.NotificationTypes;
@@ -114,21 +115,23 @@ public class RVContactRequestAdapter extends RecyclerView.Adapter<RVContactReque
                 }
             });
 
-            Glide.with(context)
-                    .load(contactPhoto)
-                    .listener(new RequestListener<Drawable>() {
-                        @Override
-                        public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
-                            return false;
-                        }
+            if(ContextValidator.isValidContextForGlide(itemView.getContext())){
+                Glide.with(itemView.getContext())
+                        .load(contactPhoto)
+                        .listener(new RequestListener<Drawable>() {
+                            @Override
+                            public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
+                                return false;
+                            }
 
-                        @Override
-                        public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
-                            itemView.findViewById(R.id.homeprogress).setVisibility(View.GONE);
-                            return false;
-                        }
-                    })
-                    .into(mContactPhoto);
+                            @Override
+                            public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
+                                itemView.findViewById(R.id.homeprogress).setVisibility(View.GONE);
+                                return false;
+                            }
+                        })
+                        .into(mContactPhoto);
+            }
 
             ImageButton btn = mView.findViewById(R.id.btn_menu);
             btn.setOnClickListener(new View.OnClickListener() {

@@ -2,6 +2,7 @@ package com.andresdlg.groupmeapp.DialogFragments;
 
 import android.app.Dialog;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.widget.LinearLayoutManager;
@@ -24,6 +25,8 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -132,8 +135,6 @@ public class SubGroupMembersDialogFragment extends DialogFragment {
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     Users u = dataSnapshot.getValue(Users.class);
                     filterUsers(u);
-                    //users.add(u);
-                    //adapter.notifyDataSetChanged();
                     usersRef.removeEventListener(this);
                 }
 

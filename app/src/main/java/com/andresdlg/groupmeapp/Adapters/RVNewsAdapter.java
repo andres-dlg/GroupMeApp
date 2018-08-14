@@ -30,6 +30,7 @@ import com.andresdlg.groupmeapp.DialogFragments.HaveSeenThePostDialogFragment;
 import com.andresdlg.groupmeapp.Entities.Post;
 import com.andresdlg.groupmeapp.Entities.Users;
 import com.andresdlg.groupmeapp.R;
+import com.andresdlg.groupmeapp.Utils.ContextValidator;
 import com.andresdlg.groupmeapp.Utils.Roles;
 import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
 import com.andresdlg.groupmeapp.uiPackage.GroupActivity;
@@ -159,9 +160,11 @@ public class RVNewsAdapter extends RecyclerView.Adapter<RVNewsAdapter.NewsViewHo
                     final Users u = dataSnapshot.getValue(Users.class);
 
                     //CARGO SU FOTO DE PERFIL
-                    Glide.with(context)
-                            .load(u.getImageURL())
-                            .into(userProfilePhoto);
+                    if(ContextValidator.isValidContextForGlide(context.getApplicationContext())){
+                        Glide.with(context.getApplicationContext())
+                                .load(u.getImageURL())
+                                .into(userProfilePhoto);
+                    }
 
                     userProfilePhoto.setOnClickListener(new View.OnClickListener() {
                         @Override

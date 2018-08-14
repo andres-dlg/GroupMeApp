@@ -31,6 +31,8 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
@@ -185,6 +187,9 @@ public class GroupsFragment extends Fragment implements View.OnClickListener, He
 
     private void updateGroups(Group group, boolean saved) {
         boolean exists = false;
+
+        adapter.updateSections(group.getName().toLowerCase().charAt(0)+"");
+
         for(int i=0; i < groups.size(); i++){
             if(groups.get(i).getGroupKey().equals(group.getGroupKey())){
                 exists = true;
@@ -204,6 +209,12 @@ public class GroupsFragment extends Fragment implements View.OnClickListener, He
                 value += 1;
             }
         }
+        Collections.sort(groups, new Comparator<Group>() {
+            @Override
+            public int compare(Group o1, Group o2) {
+                return o1.getName().toLowerCase().compareTo(o2.getName().toLowerCase());
+            }
+        });
         if(saved){
             rv.scrollToPosition(groups.size()-1);
         }

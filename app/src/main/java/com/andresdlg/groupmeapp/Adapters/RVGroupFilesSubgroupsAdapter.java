@@ -31,6 +31,7 @@ import android.widget.Toast;
 import com.andresdlg.groupmeapp.Entities.File;
 import com.andresdlg.groupmeapp.Entities.SubGroup;
 import com.andresdlg.groupmeapp.R;
+import com.andresdlg.groupmeapp.Utils.ContextValidator;
 import com.andresdlg.groupmeapp.Utils.Roles;
 import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
 import com.bumptech.glide.Glide;
@@ -127,7 +128,9 @@ public class RVGroupFilesSubgroupsAdapter extends ExpandableRecyclerViewAdapter<
 
         void setSubGroupData(final ExpandableGroup group) {
             subGroupName.setText(((SubGroup)group).getName());
-            Glide.with(context).load(((SubGroup)group).getImageUrl()).into(subGroupPhoto);
+            if(ContextValidator.isValidContextForGlide(itemView.getContext())){
+                Glide.with(itemView.getContext()).load(((SubGroup)group).getImageUrl()).into(subGroupPhoto);
+            }
 
             /*myRol = setMyRol(((SubGroup)group).getMembers());
 

@@ -15,17 +15,23 @@
         android:clickable="true"
         android:layout_alignParentBottom="true"
         android:layout_alignParentRight="true"
-        android:layout_marginBottom="15dp"
-        android:layout_marginRight="15dp"
+        android:layout_marginBottom="16dp"
+        android:layout_marginRight="16dp"
         android:tint="@color/common_google_signin_btn_text_dark"
         app:backgroundTint="@color/colorPrimaryDark"
         app:fabSize="normal"
-        app:srcCompat="@android:drawable/ic_input_add" />
+        app:srcCompat="@drawable/rfab__drawable_rfab_default" />
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/rvGroups"
         android:layout_height="match_parent"
-        android:layout_width="match_parent">
+        android:layout_width="match_parent"
+        android:scrollbarStyle="outsideOverlay"
+        app:fastScrollEnabled="true"
+        app:fastScrollHorizontalThumbDrawable="@drawable/fast_scroll_thumb_drawable"
+        app:fastScrollHorizontalTrackDrawable="@drawable/fast_scroll_line_drawable"
+        app:fastScrollVerticalThumbDrawable="@drawable/fast_scroll_thumb_drawable"
+        app:fastScrollVerticalTrackDrawable="@drawable/fast_scroll_line_drawable">
     </android.support.v7.widget.RecyclerView>
 
     <TextView

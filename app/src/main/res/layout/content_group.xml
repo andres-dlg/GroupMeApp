@@ -9,7 +9,8 @@
     android:fitsSystemWindows="true"
     android:orientation="vertical"
     android:theme="@style/AppTheme"
-    android:layout_gravity="bottom">
+    android:layout_gravity="bottom"
+    android:animateLayoutChanges="true">
 
     <android.support.v4.view.ViewPager
         android:id="@+id/viewpager"
@@ -86,11 +87,40 @@
             xmlns:ads="http://schemas.android.com/apk/res-auto"
             android:id="@+id/adView"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="50dp"
             android:layout_weight="1"
-            ads:adSize="BANNER"
+            ads:adSize="SMART_BANNER"
             ads:adUnitId="ca-app-pub-6164739277423889/8658953023"/>
 
     </LinearLayout>
+
+    <com.wangjie.rapidfloatingactionbutton.RapidFloatingActionLayout
+        xmlns:rfal="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/activity_main_rfal"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        rfal:rfal_frame_color="#ffffff"
+        rfal:rfal_frame_alpha="0.7"
+        >
+        <com.wangjie.rapidfloatingactionbutton.RapidFloatingActionButton
+            xmlns:rfab="http://schemas.android.com/apk/res-auto"
+            android:id="@+id/activity_main_rfab"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentBottom="true"
+            android:layout_marginBottom="96dp"
+            android:padding="8dp"
+            rfab:rfab_size="normal"
+            rfab:rfab_drawable="@drawable/rfab__drawable_rfab_default"
+            android:animateLayoutChanges="true"
+            rfab:rfab_color_normal="#3F51B5"
+            rfab:rfab_color_pressed="#303F9F"
+            rfab:rfab_shadow_radius="7dp"
+            rfab:rfab_shadow_color="#999999"
+            rfab:rfab_shadow_dx="0dp"
+            rfab:rfab_shadow_dy="5dp"
+            />
+    </com.wangjie.rapidfloatingactionbutton.RapidFloatingActionLayout>
 
 </android.support.design.widget.CoordinatorLayout>

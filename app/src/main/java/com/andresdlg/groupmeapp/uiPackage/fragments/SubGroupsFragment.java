@@ -1,6 +1,7 @@
 package com.andresdlg.groupmeapp.uiPackage.fragments;
 
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
@@ -15,6 +16,10 @@ import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
+import android.view.animation.DecelerateInterpolator;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -30,6 +35,8 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.wangjie.rapidfloatingactionbutton.RapidFloatingActionButton;
+import com.wangjie.rapidfloatingactionbutton.RapidFloatingActionLayout;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,7 +50,9 @@ public class SubGroupsFragment extends Fragment {
 
     //SwipeRefreshLayout swipeContainer;
 
-    FloatingActionButton fab;
+    //FloatingActionButton fab;
+    RapidFloatingActionButton rfaBtn;
+    RapidFloatingActionLayout rfaLayout;
     String groupKey;
     RecyclerView rvSubGroups;
     ProgressBar progressBar;
@@ -59,6 +68,11 @@ public class SubGroupsFragment extends Fragment {
 
     Bundle bundle;
 
+    Animation fadeIn;
+    Animation fadeOut;
+    private boolean estabaEnElUltimoElemento;
+    Handler handler;
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -72,6 +86,10 @@ public class SubGroupsFragment extends Fragment {
         //groupKey = ((FireApp) getActivity().getApplication()).getGroupKey();
 
         subGroupsRef = FirebaseDatabase.getInstance().getReference("Groups").child(groupKey).child("subgroups");
+
+        setAnimations();
+
+        handler = new Handler();
 
         return inflater.inflate(R.layout.fragment_sub_groups,container,false);
     }
@@ -88,13 +106,16 @@ public class SubGroupsFragment extends Fragment {
 
         tvNoSubGroups = view.findViewById(R.id.tvNoSubGroups);
 
-        fab = view.findViewById(R.id.fabSubGroups);
+        /*fab = view.findViewById(R.id.fabSubGroups);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 showHeaderDialogFragment();
             }
-        });
+        });*/
+
+        rfaBtn = getActivity().findViewById(R.id.activity_main_rfab);
+        rfaLayout = getActivity().findViewById(R.id.activity_main_rfal);
 
         rvSubGroups = view.findViewById(R.id.rvSubGroups);
         //rvSubGroups.setHasFixedSize(false); //El tamaño queda fijo, mejora el desempeño
@@ -107,7 +128,31 @@ public class SubGroupsFragment extends Fragment {
             public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
                 if(newState == RecyclerView.SCROLL_STATE_IDLE){
                     if(llm.findLastCompletelyVisibleItemPosition() != subGroups.size()-1){
-                        fab.show();
+                        if(estabaEnElUltimoElemento){
+                            rfaBtn.startAnimation(fadeIn);
+                            estabaEnElUltimoElemento = false;
+                            handler.postDelayed(new Runnable() {
+                                @Override
+                                public void run() {
+                                    rfaLayout.setVisibility(View.VISIBLE);
+                                }
+                            }, 100);
+                        }
+                        //rfaBtn.setVisibility(View.VISIBLE);
+                        //fab.show();
+                    }else{
+                        if(recyclerView.canScrollVertically(-1) || recyclerView.canScrollVertically(1)){
+                            if (!recyclerView.canScrollVertically(1)) {
+                                rfaBtn.startAnimation(fadeOut);
+                                handler.postDelayed(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        rfaLayout.setVisibility(View.GONE);
+                                    }
+                                }, 200);
+                                estabaEnElUltimoElemento = true;
+                            }
+                        }
                     }
                 }
                 super.onScrollStateChanged(recyclerView, newState);
@@ -115,9 +160,12 @@ public class SubGroupsFragment extends Fragment {
 
             @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-                if(dy > 0 || dx < 0 && fab.isShown()){
-                    fab.hide();
-                }
+                //if(dy > 0 || dx < 0 && fab.isShown()){
+                /*if((dy > 0 || dx < 0)  && (rfaBtn.getVisibility() == View.VISIBLE)){
+                    if(recyclerView.getScrollState() != RecyclerView.SCROLL_STATE_IDLE){
+                        rfaBtn.startAnimation(fadeOut);
+                    }
+                }*/
             }
         });
 
@@ -170,9 +218,9 @@ public class SubGroupsFragment extends Fragment {
         super.setUserVisibleHint(isVisibleToUser);
         if(isAdded()){
             if(isVisibleToUser){
-                fab.show();
+                //fab.show();
             }else{
-                fab.hide();
+                //fab.hide();
             }
         }
     }
@@ -285,12 +333,26 @@ public class SubGroupsFragment extends Fragment {
         return -1;
     }
 
-    private void showHeaderDialogFragment() {
+    private void setAnimations(){
+        fadeIn = new AlphaAnimation(0, 1);
+        fadeIn.setInterpolator(new DecelerateInterpolator()); //add this
+        fadeIn.setDuration(100);
+        fadeIn.setFillEnabled(true);
+        fadeIn.setFillAfter(true);
+
+        fadeOut = new AlphaAnimation(1, 0);
+        fadeOut.setInterpolator(new DecelerateInterpolator()); //add this
+        fadeOut.setDuration(200);
+        fadeOut.setFillEnabled(true);
+        fadeOut.setFillAfter(true);
+    }
+
+    /*private void showHeaderDialogFragment() {
         FragmentManager fragmentManager = getFragmentManager();
         HeaderDialogFragment newFragment = new HeaderDialogFragment(GroupType.SUBGROUP,groupKey);
         newFragment.setStyle(DialogFragment.STYLE_NORMAL,R.style.AppTheme_DialogFragment);
         FragmentTransaction transaction = fragmentManager.beginTransaction();
         transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
         transaction.add(android.R.id.content, newFragment).addToBackStack(null).commit();
-    }
+    }*/
 }

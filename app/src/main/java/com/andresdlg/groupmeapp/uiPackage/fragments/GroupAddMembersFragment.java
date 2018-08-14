@@ -17,6 +17,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.andresdlg.groupmeapp.Adapters.RVSearchContactAdapter;
+import com.andresdlg.groupmeapp.Entities.Meeting;
 import com.andresdlg.groupmeapp.Entities.Users;
 import com.andresdlg.groupmeapp.R;
 import com.andresdlg.groupmeapp.Utils.FriendshipStatus;
@@ -63,6 +64,8 @@ public class GroupAddMembersFragment extends Fragment implements RVSearchContact
     List<Users> groupUsers;
 
     Map<String, String> userIdsWithStatus;
+
+    List<String> usersToBeSelected;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
@@ -178,6 +181,12 @@ public class GroupAddMembersFragment extends Fragment implements RVSearchContact
             for(Users u: groupUsers){
                 users.add(u);
                 rvSearchContactAdapter.notifyDataSetChanged();
+                if(usersToBeSelected!=null){
+                    if(usersToBeSelected.contains(u.getUserid())){
+                        rvSearchContactAdapter.toggleSelection(users.indexOf(u));
+                        mOnUserSelectionSetListener.onUserSelectionSet(rvSearchContactAdapter.getSelectedIds());
+                    }
+                }
             }
         }
     }
@@ -199,6 +208,12 @@ public class GroupAddMembersFragment extends Fragment implements RVSearchContact
                     if(!users.contains(u) && validateExistingMembers(u)){
                         users.add(u);
                         rvSearchContactAdapter.notifyDataSetChanged();
+                        if(usersToBeSelected!=null){
+                            if(usersToBeSelected.contains(u.getUserid())){
+                                rvSearchContactAdapter.toggleSelection(users.indexOf(u));
+                                mOnUserSelectionSetListener.onUserSelectionSet(rvSearchContactAdapter.getSelectedIds());
+                            }
+                        }
                         //rvSearchContactAdapter.setUsers(users);
                     }
                 }
@@ -222,23 +237,26 @@ public class GroupAddMembersFragment extends Fragment implements RVSearchContact
 
     private void onListItemSelect(int position) {
 
-        mOnUserSelectionSetListener.onUserSelectionSet(rvSearchContactAdapter.getSelectedIds());
-
         rvSearchContactAdapter.toggleSelection(position);//Toggle the selection
         selected = rvSearchContactAdapter.getSelectedCount();
-        snackbar.setText( selected + ((selected > 1 ? " Seleccionados" : " Seleccionado")));
-        if(selected > 0 && !isShowing){
-            //rvAddGroupMember.setTranslationY(pxUp*-1);
-            rvAddGroupMember.setPadding(0,0,0,pxUp);
-            snackbar.show();
-            isShowing = true;
-            v.setPadding(0,0,0,pxUp);
-        }else if(selected == 0 && isShowing){
-            rvAddGroupMember.setPadding(0,0,0,0);
-            v.setPadding(0,0,0,0);
-            //rvAddGroupMember.setTranslationY(pxDown);
-            snackbar.dismiss();
-            isShowing = false;
+
+        mOnUserSelectionSetListener.onUserSelectionSet(rvSearchContactAdapter.getSelectedIds());
+
+        if(v!=null){
+            snackbar.setText( selected + ((selected > 1 ? " Seleccionados" : " Seleccionado")));
+            if(selected > 0 && !isShowing){
+                //rvAddGroupMember.setTranslationY(pxUp*-1);
+                rvAddGroupMember.setPadding(0,0,0,pxUp);
+                snackbar.show();
+                isShowing = true;
+                v.setPadding(0,0,0,pxUp);
+            }else if(selected == 0 && isShowing){
+                rvAddGroupMember.setPadding(0,0,0,0);
+                v.setPadding(0,0,0,0);
+                //rvAddGroupMember.setTranslationY(pxDown);
+                snackbar.dismiss();
+                isShowing = false;
+            }
         }
     }
 
@@ -249,7 +267,7 @@ public class GroupAddMembersFragment extends Fragment implements RVSearchContact
     }
 
     public interface OnUserSelectionSetListener{
-        public void onUserSelectionSet(List<String> userIds);
+        void onUserSelectionSet(List<String> userIds);
     }
 
     public void onAttachToParentFragment(Fragment fragment){
@@ -257,7 +275,8 @@ public class GroupAddMembersFragment extends Fragment implements RVSearchContact
             mOnUserSelectionSetListener = (OnUserSelectionSetListener) fragment;
         }
         catch (ClassCastException e){
-            throw new ClassCastException(fragment.toString() + " must implement OnUserSelectionSetListener");
+            throw new ClassCastException(e.getMessage());
+            //throw new ClassCastException(fragment.toString() + " must implement OnUserSelectionSetListener");
         }
     }
 
@@ -276,5 +295,10 @@ public class GroupAddMembersFragment extends Fragment implements RVSearchContact
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         onAttachToParentFragment(getParentFragment());
+        Bundle bundle = getArguments();
+        Meeting meeting = (Meeting) bundle.getSerializable("meeting");
+        if(meeting!=null){
+            usersToBeSelected = meeting.getGuestsIds();
+        }
     }
 }

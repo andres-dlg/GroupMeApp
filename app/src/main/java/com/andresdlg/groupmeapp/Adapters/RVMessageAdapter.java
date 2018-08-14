@@ -18,6 +18,7 @@ import com.andresdlg.groupmeapp.Entities.ConversationFirebase;
 import com.andresdlg.groupmeapp.Entities.Message;
 import com.andresdlg.groupmeapp.Entities.Users;
 import com.andresdlg.groupmeapp.R;
+import com.andresdlg.groupmeapp.Utils.ContextValidator;
 import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
 import com.andresdlg.groupmeapp.uiPackage.ChatActivity;
 import com.bumptech.glide.Glide;
@@ -184,21 +185,24 @@ public class RVMessageAdapter extends RecyclerView.Adapter<RVMessageAdapter.Mess
         }
 
         public void setPhoto(Context context, final String imageURL) {
-            Glide.with(context)
-                    .load(imageURL)
-                    .listener(new RequestListener<Drawable>() {
-                        @Override
-                        public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
-                            return false;
-                        }
+            if(ContextValidator.isValidContextForGlide(itemView.getContext())){
+                Glide.with(itemView.getContext())
+                        .load(imageURL)
+                        .listener(new RequestListener<Drawable>() {
+                            @Override
+                            public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
+                                return false;
+                            }
 
-                        @Override
-                        public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
-                            itemView.findViewById(R.id.homeprogress).setVisibility(View.GONE);
-                            return false;
-                        }
-                    })
-                    .into(userPhoto);
+                            @Override
+                            public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
+                                itemView.findViewById(R.id.homeprogress).setVisibility(View.GONE);
+                                return false;
+                            }
+                        })
+                        .into(userPhoto);
+            }
+
         }
 
         public void setNewMessageIndicator(ConversationFirebase conversation) {
