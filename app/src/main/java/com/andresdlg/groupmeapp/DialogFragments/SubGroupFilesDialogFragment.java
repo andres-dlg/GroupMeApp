@@ -151,7 +151,7 @@ public class SubGroupFilesDialogFragment extends DialogFragment {
                         files.clear();
                         for (DataSnapshot d : dataSnapshot.getChildren()){
                             File file = d.getValue(File.class);
-                            files.add(file);
+                            updateFiles(file);
                         }
                         rvSubGroupFilesAdapter.notifyDataSetChanged();
                     }
@@ -334,8 +334,7 @@ public class SubGroupFilesDialogFragment extends DialogFragment {
                                     //Toast.makeText(getContext(), "Archivo DB: " + fileData[0] + " agregado.", Toast.LENGTH_SHORT).show();
                                     // Toast.makeText(getContext(), "Archivo ST: " + fileData[0] + " agregado.", Toast.LENGTH_SHORT).show();
                                     Toast.makeText(getContext(), fileData[0] + " agregado al repositorio", Toast.LENGTH_SHORT).show();
-
-                                    files.add(file);
+                                    updateFiles(file);
                                 }
                             });
 
@@ -407,6 +406,22 @@ public class SubGroupFilesDialogFragment extends DialogFragment {
             }
         }
         return myRol;
+    }
+
+    private void updateFiles(File file) {
+        boolean exists = false;
+        for(int i=0; i < files.size(); i++){
+            if(files.get(i).getFileKey().equals(file.getFileKey())){
+                exists = true;
+                files.remove(i);
+                files.add(i,file);
+                rvSubGroupFilesAdapter.notifyItemChanged(i);
+            }
+        }
+        if(!exists){
+            files.add(file);
+            rvSubGroupFilesAdapter.notifyDataSetChanged();
+        }
     }
 
 }

@@ -31,6 +31,29 @@ public class File implements Parcelable {
         this.published = published;
     }
 
+    protected File(Parcel in) {
+        fileKey = in.readString();
+        fileName = in.readString();
+        fileUrl = in.readString();
+        fileType = in.readString();
+        fileSize = in.readFloat();
+        uploadTime = in.readLong();
+        user = in.readString();
+        published = in.readByte() != 0;
+    }
+
+    public static final Creator<File> CREATOR = new Creator<File>() {
+        @Override
+        public File createFromParcel(Parcel in) {
+            return new File(in);
+        }
+
+        @Override
+        public File[] newArray(int size) {
+            return new File[size];
+        }
+    };
+
     public String getFilename() {
         return fileName;
     }

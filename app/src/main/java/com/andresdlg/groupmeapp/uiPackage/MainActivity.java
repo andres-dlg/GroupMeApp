@@ -46,6 +46,7 @@ import com.andresdlg.groupmeapp.Utils.NotificationStatus;
 import com.andresdlg.groupmeapp.Utils.NotificationTypes;
 import com.andresdlg.groupmeapp.Utils.RoundRectangle;
 import com.andresdlg.groupmeapp.firebasePackage.FireApp;
+import com.andresdlg.groupmeapp.firebasePackage.FirebaseContacts;
 import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
 import com.andresdlg.groupmeapp.uiPackage.fragments.GroupsFragment;
 import com.andresdlg.groupmeapp.uiPackage.fragments.MessagesFragment;
@@ -312,8 +313,14 @@ public class MainActivity extends AppCompatActivity
         drawer.addDrawerListener(toggle);
         toggle.syncState();
 
+        preLoadContacts();
+
         //PARA NOTIFICACIONES
         fillContactIdsMap();
+    }
+
+    private void preLoadContacts() {
+        FirebaseContacts.getUserContacts(StaticFirebaseSettings.currentUserId);
     }
 
     private void fillContactIdsMap() {

@@ -33,8 +33,10 @@ import com.andresdlg.groupmeapp.Entities.Users;
 import com.andresdlg.groupmeapp.R;
 import com.andresdlg.groupmeapp.Utils.ContextValidator;
 import com.andresdlg.groupmeapp.Utils.GroupStatus;
+import com.andresdlg.groupmeapp.Utils.Helper;
 import com.andresdlg.groupmeapp.Utils.NotificationStatus;
 import com.andresdlg.groupmeapp.Utils.NotificationTypes;
+import com.andresdlg.groupmeapp.Utils.Roles;
 import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
 import com.andresdlg.groupmeapp.uiPackage.MainActivity;
 import com.andresdlg.groupmeapp.uiPackage.fragments.GroupsFragment;
@@ -54,6 +56,7 @@ import org.ocpsoft.prettytime.PrettyTime;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -608,6 +611,8 @@ public class RVNotificationAdapter extends RecyclerView.Adapter<RVNotificationAd
         }
 
         private void acceptInvitation(String groupKey, int position) {
+            Helper.flag = false;
+            groupsRef.child(groupKey).child("members").child(StaticFirebaseSettings.currentUserId).setValue(Roles.MEMBER);
             userRef.child("groups").child(groupKey).child("status").setValue(GroupStatus.ACCEPTED.toString()).addOnSuccessListener(new OnSuccessListener<Void>() {
                 @Override
                 public void onSuccess(Void aVoid) {
@@ -638,7 +643,10 @@ public class RVNotificationAdapter extends RecyclerView.Adapter<RVNotificationAd
             notifyItemRemoved(position);
             notifyItemRangeChanged(position, notifications.size());
 
-            mOnSaveGroupListener.onSavedGroup(true);
+            if(mOnSaveGroupListener!=null){
+                mOnSaveGroupListener.onSavedGroup(true);
+            }
+
         }
 
         void setNotificationKey(String notificationKey) {

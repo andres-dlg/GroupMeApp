@@ -44,6 +44,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -85,6 +86,7 @@ public class RVGroupDetailAdapter extends RecyclerView.Adapter<RVGroupDetailAdap
         for(Map.Entry<String, String> entry : usersRoles.entrySet()) {
             if(u.getUserid().equals(entry.getKey())){
                 rol = entry.getValue();
+                break;
             }
         }
         groupDetailViewHolder.setDetails(context,u.getName(),u.getAlias(),rol,u.getImageURL(),u.getUserid());
@@ -118,6 +120,11 @@ public class RVGroupDetailAdapter extends RecyclerView.Adapter<RVGroupDetailAdap
                 cantAdmins += 1;
             }
         }
+    }
+
+    public void setRoles(Map<String, String> usersRoles) {
+        this.usersRoles = new HashMap<>();
+        this.usersRoles.putAll(usersRoles);
     }
 
 
@@ -243,7 +250,7 @@ public class RVGroupDetailAdapter extends RecyclerView.Adapter<RVGroupDetailAdap
 
                                         if(cantAdmins >1){
                                             deleteUserFromGroup(iduser,getAdapterPosition(),false);
-                                            Toast.makeText(context,"Eliminado", Toast.LENGTH_SHORT).show();
+                                            //Toast.makeText(context,"Eliminado", Toast.LENGTH_SHORT).show();
                                             break;
                                         }else{
                                             if(usersList.size()>1){
@@ -290,7 +297,7 @@ public class RVGroupDetailAdapter extends RecyclerView.Adapter<RVGroupDetailAdap
                                             }
                                         });
 
-                                        Toast.makeText(context, "Hacer admin", Toast.LENGTH_SHORT).show();
+                                        Toast.makeText(context, "Permisos de administrador otorgados", Toast.LENGTH_SHORT).show();
                                         break;
                                     case R.id.delete:
                                         //rejectRequest(iduser);
@@ -315,7 +322,7 @@ public class RVGroupDetailAdapter extends RecyclerView.Adapter<RVGroupDetailAdap
                                     case R.id.delete:
                                         //rejectRequest(iduser);
                                         deleteUserFromGroup(iduser,getAdapterPosition(),false);
-                                        Toast.makeText(context, "Eliminar", Toast.LENGTH_SHORT).show();
+                                        //Toast.makeText(context, "Eliminar", Toast.LENGTH_SHORT).show();
                                         break;
                                 }
                                 return true;

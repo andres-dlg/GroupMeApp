@@ -266,7 +266,7 @@ public class RVNewsAdapter extends RecyclerView.Adapter<RVNewsAdapter.NewsViewHo
                 }
             });
 
-            if(likeBy.size()>0){
+            if(likeBy.size()>0 && likeBy != null){
                 likesCountTv.setText(String.valueOf(likeBy.size()));
                 rlCount.setOnClickListener(new View.OnClickListener() {
                     @Override
@@ -274,6 +274,9 @@ public class RVNewsAdapter extends RecyclerView.Adapter<RVNewsAdapter.NewsViewHo
                         showHaveSeenThePostDialogFragment(posts.get(position).getLikeBy());
                     }
                 });
+            }else{
+                likesCountTv.setText(String.valueOf(0));
+                rlCount.setOnClickListener(null);
             }
 
             final List<String> likesIds = new ArrayList<>();
@@ -291,10 +294,22 @@ public class RVNewsAdapter extends RecyclerView.Adapter<RVNewsAdapter.NewsViewHo
                         if(id.equals(StaticFirebaseSettings.currentUserId)){
                             likesIds.remove(StaticFirebaseSettings.currentUserId);
                             existo = true;
+                            if(likesIds.size()==0){
+                                rlCount.setOnClickListener(null);
+                            }
+                            break;
                         }
                     }
                     if(!existo){
                         likesIds.add(StaticFirebaseSettings.currentUserId);
+                        if(likesIds.size()>0){
+                            rlCount.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    showHaveSeenThePostDialogFragment(posts.get(position).getLikeBy());
+                                }
+                            });
+                        }
                     }
 
                     if(likesIds.size() > 0){

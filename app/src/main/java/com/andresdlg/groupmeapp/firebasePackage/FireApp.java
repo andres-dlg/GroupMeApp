@@ -73,12 +73,6 @@ public class FireApp extends Application {
         }
         groupsIds = new HashMap<>();
         contactsIds = new HashMap<>();
-
-        String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
-        if(userId != null){
-            FirebaseContacts.getUserContacts(userId);
-        }
-
     }
 
     public String getGroupName() {

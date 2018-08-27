@@ -18,6 +18,8 @@ import com.andresdlg.groupmeapp.Adapters.RVSubGroupDetailAdapter;
 import com.andresdlg.groupmeapp.Entities.SubGroup;
 import com.andresdlg.groupmeapp.Entities.Users;
 import com.andresdlg.groupmeapp.R;
+import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
+import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -40,7 +42,6 @@ public class SubGroupMembersDialogFragment extends DialogFragment {
     RVSubGroupDetailAdapter adapter;
     List<Users> users = new ArrayList<>();
     Map<String, String> usersRoles = new HashMap<>();
-    Map<String, String> members;
     DatabaseReference firebaseContacts;
     //TextView tvFriends;
 
@@ -81,25 +82,46 @@ public class SubGroupMembersDialogFragment extends DialogFragment {
         LinearLayoutManager llm = new LinearLayoutManager(getContext());
         rv.setLayoutManager(llm);
 
-        firebaseContacts = FirebaseDatabase.getInstance().getReference("Groups").child(groupKey).child("subgroups").child(subGroupKey);
-        firebaseContacts.addValueEventListener(new ValueEventListener() {
+        adapter = new RVSubGroupDetailAdapter(users,usersRoles,groupKey,subGroupKey,getContext());
+        rv.setAdapter(adapter);
+
+        firebaseContacts = FirebaseDatabase.getInstance().getReference("Groups").child(groupKey).child("subgroups");
+        firebaseContacts.addChildEventListener(new ChildEventListener() {
             @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                //users.clear();
+            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                if(dataSnapshot.child("subGroupKey").getValue().toString().equals(subGroupKey)){
+                    SubGroup sg = new SubGroup(dataSnapshot.child("name").getValue().toString(),null,null,null,null);
+                    sg.setName(dataSnapshot.child("name").getValue().toString());
+                    sg.setImageUrl(dataSnapshot.child("imageUrl").getValue().toString());
+                    sg.setMembers((Map<String,String>) dataSnapshot.child("members").getValue());
+                    sg.setSubGroupKey(dataSnapshot.child("subGroupKey").getValue().toString());
+                    getMembers(sg);
+                }
+            }
+
+            @Override
+            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+                users.clear();
+                usersRoles.clear();
                 SubGroup sg = new SubGroup(dataSnapshot.child("name").getValue().toString(),null,null,null,null);
                 sg.setName(dataSnapshot.child("name").getValue().toString());
                 sg.setImageUrl(dataSnapshot.child("imageUrl").getValue().toString());
                 sg.setMembers((Map<String,String>) dataSnapshot.child("members").getValue());
                 sg.setSubGroupKey(dataSnapshot.child("subGroupKey").getValue().toString());
-                getMembers(sg);
-
-                adapter = new RVSubGroupDetailAdapter(users,usersRoles,groupKey,subGroupKey,getContext());
-                if(rv.getAdapter() == null){
-                    rv.setAdapter(adapter);
+                if(((Map<String,String>) dataSnapshot.child("members").getValue()).get(StaticFirebaseSettings.currentUserId) == null){
+                    dismiss();
                 }else{
-                    rv.swapAdapter(adapter,false);
+                    getMembers(sg);
                 }
+            }
 
+            @Override
+            public void onChildRemoved(DataSnapshot dataSnapshot) {
+
+            }
+
+            @Override
+            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
 
             }
 
@@ -123,12 +145,11 @@ public class SubGroupMembersDialogFragment extends DialogFragment {
     }
 
     private void getMembers(final SubGroup sg) {
-        members = sg.getMembers();
+        usersRoles = sg.getMembers();
         ValueEventListener listener;
-        for(Map.Entry<String, String> entry : members.entrySet()) {
+        for(Map.Entry<String, String> entry : usersRoles.entrySet()) {
             String memberId = entry.getKey();
             //String memberRol = entry.getValue();
-            usersRoles = sg.getMembers();
             usersRef = FirebaseDatabase.getInstance().getReference("Users").child(memberId);
             listener = new ValueEventListener() {
                 @Override
@@ -149,6 +170,7 @@ public class SubGroupMembersDialogFragment extends DialogFragment {
 
     private void filterUsers(Users u) {
         boolean exists = false;
+        adapter.setRoles(usersRoles);
         for(int i = 0; i<users.size();i++){
             if(users.get(i).getUserid().equals(u.getUserid())){
                 exists = true;

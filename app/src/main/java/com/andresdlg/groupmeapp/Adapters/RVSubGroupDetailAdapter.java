@@ -39,6 +39,7 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -117,6 +118,11 @@ public class RVSubGroupDetailAdapter extends RecyclerView.Adapter<RVSubGroupDeta
         }
     }
 
+    public void setRoles(Map<String, String> usersRoles) {
+        this.usersRoles = new HashMap<>();
+        this.usersRoles.putAll(usersRoles);
+    }
+
 
     class SubGroupDetailViewHolder extends RecyclerView.ViewHolder{
 
@@ -158,7 +164,7 @@ public class RVSubGroupDetailAdapter extends RecyclerView.Adapter<RVSubGroupDeta
             });
 
             setMyRol();
-            if(myRol.equals(Roles.SUBGROUP_ADMIN.toString())){
+            if(myRol.equals(Roles.SUBGROUP_ADMIN.toString()) || iduser.equals(StaticFirebaseSettings.currentUserId)){
                 btnMenu.setVisibility(View.VISIBLE);
             }
 
@@ -200,7 +206,7 @@ public class RVSubGroupDetailAdapter extends RecyclerView.Adapter<RVSubGroupDeta
                                 popupMenu.getMenuInflater().inflate(R.menu.activity_group_detail_item_admin_to_admin_menu, menu);
 
                                 if(iduser.equals(StaticFirebaseSettings.currentUserId)){
-                                    popupMenu.getMenu().getItem(1).setTitle("Abandonar grupo");
+                                    popupMenu.getMenu().getItem(1).setTitle("Abandonar subgrupo");
                                 }
 
                                 popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
@@ -236,7 +242,7 @@ public class RVSubGroupDetailAdapter extends RecyclerView.Adapter<RVSubGroupDeta
 
                                                 if(cantAdmins >1){
                                                     deleteUserFromSubGroup(iduser,getAdapterPosition(), false);
-                                                    Toast.makeText(context,"Eliminado", Toast.LENGTH_SHORT).show();
+                                                    //Toast.makeText(context,"Eliminado", Toast.LENGTH_SHORT).show();
                                                     break;
                                                 }else{
                                                     if(usersList.size()>1){
@@ -287,12 +293,32 @@ public class RVSubGroupDetailAdapter extends RecyclerView.Adapter<RVSubGroupDeta
                                                     }
                                                 });
 
-                                                Toast.makeText(context, "Hacer admin", Toast.LENGTH_SHORT).show();
+                                                Toast.makeText(context, "Permisos de administrador otorgados", Toast.LENGTH_SHORT).show();
                                                 break;
                                             case R.id.delete:
                                                 //rejectRequest(iduser);
                                                 deleteUserFromSubGroup(iduser,getAdapterPosition(), false);
                                                 Toast.makeText(context, "Eliminar", Toast.LENGTH_SHORT).show();
+                                                break;
+                                        }
+                                        return true;
+                                    }
+                                });
+                                popupMenu.show();
+                            }else{
+
+                                popupMenu.getMenuInflater().inflate(R.menu.activity_group_detail_item_admin_to_member_menu, menu);
+                                popupMenu.getMenu().getItem(0).setVisible(false);
+                                popupMenu.getMenu().getItem(1).setTitle("Abandonar grupo");
+                                popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+                                    @Override
+                                    public boolean onMenuItemClick(MenuItem menuItem) {
+                                        int id = menuItem.getItemId();
+                                        switch (id) {
+                                            case R.id.delete:
+                                                //rejectRequest(iduser);
+                                                deleteUserFromSubGroup(iduser,getAdapterPosition(),false);
+                                                //Toast.makeText(context, "Eliminar", Toast.LENGTH_SHORT).show();
                                                 break;
                                         }
                                         return true;
@@ -310,7 +336,7 @@ public class RVSubGroupDetailAdapter extends RecyclerView.Adapter<RVSubGroupDeta
             subGroupsRef.child("members").child(userId).removeValue().addOnSuccessListener(new OnSuccessListener<Void>() {
                 @Override
                 public void onSuccess(Void aVoid) {
-                    Toast.makeText(context, "Borrado del subgrupo", Toast.LENGTH_SHORT).show();
+                    //Toast.makeText(context, "Borrado del subgrupo", Toast.LENGTH_SHORT).show();
                     /*usersList.remove(position);
                     notifyItemRemoved(position);
                     notifyItemRangeChanged(position, usersList.size());*/
@@ -345,7 +371,7 @@ public class RVSubGroupDetailAdapter extends RecyclerView.Adapter<RVSubGroupDeta
             usersRef.removeValue().addOnSuccessListener(new OnSuccessListener<Void>() {
                 @Override
                 public void onSuccess(Void aVoid) {
-                    Toast.makeText(context, "Usuario eliminado", Toast.LENGTH_SHORT).show();
+                    //Toast.makeText(context, "Usuario eliminado", Toast.LENGTH_SHORT).show();
                 }
             });
 

@@ -391,14 +391,20 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
 
                 View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.list_item_sub_group_task, parent, false);
                 FrameLayout fl = v.findViewById(R.id.fltask);
-                if(isSubGroupMember && (amIauthor || amIsubGroupAdmin)){
+                fl.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        showTaskDialog(task, subGroups.get(position).getSubGroupKey(), groupKey,subGroups.get(position).getMembers());
+                    }
+                });
+                /*if(isSubGroupMember && (amIauthor || amIsubGroupAdmin)){
                     fl.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                            showTaskDialog(task, subGroups.get(position).getSubGroupKey(), groupKey);
+                            showTaskDialog(task, subGroups.get(position).getSubGroupKey(), groupKey,subGroups.get(position).getMembers());
                         }
                     });
-                }
+                }*/
 
                 //Nombre de la tarea
                 textView = fl.findViewById(R.id.tasktv);
@@ -588,15 +594,6 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
             }
         }
 
-        private boolean amIsubGroupAdmin(Map<String, String> members) {
-            for(Map.Entry<String, String> entry: members.entrySet()) {
-                if(entry.getKey().equals(StaticFirebaseSettings.currentUserId) && entry.getValue().equals(Roles.SUBGROUP_ADMIN.toString())){
-                    return true;
-                }
-            }
-            return false;
-        }
-
         private boolean amIauthor(String author) {
             if(author.equals(StaticFirebaseSettings.currentUserId)){
                 return true;
@@ -722,9 +719,23 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
         }
     }
 
-    private void showTaskDialog(Task task, String subGroupKey, String groupKey) {
+    private boolean amIsubGroupAdmin(Map<String, String> members) {
+        for(Map.Entry<String, String> entry: members.entrySet()) {
+            if(entry.getKey().equals(StaticFirebaseSettings.currentUserId) && entry.getValue().equals(Roles.SUBGROUP_ADMIN.toString())){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void showTaskDialog(Task task, String subGroupKey, String groupKey, Map<String,String> members) {
         FragmentManager fragmentManager = ((GroupActivity)contexto).getSupportFragmentManager();
-        SubGroupNewTaskDialogFragment newFragment4 = new SubGroupNewTaskDialogFragment(subGroupKey,groupKey, task);
+        SubGroupNewTaskDialogFragment newFragment4;
+        if(task.getAuthor().equals(StaticFirebaseSettings.currentUserId) || amIsubGroupAdmin(members)){
+            newFragment4 = new SubGroupNewTaskDialogFragment(subGroupKey,groupKey, task);
+        }else{
+            newFragment4 = new SubGroupNewTaskDialogFragment(subGroupKey,groupKey, task, true);
+        }
         newFragment4.setCancelable(false);
         newFragment4.setStyle(DialogFragment.STYLE_NORMAL,R.style.AppTheme_DialogFragment);
         FragmentTransaction transaction4 = fragmentManager.beginTransaction();

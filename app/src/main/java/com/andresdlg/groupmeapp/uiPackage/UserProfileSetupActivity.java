@@ -27,9 +27,13 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.andresdlg.groupmeapp.Entities.Users;
 import com.andresdlg.groupmeapp.R;
+import com.andresdlg.groupmeapp.Utils.FriendshipStatus;
+import com.andresdlg.groupmeapp.Utils.NotificationStatus;
+import com.andresdlg.groupmeapp.Utils.NotificationTypes;
 import com.andresdlg.groupmeapp.Utils.PhotoFullPopupWindow;
 import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
 import com.bumptech.glide.Glide;
@@ -51,6 +55,10 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
+
+import java.util.Calendar;
+import java.util.HashMap;
+import java.util.Map;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -76,6 +84,7 @@ public class UserProfileSetupActivity extends AppCompatActivity {
     TextView mCompletedTasksQuantity;
     ImageButton mEdit;
     ImageButton mCall;
+    ImageButton mFriendship;
 
     //FIREBASE AUTHENTICATION FIELDS
     FirebaseAuth mAuth;
@@ -109,6 +118,8 @@ public class UserProfileSetupActivity extends AppCompatActivity {
     String iduser;
     Users u;
 
+    ValueEventListener eventListener;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -136,6 +147,7 @@ public class UserProfileSetupActivity extends AppCompatActivity {
             });
         }
 
+        mFriendship = findViewById(R.id.friendship);
 
         mTextInputAlias = findViewById(R.id.til);
 
@@ -229,7 +241,9 @@ public class UserProfileSetupActivity extends AppCompatActivity {
                 mSaveButton.setVisibility(View.GONE);
                 fab.setVisibility(View.GONE);
                 mName.setEnabled(false);
+                setFriendshipIcon();
             }else{
+                mFriendship.setVisibility(View.GONE);
                 mEdit.setVisibility(View.VISIBLE);
                 mEdit.setOnClickListener(new View.OnClickListener() {
                     @Override
@@ -239,17 +253,13 @@ public class UserProfileSetupActivity extends AppCompatActivity {
                             mTextInputJob.setEnabled(true);
                             mTextInputPhone.setEnabled(true);
                             //mJob.setEnabled(true);
-
-                            Drawable i = getResources().getDrawable(R.drawable.check_green);
-                            mEdit.setImageDrawable(i);
+                            mEdit.setImageDrawable(ContextCompat.getDrawable(UserProfileSetupActivity.this,R.drawable.check_green));
                         }else{
                             mTextInputAlias.setEnabled(false);
                             mTextInputJob.setEnabled(false);
                             mTextInputPhone.setEnabled(false);
                             //mJob.setEnabled(false);
-
-                            Drawable i = getResources().getDrawable(R.drawable.ic_pen_black_24dp);
-                            mEdit.setImageDrawable(i);
+                            mEdit.setImageDrawable(ContextCompat.getDrawable(UserProfileSetupActivity.this,R.drawable.ic_pen_black_24dp));
                         }
                         editMode = !editMode;
                     }
@@ -260,6 +270,95 @@ public class UserProfileSetupActivity extends AppCompatActivity {
             mMetricsLinearLayout.setVisibility(View.GONE);
         }
 
+    }
+
+    private void setFriendshipIcon() {
+        eventListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if(dataSnapshot.getValue()==null || dataSnapshot.child("status").getValue().toString().equals(FriendshipStatus.REJECTED.toString())){
+                    mFriendship.setImageDrawable(ContextCompat.getDrawable(UserProfileSetupActivity.this,R.drawable.ic_account_plus_white_24dp));
+                    mFriendship.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            sendInvitation();
+                        }
+                    });
+                }else if(dataSnapshot.child("status").getValue().toString().equals(FriendshipStatus.ACCEPTED.toString())){
+                    mFriendship.setImageDrawable(ContextCompat.getDrawable(UserProfileSetupActivity.this,R.drawable.ic_account_check_white_24dp));
+                    mFriendship.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            Toast.makeText(UserProfileSetupActivity.this, "Este usuario ya es tu contacto", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                }else if(dataSnapshot.child("status").getValue().toString().equals(FriendshipStatus.PENDING.toString())){
+                    mFriendship.setImageDrawable(ContextCompat.getDrawable(UserProfileSetupActivity.this,R.drawable.ic_timer_sand_white_24dp));
+                    mFriendship.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            Toast.makeText(UserProfileSetupActivity.this, "Ya le has enviado una solicitud de contacto", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        };
+        mUserDatabase.child("friends").child(StaticFirebaseSettings.currentUserId).addValueEventListener(eventListener);
+    }
+
+    private void sendInvitation() {
+        final String userFrom = StaticFirebaseSettings.currentUserId;
+
+        FirebaseDatabase
+                .getInstance()
+                .getReference("Users")
+                .child(userFrom).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                Users me = dataSnapshot.getValue(Users.class);
+
+                DatabaseReference userTo = FirebaseDatabase
+                        .getInstance()
+                        .getReference("Users")
+                        .child(iduser);
+
+                //Envio y almacenamiento de notificación
+                DatabaseReference userToNotifications = userTo.child("notifications");
+                String notificationKey = userToNotifications.push().getKey();
+                Map<String,Object> notification = new HashMap<>();
+                notification.put("notificationKey",notificationKey);
+                notification.put("title","Solicitud de amistad");
+                notification.put("message","Has recibido una solicitud de amistad de " + me.getName());
+                notification.put("from",userFrom);
+                notification.put("state", NotificationStatus.UNREAD);
+                notification.put("date", Calendar.getInstance().getTimeInMillis());
+                notification.put("type", NotificationTypes.FRIENDSHIP);
+
+                userToNotifications.child(notificationKey).setValue(notification).addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Toast.makeText(UserProfileSetupActivity.this, "Solicitud enviada", Toast.LENGTH_SHORT).show();
+                    }
+                });
+
+                //Almacenamiento de nodo friend
+                DatabaseReference userToFriends = userTo.child("friends");
+                Map<String,Object> friend = new HashMap<>();
+                friend.put("status", FriendshipStatus.PENDING);
+                friend.put("seen", NotificationStatus.UNREAD);
+                userToFriends.child(userFrom).updateChildren(friend);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
     }
 
     private void dialContactPhone(String phoneNumber) {
@@ -291,9 +390,15 @@ public class UserProfileSetupActivity extends AppCompatActivity {
                 mName.setText(u.getName());
                 mAlias.setText(u.getAlias());
                 mJob.setText(u.getJob());
-                mPhone.setText(u.getPhone());
+                String phone = u.getPhone();
+                if(phone!=null && !phone.equals("")){
+                    mPhone.setText(phone);
+                }else{
+                    mPhone.setText("Sin datos");
+                }
 
-                if(!TextUtils.isEmpty(mPhone.getText().toString().trim()) && !u.getUserid().equals(StaticFirebaseSettings.currentUserId)){
+
+                if((!u.getUserid().equals(StaticFirebaseSettings.currentUserId) && !mPhone.getText().toString().trim().equals("Sin datos"))){
                     mCall.setVisibility(View.VISIBLE);
                 }
                 //supportPostponeEnterTransition();
@@ -565,5 +670,8 @@ public class UserProfileSetupActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         mProgress.dismiss();
+        if(eventListener!=null){
+            mUserDatabase.removeEventListener(eventListener);
+        }
     }
 }

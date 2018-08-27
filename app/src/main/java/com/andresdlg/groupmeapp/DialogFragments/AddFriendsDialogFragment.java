@@ -462,7 +462,6 @@ public class AddFriendsDialogFragment extends DialogFragment {
                             friend.put("status", FriendshipStatus.PENDING);
                             friend.put("seen", NotificationStatus.UNREAD);
                             userToFriends.child(userFrom).updateChildren(friend);
-
                         }
 
                         @Override

@@ -31,6 +31,7 @@ import com.andresdlg.groupmeapp.Entities.File;
 import com.andresdlg.groupmeapp.R;
 import com.andresdlg.groupmeapp.Utils.Roles;
 import com.andresdlg.groupmeapp.firebasePackage.FireApp;
+import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.DatabaseReference;
@@ -81,7 +82,7 @@ public class RVGroupFilesAdapter extends RecyclerView.Adapter<RVGroupFilesAdapte
     @Override
     public void onBindViewHolder(@NonNull FilesViewHolder filesViewHolder, int position) {
         File f = files.get(position);
-        filesViewHolder.setDetails(context,f.getFileKey(),f.getFilename(),f.getFileType(),f.getFileSize(),f.getFileUrl(),f.getUploadTime(),f.getUser(),position);
+        filesViewHolder.setDetails(context,f.getFileKey(),f.getFilename(),f.getFileType(),f.getFileSize(),f.getFileUrl(),f.getUser(),f.getUploadTime(),f.getUser(),position);
     }
 
     @Override
@@ -109,7 +110,7 @@ public class RVGroupFilesAdapter extends RecyclerView.Adapter<RVGroupFilesAdapte
             //position = getAdapterPosition();
         }
 
-        void setDetails(final Context context, final String fileKey, final String fileName, final String fileType, float fileSize, final String fileUrl, long uploadTime, String user, final int position){
+        void setDetails(final Context context, final String fileKey, final String fileName, final String fileType, float fileSize, final String fileUrl, final String fileUser, long uploadTime, String user, final int position){
 
             final java.io.File fileFromPhone = new java.io.File(Environment.getExternalStorageDirectory()+"/GroupMeApp/Grupos/"+groupName+"/"+fileName);
 
@@ -152,7 +153,7 @@ public class RVGroupFilesAdapter extends RecyclerView.Adapter<RVGroupFilesAdapte
 
                     popupMenu.getMenu().removeItem(R.id.publish);
 
-                    if(!myRol.equals(Roles.ADMIN.toString())){
+                    if(!myRol.equals(Roles.ADMIN.toString()) && !fileUser.equals(StaticFirebaseSettings.currentUserId)){
                         popupMenu.getMenu().removeItem(R.id.delete);
                     }
 

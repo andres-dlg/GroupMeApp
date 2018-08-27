@@ -40,6 +40,7 @@ import com.andresdlg.groupmeapp.Utils.ABShape;
 import com.andresdlg.groupmeapp.Utils.ABTextUtil;
 import com.andresdlg.groupmeapp.Utils.GroupStatus;
 import com.andresdlg.groupmeapp.Utils.GroupType;
+import com.andresdlg.groupmeapp.Utils.Helper;
 import com.andresdlg.groupmeapp.Utils.RoundRectangle;
 import com.andresdlg.groupmeapp.firebasePackage.FireApp;
 import com.andresdlg.groupmeapp.uiPackage.fragments.GroupChatFragment;
@@ -421,6 +422,8 @@ public class GroupActivity extends AppCompatActivity implements GroupChatFragmen
                 rfaContent
         ).build();
 
+        Helper.flag = true;
+
         setAnimations();
 
         fetchContacts();
@@ -432,8 +435,16 @@ public class GroupActivity extends AppCompatActivity implements GroupChatFragmen
             public void onClick(View view) {
                 Intent intent = new Intent(GroupActivity.this, GroupDetailActivity.class);
                 // Pass data object in the bundle and populate details activity.
-                intent.putExtra("groupName", groupName);
-                intent.putExtra("groupPhotoUrl", groupPhotoUrl);
+                if(((FireApp) getApplication()).getDownloadUrl() != null){
+                    intent.putExtra("groupPhotoUrl", ((FireApp) getApplication()).getDownloadUrl());
+                }else{
+                    intent.putExtra("groupPhotoUrl", groupPhotoUrl);
+                }
+                if(((FireApp) getApplication()).getDownloadUrl() != null){
+                    intent.putExtra("groupName", ((FireApp) getApplication()).getGroupName());
+                }else{
+                    intent.putExtra("groupName", groupName);
+                }
                 intent.putExtra("groupKey", groupKey);
                 Pair<View, String> p1 = Pair.create((View)civ, "photo");
                 Pair<View, String> p2 = Pair.create((View)tv, "text");
@@ -543,6 +554,7 @@ public class GroupActivity extends AppCompatActivity implements GroupChatFragmen
         ((FireApp) this.getApplication()).setEvents(null);
         ((FireApp) this.getApplication()).setGroupName(null);
         ((FireApp) this.getApplication()).setGroupPhoto(null);
+        Helper.flag = false;
     }
 
 

@@ -3,8 +3,12 @@ package com.andresdlg.groupmeapp.uiPackage;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.ActivityManager;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
@@ -43,6 +47,7 @@ import com.andresdlg.groupmeapp.Entities.Group;
 import com.andresdlg.groupmeapp.Entities.Users;
 import com.andresdlg.groupmeapp.R;
 import com.andresdlg.groupmeapp.Utils.GroupStatus;
+import com.andresdlg.groupmeapp.Utils.Helper;
 import com.andresdlg.groupmeapp.Utils.PhotoFullPopupWindow;
 import com.andresdlg.groupmeapp.Utils.Roles;
 import com.andresdlg.groupmeapp.firebasePackage.FireApp;
@@ -55,6 +60,7 @@ import com.bumptech.glide.request.RequestOptions;
 import com.bumptech.glide.request.target.Target;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -147,9 +153,12 @@ public class GroupDetailActivity extends AppCompatActivity {
         fab = findViewById(R.id.fab);
 
         final RecyclerView rv = findViewById(R.id.rvMembers);
-        rv.setHasFixedSize(true);
+        //rv.setHasFixedSize(true);
         LinearLayoutManager llm = new LinearLayoutManager(this);
         rv.setLayoutManager(llm);
+
+        adapter = new RVGroupDetailAdapter(usersList,usersRoles,groupKey,GroupDetailActivity.this);
+        rv.setAdapter(adapter);
 
         supportPostponeEnterTransition();
         RequestOptions requestOptions = new RequestOptions().dontAnimate();
@@ -172,84 +181,116 @@ public class GroupDetailActivity extends AppCompatActivity {
                 })
                 .into(iv);
 
-        groupRef = FirebaseDatabase.getInstance().getReference("Groups").child(groupKey);
-        groupRef.addListenerForSingleValueEvent(new ValueEventListener() {
-            @SuppressLint("SetTextI18n")
+        groupRef = FirebaseDatabase.getInstance().getReference("Groups");
+        groupRef.addChildEventListener(new ChildEventListener() {
             @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                Group g = dataSnapshot.getValue(Group.class);
+            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
 
-                getMembers(g);
+                if(dataSnapshot.child("groupKey").getValue().toString().equals(groupKey)){
+                    Group g = dataSnapshot.getValue(Group.class);
 
-                adapter = new RVGroupDetailAdapter(usersList,usersRoles,groupKey,GroupDetailActivity.this);
-                rv.setAdapter(adapter);
+                    getMembers(g);
 
-                if(TextUtils.isEmpty(g.getObjetive())){
-                    objetive.setText("Sin objetivo");
-                }else{
-                    objetive.setText(g.getObjetive());
+                    //adapter = new RVGroupDetailAdapter(usersList,usersRoles,groupKey,GroupDetailActivity.this);
+                    //rv.setAdapter(adapter);
+
+                    if(TextUtils.isEmpty(g.getObjetive())){
+                        objetive.setText("Sin objetivo");
+                    }else{
+                        objetive.setText(g.getObjetive());
+                    }
+
+                    fab.startAnimation(myFadeInAnimation);
+                    fab.bringToFront();
+                    fab.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            if(amIadmin()){
+                                onSelectImageClick();
+                            }else{
+                                Toast.makeText(GroupDetailActivity.this, "Debes ser administrador para actualizar la foto del grupo", Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                    });
+
+                    if(amIadmin()){
+
+                        //appBarLayout.setExpanded(true);
+
+                        editObjetiveBtn.setVisibility(View.VISIBLE);
+                        editObjetiveBtn.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                if(!editMode){
+
+                                    Drawable i = getResources().getDrawable(R.drawable.check);
+                                    i.setTint(getResources().getColor(R.color.green_file_download));
+                                    editObjetiveBtn.setImageDrawable(i);
+
+                                    editMode = true;
+                                    objetive.setEnabled(true);
+                                    objetive.setSelection(objetive.getText().length());
+                                    objetive.requestFocus();
+                                    InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                                    imm.showSoftInput(objetive, InputMethodManager.SHOW_IMPLICIT);
+                                    //getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
+                                }
+                                else{
+                                    Drawable i = getResources().getDrawable(R.drawable.pen);
+                                    i.setTint(getResources().getColor(R.color.mdtp_light_gray));
+                                    editObjetiveBtn.setImageDrawable(i);
+
+                                    InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                                    imm.hideSoftInputFromWindow(objetive.getWindowToken(),0);
+
+                                    editMode = false;
+                                    objetive.setEnabled(false);
+                                    saveObjetive();
+                                }
+                            }
+                        });
+
+                        addContact.setVisibility(View.VISIBLE);
+                        addContact.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                Intent i = new Intent(GroupDetailActivity.this, SearchContactActivity.class);
+                                i.putExtra("groupKey",groupKey);
+                                startActivity(i);
+                            }
+                        });
+                    }
                 }
+            }
 
-                fab.startAnimation(myFadeInAnimation);
-                fab.bringToFront();
-                fab.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        if(amIadmin()){
-                            onSelectImageClick();
+            @Override
+            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+                if(dataSnapshot.child("groupKey").getValue().toString().equals(groupKey)){
+                    if(Helper.flag){
+                        Map<String, String> members = (Map<String, String>) dataSnapshot.child("members").getValue();
+                        if(members.get(StaticFirebaseSettings.currentUserId) == null){
+                            Toast.makeText(GroupDetailActivity.this, "Fuiste eliminado de este grupo", Toast.LENGTH_SHORT).show();
+                            Intent intent = new Intent(GroupDetailActivity.this,MainActivity.class);
+                            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                            startActivity(intent);
                         }else{
-                            Toast.makeText(GroupDetailActivity.this, "Debes ser administrador para actualizar la foto del grupo", Toast.LENGTH_SHORT).show();
+                            usersList.clear();
+                            usersRoles.clear();
+                            Group g = dataSnapshot.getValue(Group.class);
+                            getMembers(g);
                         }
                     }
-                });
-
-                if(amIadmin()){
-
-                    appBarLayout.setExpanded(true);
-
-                    editObjetiveBtn.setVisibility(View.VISIBLE);
-                    editObjetiveBtn.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-                            if(!editMode){
-
-                                Drawable i = getResources().getDrawable(R.drawable.check);
-                                i.setTint(getResources().getColor(R.color.green_file_download));
-                                editObjetiveBtn.setImageDrawable(i);
-
-                                editMode = true;
-                                objetive.setEnabled(true);
-                                objetive.setSelection(objetive.getText().length());
-                                objetive.requestFocus();
-                                InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-                                imm.showSoftInput(objetive, InputMethodManager.SHOW_IMPLICIT);
-                                //getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
-                            }
-                            else{
-                                Drawable i = getResources().getDrawable(R.drawable.pen);
-                                i.setTint(getResources().getColor(R.color.mdtp_light_gray));
-                                editObjetiveBtn.setImageDrawable(i);
-
-                                InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-                                imm.hideSoftInputFromWindow(objetive.getWindowToken(),0);
-
-                                editMode = false;
-                                objetive.setEnabled(false);
-                                saveObjetive();
-                            }
-                        }
-                    });
-
-                    addContact.setVisibility(View.VISIBLE);
-                    addContact.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-                            Intent i = new Intent(GroupDetailActivity.this, SearchContactActivity.class);
-                            i.putExtra("groupKey",groupKey);
-                            startActivity(i);
-                        }
-                    });
                 }
+            }
+
+            @Override
+            public void onChildRemoved(DataSnapshot dataSnapshot) {
+
+            }
+
+            @Override
+            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
             }
 
             @Override
@@ -451,7 +492,7 @@ public class GroupDetailActivity extends AppCompatActivity {
     }
 
     private boolean amIadmin() {
-        for(Map.Entry<String, String> entry : members.entrySet()) {
+        for(Map.Entry<String, String> entry : usersRoles.entrySet()) {
             String memberId = entry.getKey();
             String memberRol = entry.getValue();
             if(memberId.equals(StaticFirebaseSettings.currentUserId) && memberRol.equals(Roles.ADMIN.toString())){
@@ -476,10 +517,10 @@ public class GroupDetailActivity extends AppCompatActivity {
     }
 
     private void getMembers(final Group g) {
-        members = g.getMembers();
-        for(Map.Entry<String, String> entry : members.entrySet()) {
+        usersRoles = g.getMembers();
+        for(Map.Entry<String, String> entry : usersRoles.entrySet()) {
             String memberId = entry.getKey();
-            usersRoles = g.getMembers();
+            //usersRoles = g.getMembers();
             usersRef = FirebaseDatabase.getInstance().getReference("Users").child(memberId);
             usersRef.addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
@@ -509,8 +550,9 @@ public class GroupDetailActivity extends AppCompatActivity {
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if(dataSnapshot.getValue()!=null){
                     if(dataSnapshot.getValue().toString().equals(GroupStatus.ACCEPTED.toString())){
-                        usersList.add(u);
-                        adapter.notifyDataSetChanged();
+                        //usersList.add(u);
+                        updateUsers(u);
+                        //adapter.notifyDataSetChanged();
                     }
                 }
             }
@@ -520,6 +562,24 @@ public class GroupDetailActivity extends AppCompatActivity {
 
             }
         });
+    }
+
+    private void updateUsers(Users user) {
+        boolean exists = false;
+        adapter.setRoles(usersRoles);
+        //appBarLayout.setExpanded(false);
+        for(int i=0; i < usersList.size(); i++){
+            if(usersList.get(i).getUserid().equals(user.getUserid())){
+                exists = true;
+                usersList.remove(i);
+                usersList.add(i,user);
+                adapter.notifyItemChanged(i);
+            }
+        }
+        if(!exists){
+            usersList.add(user);
+            adapter.notifyDataSetChanged();
+        }
     }
 
     private void letTheFirstPartOfTheShowBegin() {

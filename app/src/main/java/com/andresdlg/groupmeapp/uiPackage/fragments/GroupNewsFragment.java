@@ -76,17 +76,6 @@ public class GroupNewsFragment extends Fragment {
 
         tvNoNews = view.findViewById(R.id.tvNoNews);
 
-        /*fab = view.findViewById(R.id.fabNewPost);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent i = new Intent(getContext(), NewPostActivity.class);
-                getContext().startActivity(i);
-            }
-        });*/
-
-        //String groupKey = ((FireApp) getContext().getApplicationContext()).getGroupKey();
-
         postsRef = FirebaseDatabase.getInstance().getReference("Groups").child(groupKey).child("posts");
         postsRef.keepSynced(true);
 
@@ -94,7 +83,6 @@ public class GroupNewsFragment extends Fragment {
 
         rvNewsAdapter = new RVNewsAdapter(getContext(),posts, true,groupKey);
 
-        //rvPosts.setHasFixedSize(true);
         llm = new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false);
         rvPosts = view.findViewById(R.id.rvPosts);
         rvPosts.setLayoutManager(llm);

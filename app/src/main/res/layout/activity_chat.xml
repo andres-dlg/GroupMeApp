@@ -39,6 +39,8 @@
         android:gravity="center"
         android:background="@color/colorAccent"
         android:elevation="10dp"
+        android:clickable="true"
+        android:focusable="true"
         >
 
         <ImageButton
@@ -81,5 +83,19 @@
             android:minHeight="45dp"
             android:layout_toStartOf="@id/btnSend"
             android:padding="10dp"/>
+
+
     </RelativeLayout>
+
+    <View
+        android:id="@+id/dummyView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/transparent"
+        android:layout_alignTop="@+id/rl"
+        android:visibility="gone"
+        android:clickable="true"
+        android:focusable="true"
+        android:elevation="11dp"
+        />
 </RelativeLayout>

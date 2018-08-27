@@ -85,7 +85,7 @@ public class GroupFilesActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_group_files);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setTitle("Archvos compartidos");
+        getSupportActionBar().setTitle("Archivos compartidos");
 
         notificationChannel = 0;
 

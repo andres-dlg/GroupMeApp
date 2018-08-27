@@ -13,6 +13,8 @@ import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 public class FirebaseContacts {
@@ -69,6 +71,12 @@ public class FirebaseContacts {
                 Users u = dataSnapshot.getValue(Users.class);
                 if(!users.contains(u)){
                     users.add(u);
+                    Collections.sort(users, new Comparator<Users>() {
+                        @Override
+                        public int compare(Users o1, Users o2) {
+                            return o1.getName().toLowerCase().compareTo(o2.getName().toLowerCase());
+                        }
+                    });
                     if(isAnyObjectListening) {
                         adapterListener.onUserContactsChange(users);
                     }

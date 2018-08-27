@@ -14,13 +14,16 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.andresdlg.groupmeapp.Adapters.ListMessageAdapter;
 import com.andresdlg.groupmeapp.Entities.Conversation;
 import com.andresdlg.groupmeapp.Entities.Message;
 import com.andresdlg.groupmeapp.Entities.Users;
 import com.andresdlg.groupmeapp.R;
+import com.andresdlg.groupmeapp.Utils.FriendshipStatus;
 import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
 import com.bumptech.glide.Glide;
 import com.google.firebase.database.ChildEventListener;
@@ -52,6 +55,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
     private LinearLayout toolbarContainer;
     private TextView tv;
     private CircleImageView civ;
+    private View dummyView;
 
     DatabaseReference conversationRef;
     DatabaseReference userToRef;
@@ -74,6 +78,10 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         civ = toolbar.findViewById(R.id.conversation_contact_photo);
         contactIds = getIntent().getStringArrayListExtra("contactIds");
         conversationKey = getIntent().getStringExtra("conversationKey");
+
+        editWriteMessage = findViewById(R.id.editWriteMessage);
+
+        dummyView = findViewById(R.id.dummyView);
 
         //conversationRef = FirebaseDatabase.getInstance().getReference("Conversations").child(conversationKey);
         conversationRef = FirebaseDatabase.getInstance().getReference("Users").child(StaticFirebaseSettings.currentUserId).child("conversation").child(conversationKey);
@@ -125,7 +133,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         conversationRef.child("messages").addValueEventListener(valueEventListener);
 
         conversation = new Conversation();
-        ImageButton btnSend = findViewById(R.id.btnSend);
+        final ImageButton btnSend = findViewById(R.id.btnSend);
         btnSend.setOnClickListener(this);
 
         userToRef = FirebaseDatabase.getInstance().getReference("Users").child(contactIds.get(0));
@@ -152,7 +160,23 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         currentUser = dataSnapshot.getValue(Users.class);
+
                         if (userTo != null && currentUser != null) {
+                            if(!dataSnapshot.child("friends").child(userTo.getUserid()).exists() || !dataSnapshot.child("friends").child(userTo.getUserid()).child("status").getValue().toString().equals(FriendshipStatus.ACCEPTED.toString())){
+                                editWriteMessage.setClickable(false);
+                                editWriteMessage.setFocusable(false);
+                                btnSend.setClickable(false);
+                                btnSend.setFocusable(false);
+                                dummyView.setVisibility(View.VISIBLE);
+                                dummyView.bringToFront();
+                                dummyView.setOnClickListener(new View.OnClickListener() {
+                                    @Override
+                                    public void onClick(View v) {
+                                        Toast.makeText(ChatActivity.this, "Este usuario ya no es tu contacto. Búscalo y agregalo para chatear con él", Toast.LENGTH_LONG).show();
+                                    }
+                                });
+                            }
+
                             linearLayoutManager = new LinearLayoutManager(getBaseContext(), LinearLayoutManager.VERTICAL, false);
                             recyclerChat = findViewById(R.id.recyclerChat);
                             recyclerChat.setLayoutManager(linearLayoutManager);
@@ -211,7 +235,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
 
             }
         });
-        editWriteMessage = findViewById(R.id.editWriteMessage);
+
     }
 
 

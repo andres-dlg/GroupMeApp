@@ -18,6 +18,7 @@ import com.andresdlg.groupmeapp.Entities.Users;
 import com.andresdlg.groupmeapp.R;
 import com.andresdlg.groupmeapp.Utils.FriendshipStatus;
 import com.andresdlg.groupmeapp.Utils.GroupStatus;
+import com.andresdlg.groupmeapp.Utils.Helper;
 import com.andresdlg.groupmeapp.Utils.NotificationStatus;
 import com.andresdlg.groupmeapp.Utils.NotificationTypes;
 import com.andresdlg.groupmeapp.Utils.Roles;
@@ -162,10 +163,10 @@ public class SearchContactActivity extends AppCompatActivity {
 
         //SI ESTOY AGREGANDO MIEMBROS A UN GRUPO
         if(subGroupKey==null){
-            DatabaseReference membersRef =  mGroupsDatabase.child(groupKey).child("members");
-            for(String id : selectedMembersId){
-                membersRef.child(id).setValue(Roles.MEMBER);
-            }
+            //DatabaseReference membersRef =  mGroupsDatabase.child(groupKey).child("members");
+            //for(String id : selectedMembersId){
+            //    membersRef.child(id).setValue(Roles.MEMBER);
+            //}
 
             Map<String,Object> map2;
             map2 = new HashMap<>();
@@ -366,6 +367,7 @@ public class SearchContactActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        Helper.hideKeyboard(this);
         //((FireApp) this.getApplication()).setMembers(null);
     }
 }
