@@ -487,6 +487,7 @@ public class GroupActivity extends AppCompatActivity implements GroupChatFragmen
                         if(!validateExistingMembers(u)){
                             groupUsers.add(u);
                         }
+                        NewPostActivity.setGroupUsers(groupUsers);
                         ((FireApp) getApplicationContext()).setGroupUsers(groupUsers);
                         /*Bundle objectId = new Bundle();
                         objectId.putBoolean("loaded", true);*/

@@ -186,7 +186,7 @@ public class GroupDetailActivity extends AppCompatActivity {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
 
-                if(dataSnapshot.child("groupKey").getValue().toString().equals(groupKey)){
+                if(dataSnapshot.child("groupKey").getValue() != null && dataSnapshot.child("groupKey").getValue().toString().equals(groupKey)){
                     Group g = dataSnapshot.getValue(Group.class);
 
                     getMembers(g);
@@ -265,7 +265,7 @@ public class GroupDetailActivity extends AppCompatActivity {
 
             @Override
             public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-                if(dataSnapshot.child("groupKey").getValue().toString().equals(groupKey)){
+                if(dataSnapshot.child("groupKey").getValue() != null && dataSnapshot.child("groupKey").getValue().toString().equals(groupKey)){
                     if(Helper.flag){
                         Map<String, String> members = (Map<String, String>) dataSnapshot.child("members").getValue();
                         if(members.get(StaticFirebaseSettings.currentUserId) == null){

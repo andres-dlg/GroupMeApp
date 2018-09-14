@@ -343,12 +343,14 @@ public class RVGroupDetailAdapter extends RecyclerView.Adapter<RVGroupDetailAdap
             groupRef.child("members").child(userId).setValue(null).addOnSuccessListener(new OnSuccessListener<Void>() {
                 @Override
                 public void onSuccess(Void aVoid) {
-                    //Toast.makeText(context, "Borrado del grupo", Toast.LENGTH_SHORT).show();
-
-                    usersList.remove(position);
-                    notifyItemRemoved(position);
-                    notifyItemRangeChanged(position, usersList.size());
                     ((FireApp) context.getApplicationContext()).setGroupUsers(usersList);
+                    //Toast.makeText(context, "Borrado del grupo", Toast.LENGTH_SHORT).show();
+                    if(usersList.size()>0){
+                        usersList.remove(position);
+                        notifyItemRemoved(position);
+                        notifyItemRangeChanged(position, usersList.size());
+                        ((FireApp) context.getApplicationContext()).setGroupUsers(usersList);
+                    }
                 }
             });
 

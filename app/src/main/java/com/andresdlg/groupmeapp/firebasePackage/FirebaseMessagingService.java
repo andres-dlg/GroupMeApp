@@ -366,6 +366,36 @@ public class FirebaseMessagingService extends com.google.firebase.messaging.Fire
 
                 showNotification();
 
+            }else if(dataType.equals(NotificationTypes.TASK_FINISHED.toString())){
+                resultIntent = new Intent(this, MainActivity.class);
+                resultIntent.putExtra("notification",NotificationTypes.TASK_FINISHED.toString());
+
+                PendingIntent resultPendingIntent =
+                        PendingIntent.getActivity(
+                                this,
+                                0,
+                                resultIntent,
+                                PendingIntent.FLAG_UPDATE_CURRENT
+                        );
+                mBuilder.setContentIntent(resultPendingIntent);
+
+                showNotification();
+
+            }else if(dataType.equals(NotificationTypes.NEW_MEETING.toString())){
+                resultIntent = new Intent(this, MainActivity.class);
+                resultIntent.putExtra("notification",NotificationTypes.NEW_MEETING.toString());
+
+                PendingIntent resultPendingIntent =
+                        PendingIntent.getActivity(
+                                this,
+                                0,
+                                resultIntent,
+                                PendingIntent.FLAG_UPDATE_CURRENT
+                        );
+                mBuilder.setContentIntent(resultPendingIntent);
+
+                showNotification();
+
             }
 
             //ASIGNO EL INTENT PARA CUANDO SE HAGA EL CLICK

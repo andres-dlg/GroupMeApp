@@ -1,5 +1,6 @@
 package com.andresdlg.groupmeapp.uiPackage;
 
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
@@ -7,6 +8,7 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.OpenableColumns;
@@ -272,13 +274,18 @@ public class GroupFilesActivity extends AppCompatActivity {
                                     , (int) Math.round(progress), false);
                             mBuilder.setContentText(file.getFilename());
 
-                        /*PROGRESS IS INTEGER VALUE THATS U GOT IT FROM IMPLEMENT METHOD. EXAMPLE IN AWS :
-
-                        public void onProgressChanged(int id, long bytesCurrent, long bytesTotal) {
-
-                        MAKE IT INTEGER,LIKE THIS :
-                        int progress = (int) ((double) bytesCurrent * 100 / bytesTotal);
-                        */
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                //DEFINO EL CHANNEL
+                                int importance = NotificationManager.IMPORTANCE_HIGH;
+                                NotificationChannel mChannel = notificationManager.getNotificationChannel(getString(R.string.default_notification_channel_id));
+                                if (mChannel == null) {
+                                    mChannel = new NotificationChannel(getString(R.string.default_notification_channel_id), getString(R.string.default_notification_channel_id), importance);
+                                    mChannel.setDescription(getString(R.string.default_notification_channel_id));
+                                    mChannel.enableVibration(true);
+                                    mChannel.setVibrationPattern(new long[]{100, 200, 300, 400, 500, 400, 300, 200, 400});
+                                    notificationManager.createNotificationChannel(mChannel);
+                                }
+                            }
 
                             notificationManager.notify(notificationChannel, mBuilder.build());
                         }
@@ -292,6 +299,20 @@ public class GroupFilesActivity extends AppCompatActivity {
                             mBuilder.setContentText(file.getFilename());
                             mBuilder.setSmallIcon(android.R.drawable.stat_sys_upload_done);
                             mBuilder.setOngoing(false);
+
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                //DEFINO EL CHANNEL
+                                int importance = NotificationManager.IMPORTANCE_HIGH;
+                                NotificationChannel mChannel = notificationManager.getNotificationChannel(getString(R.string.default_notification_channel_id));
+                                if (mChannel == null) {
+                                    mChannel = new NotificationChannel(getString(R.string.default_notification_channel_id), getString(R.string.default_notification_channel_id), importance);
+                                    mChannel.setDescription(getString(R.string.default_notification_channel_id));
+                                    mChannel.enableVibration(true);
+                                    mChannel.setVibrationPattern(new long[]{100, 200, 300, 400, 500, 400, 300, 200, 400});
+                                    notificationManager.createNotificationChannel(mChannel);
+                                }
+                            }
+
                             notificationManager.notify(notificationChannel, mBuilder.build());
 
                             file.setFileUrl(taskSnapshot.getDownloadUrl().toString());

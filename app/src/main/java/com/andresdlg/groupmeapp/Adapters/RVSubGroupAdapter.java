@@ -805,7 +805,7 @@ public class RVSubGroupAdapter extends RecyclerView.Adapter<RVSubGroupAdapter.Su
                 notification.put("state", NotificationStatus.UNREAD);
                 notification.put("date", Calendar.getInstance().getTimeInMillis());
                 notification.put("type", NotificationTypes.TASK_FINISHED);
-                userToNotifications.child(notificationKey).setValue(notification);
+                userToNotifications.child(notificationKey).updateChildren(notification);
             }
         }
     }

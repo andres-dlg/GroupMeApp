@@ -4,10 +4,12 @@ import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -21,6 +23,7 @@ import android.widget.Toast;
 
 import com.andresdlg.groupmeapp.Entities.Task;
 import com.andresdlg.groupmeapp.R;
+import com.andresdlg.groupmeapp.Utils.Helper;
 import com.andresdlg.groupmeapp.firebasePackage.StaticFirebaseSettings;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -65,15 +68,36 @@ public class SubGroupNewTaskDialogFragment extends DialogFragment {
     int dateMode;
     int databaseMode;
 
+    boolean alertDialogFlag;
+
+    String auxTaskName;
+    Calendar auxTaskStartDate;
+    Calendar auxTaskEndDate;
+    String auxTaskDescription;
+
+    String dialogMessage;
+
     public SubGroupNewTaskDialogFragment(String subGroupKey, String groupKey) {
         this.subGroupKey = subGroupKey;
         this.groupKey = groupKey;
+
+        alertDialogFlag = true;
+        dialogMessage = "Los datos ingresados en el formulario se perderán";
     }
 
     public SubGroupNewTaskDialogFragment(String subGroupKey, String groupKey, Task task) {
         this.subGroupKey = subGroupKey;
         this.groupKey = groupKey;
         this.task = task;
+
+        auxTaskName = task.getName();
+        auxTaskStartDate = Calendar.getInstance();
+        auxTaskStartDate.setTimeInMillis(task.getStartDate());
+        auxTaskEndDate = Calendar.getInstance();
+        auxTaskEndDate.setTimeInMillis(task.getEndDate());
+        auxTaskDescription = task.getTaskDescription();
+        alertDialogFlag = true;
+        dialogMessage = "Los cambios realizados se perderán";
     }
 
     public SubGroupNewTaskDialogFragment(String subGroupKey, String groupKey, Task task, boolean fromWeekView) {
@@ -81,6 +105,7 @@ public class SubGroupNewTaskDialogFragment extends DialogFragment {
         this.groupKey = groupKey;
         this.task = task;
         this.fromWeekView = fromWeekView;
+        alertDialogFlag = false;
     }
 
     @Override
@@ -181,7 +206,31 @@ public class SubGroupNewTaskDialogFragment extends DialogFragment {
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                dismiss();
+                if(displayAlertDialog()){
+                    new android.support.v7.app.AlertDialog.Builder(getContext(),R.style.MyDialogTheme)
+                            .setTitle("¿Está seguro que desea volver?")
+                            .setMessage(dialogMessage)
+                            .setPositiveButton("Si", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    dismiss();
+                                    Helper.hideKeyboardFrom(getContext(),taskName);
+                                    Helper.hideKeyboardFrom(getContext(),taskDecription);
+                                }
+                            })
+                            .setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    dialog.dismiss();
+                                }
+                            })
+                            .setCancelable(false)
+                            .show();
+                }else{
+                    dismiss();
+                    Helper.hideKeyboardFrom(getContext(),taskName);
+                    Helper.hideKeyboardFrom(getContext(),taskDecription);
+                }
             }
         });
 
@@ -208,6 +257,39 @@ public class SubGroupNewTaskDialogFragment extends DialogFragment {
         }
 
         return v;
+    }
+
+    private boolean displayAlertDialog() {
+        if(alertDialogFlag){
+            if(task != null){
+
+                if(startDateCalendar == null){
+                    startDateCalendar = Calendar.getInstance();
+                    startDateCalendar.setTimeInMillis(0);
+                }
+
+                if(endDateCalendar == null){
+                    endDateCalendar = Calendar.getInstance();
+                    endDateCalendar.setTimeInMillis(0);
+                }
+
+                if(auxTaskDescription == null || TextUtils.isEmpty(auxTaskDescription.trim())){
+                    auxTaskDescription = "No hay descripción para esta tarea";
+                }
+
+                return !taskName.getText().toString().trim().equals(auxTaskName) ||
+                        !taskDecription.getText().toString().trim().equals(auxTaskDescription) ||
+                        startDateCalendar.getTimeInMillis() != auxTaskStartDate.getTimeInMillis() ||
+                        endDateCalendar.getTimeInMillis() != auxTaskEndDate.getTimeInMillis();
+            }else{
+                return !TextUtils.isEmpty(taskStartDate.getText().toString().trim()) ||
+                        !TextUtils.isEmpty(taskEndDate.getText().toString().trim()) ||
+                        !TextUtils.isEmpty(taskDecription.getText().toString().trim()) ||
+                        !TextUtils.isEmpty(taskName.getText().toString().trim());
+            }
+        }else{
+            return false;
+        }
     }
 
     private void showDatePickerDialog(final EditText date) {
@@ -310,6 +392,8 @@ public class SubGroupNewTaskDialogFragment extends DialogFragment {
                 });
             }
             dismiss();
+            Helper.hideKeyboardFrom(getContext(),taskName);
+            Helper.hideKeyboardFrom(getContext(),taskDecription);
         }else{
             Toast.makeText(getContext(), "Revise las fechas ingresadas", Toast.LENGTH_SHORT).show();
         }

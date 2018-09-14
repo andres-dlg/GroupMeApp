@@ -42,6 +42,12 @@ public class NewPostActivity extends AppCompatActivity {
     Button postBtn;
     private DatabaseReference mUsersDatabase;
 
+    //List<Users> groupUsers;
+    String groupKey;
+    String groupName;
+
+    static List<Users> groupUsers;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -53,9 +59,9 @@ public class NewPostActivity extends AppCompatActivity {
 
         mUsersDatabase = FirebaseDatabase.getInstance().getReference("Users");
 
-        final String groupKey = ((FireApp) getApplication()).getGroupKey();
-        final String groupName = ((FireApp) getApplication()).getGroupName();
-        final List<Users> groupUsers = ((FireApp) getApplication()).getGroupUsers();
+        groupKey = ((FireApp) getApplication()).getGroupKey();
+        groupName = ((FireApp) getApplication()).getGroupName();
+        //groupUsers = ((FireApp) getApplication()).getGroupUsers();
 
         postsRef = FirebaseDatabase
                 .getInstance()
@@ -174,5 +180,11 @@ public class NewPostActivity extends AppCompatActivity {
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    public static void setGroupUsers(List<Users> users){
+        groupUsers = new ArrayList<>();
+        //groupUsers.clear();
+        groupUsers.addAll(users);
     }
 }

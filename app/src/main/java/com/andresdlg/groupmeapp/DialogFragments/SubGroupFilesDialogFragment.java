@@ -1,19 +1,26 @@
 package com.andresdlg.groupmeapp.DialogFragments;
 
 import android.app.Dialog;
+import android.app.Notification;
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.BitmapFactory;
+import android.media.RingtoneManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.OpenableColumns;
 import android.support.annotation.NonNull;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.NotificationCompat;
+import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
@@ -228,8 +235,9 @@ public class SubGroupFilesDialogFragment extends DialogFragment {
                             Intent intent = new Intent();
                             final PendingIntent pendingIntent = PendingIntent.getActivity(
                                     getContext(), 17, intent, 0);
+
                             mBuilder =
-                                    new NotificationCompat.Builder(getContext(),"GroupMeAppChannel")
+                                    new NotificationCompat.Builder(getContext(),getString(R.string.default_notification_channel_id))
                                             //.setSmallIcon(android.R.drawable.ic_menu_upload)
                                             .setOngoing(true)
                                             .setOnlyAlertOnce(true)
@@ -238,21 +246,28 @@ public class SubGroupFilesDialogFragment extends DialogFragment {
                                             .setContentTitle("Subiendo archivo");
 
                             mBuilder.setContentIntent(pendingIntent);
+
                             notificationManager =
                                     (NotificationManager) getContext().getSystemService(Context.NOTIFICATION_SERVICE);
                             mBuilder.setProgress(100
                                     , (int) Math.round(progress), false);
                             mBuilder.setContentText(file.getFilename());
 
-                        /*PROGRESS IS INTEGER VALUE THATS U GOT IT FROM IMPLEMENT METHOD. EXAMPLE IN AWS :
-
-                        public void onProgressChanged(int id, long bytesCurrent, long bytesTotal) {
-
-                        MAKE IT INTEGER,LIKE THIS :
-                        int progress = (int) ((double) bytesCurrent * 100 / bytesTotal);
-                        */
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                //DEFINO EL CHANNEL
+                                int importance = NotificationManager.IMPORTANCE_HIGH;
+                                NotificationChannel mChannel = notificationManager.getNotificationChannel(getString(R.string.default_notification_channel_id));
+                                if (mChannel == null) {
+                                    mChannel = new NotificationChannel(getString(R.string.default_notification_channel_id), getString(R.string.default_notification_channel_id), importance);
+                                    mChannel.setDescription(getString(R.string.default_notification_channel_id));
+                                    mChannel.enableVibration(true);
+                                    mChannel.setVibrationPattern(new long[]{100, 200, 300, 400, 500, 400, 300, 200, 400});
+                                    notificationManager.createNotificationChannel(mChannel);
+                                }
+                            }
 
                             notificationManager.notify(notificationChannel, mBuilder.build());
+
                         }
                     })
                     .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
@@ -264,6 +279,20 @@ public class SubGroupFilesDialogFragment extends DialogFragment {
                             mBuilder.setContentText(file.getFilename());
                             mBuilder.setSmallIcon(android.R.drawable.stat_sys_upload_done);
                             mBuilder.setOngoing(false);
+
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                //DEFINO EL CHANNEL
+                                int importance = NotificationManager.IMPORTANCE_HIGH;
+                                NotificationChannel mChannel = notificationManager.getNotificationChannel(getString(R.string.default_notification_channel_id));
+                                if (mChannel == null) {
+                                    mChannel = new NotificationChannel(getString(R.string.default_notification_channel_id), getString(R.string.default_notification_channel_id), importance);
+                                    mChannel.setDescription(getString(R.string.default_notification_channel_id));
+                                    mChannel.enableVibration(true);
+                                    mChannel.setVibrationPattern(new long[]{100, 200, 300, 400, 500, 400, 300, 200, 400});
+                                    notificationManager.createNotificationChannel(mChannel);
+                                }
+                            }
+
                             notificationManager.notify(notificationChannel, mBuilder.build());
 
                             file.setFileUrl(taskSnapshot.getDownloadUrl().toString());

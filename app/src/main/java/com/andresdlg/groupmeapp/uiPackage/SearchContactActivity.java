@@ -11,6 +11,8 @@ import android.support.v7.widget.SearchView;
 import android.text.TextUtils;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.Toast;
 
 import com.andresdlg.groupmeapp.Adapters.RVSearchContactAdapter;
@@ -49,6 +51,7 @@ public class SearchContactActivity extends AppCompatActivity {
 
     CoordinatorLayout coordinatorLayout;
     Snackbar snackbar;
+    SearchView searchView;
     int selected;
 
     //Multiselect stuff
@@ -107,7 +110,7 @@ public class SearchContactActivity extends AppCompatActivity {
         rvSearchContactAdapter = new RVSearchContactAdapter(users,this,null, groupKey, userIdsWithStatus);
         rvAddGroupMember.setAdapter(rvSearchContactAdapter);
 
-        SearchView searchView = findViewById(R.id.toolbar);
+        searchView = findViewById(R.id.toolbar);
         searchView.setIconifiedByDefault(false);
         searchView.requestFocus();
         // listening to search query text change
@@ -357,6 +360,7 @@ public class SearchContactActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
+                Helper.hideKeyboard(this);
                 this.finish();
                 return true;
             default:
@@ -367,7 +371,6 @@ public class SearchContactActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        Helper.hideKeyboard(this);
         //((FireApp) this.getApplication()).setMembers(null);
     }
 }

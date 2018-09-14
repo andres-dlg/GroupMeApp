@@ -1,6 +1,7 @@
 package com.andresdlg.groupmeapp.DialogFragments;
 
 import android.app.Dialog;
+import android.content.DialogInterface;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
@@ -10,6 +11,7 @@ import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -25,6 +27,7 @@ import android.widget.Toast;
 import com.andresdlg.groupmeapp.R;
 import com.andresdlg.groupmeapp.Utils.GroupStatus;
 import com.andresdlg.groupmeapp.Utils.GroupType;
+import com.andresdlg.groupmeapp.Utils.Helper;
 import com.andresdlg.groupmeapp.Utils.NotificationStatus;
 import com.andresdlg.groupmeapp.Utils.NotificationTypes;
 import com.andresdlg.groupmeapp.Utils.Roles;
@@ -117,7 +120,31 @@ public class HeaderDialogFragment extends DialogFragment implements GroupAddMemb
         (toolbar.findViewById(R.id.close)).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                dismiss();
+                if(displayAlertDialog()){
+                    new android.support.v7.app.AlertDialog.Builder(getContext(),R.style.MyDialogTheme)
+                            .setTitle("¿Está seguro que desea volver?")
+                            .setMessage("Los datos ingresados en el formulario se perderán")
+                            .setPositiveButton("Si", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    dismiss();
+                                    Helper.hideKeyboardFrom(getContext(),nameText);
+                                    Helper.hideKeyboardFrom(getContext(),objetiveText);
+                                }
+                            })
+                            .setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    dialog.dismiss();
+                                }
+                            })
+                            .setCancelable(false)
+                            .show();
+                }else{
+                    dismiss();
+                    Helper.hideKeyboardFrom(getContext(),nameText);
+                    Helper.hideKeyboardFrom(getContext(),objetiveText);
+                }
             }
         });
 
@@ -146,6 +173,7 @@ public class HeaderDialogFragment extends DialogFragment implements GroupAddMemb
                 .add("Setup", GroupSetupFragment.class)
                 .add("Add contacts", GroupAddMembersFragment.class)
                 .create());
+
 
         ViewPager viewPager = view.findViewById(R.id.viewpager);
         viewPager.setAdapter(adapter);
@@ -222,13 +250,20 @@ public class HeaderDialogFragment extends DialogFragment implements GroupAddMemb
             case R.id.save:
                 return true;
             case android.R.id.home:
-                dismiss();
                 return true;
             case R.id.menu_save:
                 saveGroup();
                 return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private boolean displayAlertDialog() {
+        fragments = new ArrayList<>();
+        fragments = getChildFragmentManager().getFragments();
+        objetiveText = fragments.get(0).getView().findViewById(R.id.etobj);
+        nameText = fragments.get(0).getView().findViewById(R.id.etId);
+        return !TextUtils.isEmpty(nameText.getText().toString().trim()) || !TextUtils.isEmpty(objetiveText.getText().toString().trim());
     }
 
     private void saveGroup() {
