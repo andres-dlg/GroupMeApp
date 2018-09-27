@@ -298,7 +298,7 @@ public class RVSubGroupDetailAdapter extends RecyclerView.Adapter<RVSubGroupDeta
                                             case R.id.delete:
                                                 //rejectRequest(iduser);
                                                 deleteUserFromSubGroup(iduser,getAdapterPosition(), false);
-                                                Toast.makeText(context, "Eliminar", Toast.LENGTH_SHORT).show();
+                                                //Toast.makeText(context, "Eliminar", Toast.LENGTH_SHORT).show();
                                                 break;
                                         }
                                         return true;

@@ -302,7 +302,7 @@ public class RVGroupDetailAdapter extends RecyclerView.Adapter<RVGroupDetailAdap
                                     case R.id.delete:
                                         //rejectRequest(iduser);
                                         deleteUserFromGroup(iduser,getAdapterPosition(),false);
-                                        Toast.makeText(context, "Eliminar", Toast.LENGTH_SHORT).show();
+                                        //Toast.makeText(context, "Eliminar", Toast.LENGTH_SHORT).show();
                                         break;
                                 }
                                 return true;
